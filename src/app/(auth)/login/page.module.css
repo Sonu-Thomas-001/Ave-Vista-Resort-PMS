@@ -192,17 +192,120 @@
     z-index: 1000;
 }
 
-.select {
+.customSelectWrapper {
+    position: relative;
+}
+
+.customSelect {
+    position: relative;
+    width: 100%;
+    cursor: pointer;
+}
+
+.selectedValue {
+    width: 100%;
+    padding: 0.85rem 1rem 0.85rem 3rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    background: var(--background);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 500;
+}
+
+.customSelect:hover .selectedValue {
+    border-color: var(--primary);
+    background: var(--surface);
+}
+
+.hiddenSelect {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
     appearance: none;
     -webkit-appearance: none;
-    cursor: pointer;
+    -moz-appearance: none;
+}
+
+.hiddenSelect option {
+    background: white !important;
+    color: var(--text-main) !important;
+    padding: 0.75rem;
+}
+
+.hiddenSelect:focus+.selectedValue {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+    background: var(--surface);
 }
 
 .selectArrow {
     position: absolute;
     right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
     color: var(--text-secondary);
     pointer-events: none;
     display: flex;
     align-items: center;
+    transition: color 0.2s;
+    z-index: 1;
+}
+
+.customSelect:hover~.selectArrow {
+    color: var(--primary);
+}
+
+.dropdownMenu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-top: 4px;
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    overflow: hidden;
+    animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdownItem {
+    padding: 0.75rem 1rem 0.75rem 3rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.dropdownItem:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.dropdownItem.selected {
+    background: var(--primary);
+    color: white;
+    font-weight: 600;
 }

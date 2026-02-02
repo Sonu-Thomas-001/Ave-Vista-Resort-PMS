@@ -128,12 +128,6 @@ export default function LoginPage() {
             <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.9rem' }}>
                 <p>Don't have an account? <Link href="/signup" style={{ color: 'var(--primary)', fontWeight: 600 }}>Sign Up</Link></p>
             </div>
-
-            <div className={styles.credentialsHint}>
-                <p><strong>Demo Credentials:</strong></p>
-                <p>Admin: admin@avevista.com / admin123</p>
-                <p>Manager: manager@avevista.com / manager123</p>
-            </div>
         </div>
     );
 }

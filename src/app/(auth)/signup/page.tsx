@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,6 +17,25 @@ export default function SignupPage() {
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+    const roles = ['Admin', 'Manager', 'Reception'];
+
+    useEffect(() => {
+        const handleClickOutside = () => {
+            if (isDropdownOpen) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        if (isDropdownOpen) {
+            document.addEventListener('click', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, [isDropdownOpen]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -125,22 +144,36 @@ export default function SignupPage() {
 
                     <div className={styles.inputGroup}>
                         <label htmlFor="role" className={styles.label}>Role</label>
-                        <div className={styles.inputWrapper}>
-                            <Briefcase className={styles.icon} size={20} />
-                            <select
-                                id="role"
-                                className={`${styles.input} ${styles.select}`}
-                                value={role}
-                                onChange={(e) => setRole(e.target.value)}
-                                style={{ backgroundColor: 'var(--background)' }}
-                            >
-                                <option value="Admin">Admin</option>
-                                <option value="Manager">Manager</option>
-                                <option value="Reception">Reception</option>
-
-                            </select>
-                            <div className={styles.selectArrow}>
-                                <ChevronDown size={18} />
+                        <div className={styles.customSelectWrapper}>
+                            <div className={styles.inputWrapper}>
+                                <Briefcase className={styles.icon} size={20} />
+                                <div
+                                    className={styles.customSelect}
+                                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                >
+                                    <div className={styles.selectedValue}>
+                                        {role}
+                                    </div>
+                                    {isDropdownOpen && (
+                                        <div className={styles.dropdownMenu}>
+                                            {roles.map((r) => (
+                                                <div
+                                                    key={r}
+                                                    className={`${styles.dropdownItem} ${role === r ? styles.selected : ''}`}
+                                                    onClick={() => {
+                                                        setRole(r);
+                                                        setIsDropdownOpen(false);
+                                                    }}
+                                                >
+                                                    {r}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className={styles.selectArrow}>
+                                    <ChevronDown size={18} />
+                                </div>
                             </div>
                         </div>
                     </div>
