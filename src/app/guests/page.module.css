@@ -1,0 +1,214 @@
+.container {
+    padding: 0 var(--spacing-lg) var(--spacing-xl);
+}
+
+.controls {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-lg);
+}
+
+.search {
+    position: relative;
+    width: 300px;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+}
+
+.searchInput {
+    width: 100%;
+    padding: 0.6rem 1rem 0.6rem 2.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+}
+
+.tableWrapper {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: var(--spacing-md);
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.table th {
+    background: var(--background);
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.table tr:last-child td {
+    border-bottom: none;
+}
+
+.row {
+    position: relative;
+    transition: background 0.1s;
+}
+
+.row:hover {
+    background: var(--surface-hover);
+}
+
+.linkOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.nameCell {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--text-main);
+    position: relative;
+    z-index: 2;
+    /* Ensure avatar/text is above overlay if needed, but overlay handles click */
+}
+
+/* Fix z-index for link to cover cell but not block action buttons */
+.nameCell .linkOverlay {
+    z-index: 1;
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary-light);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.name {
+    display: block;
+    font-weight: 500;
+}
+
+.email {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.tags {
+    display: flex;
+    gap: 4px;
+}
+
+.tag {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.vip {
+    background: #FFEB3B;
+    color: #F57F17;
+}
+
+.corporate {
+    background: #E3F2FD;
+    color: #1976D2;
+}
+
+.status {
+    padding: 4px 8px;
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.checkedin {
+    background: #E8F5E9;
+    color: #4CAF50;
+}
+
+.checkedout {
+    background: #F5F5F0;
+    color: #757575;
+}
+
+.reserved {
+    background: #E3F2FD;
+    color: #2196F3;
+}
+
+.actionBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    position: relative;
+    z-index: 2;
+}
+
+.actionBtn:hover {
+    color: var(--primary);
+}
+
+.actionsMenu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 50;
+    min-width: 140px;
+    padding: 4px;
+}
+
+.actionsMenu button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    text-align: left;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.actionsMenu button:hover {
+    background: var(--surface-hover);
+}
+
+.actionsMenu .deleteBtn:hover {
+    background: #FFEBEE;
+    color: #C62828;
+}

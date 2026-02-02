@@ -1,0 +1,241 @@
+.container {
+    padding: 40px;
+    background: white;
+    max-width: 210mm;
+    /* A4 Width */
+    margin: 0 auto;
+    font-family: 'Inter', sans-serif;
+    color: #333;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 20px;
+}
+
+.metaHeader {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #000;
+    margin-bottom: 20px;
+}
+
+.resortName {
+    font-size: 32px;
+    font-weight: 800;
+    color: #2c5f2d;
+    /* Resort Green */
+    margin-bottom: 8px;
+    text-transform: capitalize;
+}
+
+.resortAddress {
+    font-size: 14px;
+    color: #666;
+    font-weight: 700;
+    line-height: 1.6;
+}
+
+.title {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.infoGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 30px;
+}
+
+.section {
+    margin-bottom: 20px;
+}
+
+.sectionTitle {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #888;
+    font-weight: 600;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.label {
+    color: #666;
+    font-weight: 500;
+}
+
+.value {
+    font-weight: 600;
+    color: #000;
+}
+
+.tableSection {
+    margin-bottom: 30px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.table th {
+    text-align: left;
+    padding: 12px;
+    background: #f8f9fa;
+    border-bottom: 2px solid #ddd;
+    font-weight: 600;
+    color: #444;
+}
+
+.table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.colRight {
+    text-align: right;
+}
+
+.summary {
+    width: 50%;
+    margin-left: auto;
+    margin-bottom: 30px;
+}
+
+.summaryRow {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 14px;
+}
+
+.totalRow {
+    font-size: 18px;
+    font-weight: 700;
+    border-top: 2px solid #000;
+    padding-top: 15px;
+    margin-top: 10px;
+    color: #2c5f2d;
+}
+
+.policies {
+    font-size: 12px;
+    color: #666;
+    margin-top: 50px;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.policies ul {
+    padding-left: 20px;
+    margin: 5px 0;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 50px;
+    font-size: 14px;
+    color: #888;
+    font-style: italic;
+}
+
+.auth {
+    margin-top: 60px;
+    text-align: right;
+}
+
+.signatureLine {
+    display: inline-block;
+    width: 200px;
+    border-bottom: 1px solid #000;
+    margin-bottom: 5px;
+}
+
+.authLabel {
+    display: block;
+    font-size: 12px;
+    color: #666;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    .container,
+    .container * {
+        visibility: visible;
+    }
+
+    .container {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 20px;
+    }
+}
+
+.connectSection {
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-top: 2px solid #eee;
+    padding-top: 20px;
+}
+
+.qrBlock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.qrImage {
+    width: 80px;
+    height: 80px;
+    border: 1px solid #eee;
+}
+
+.qrText {
+    font-size: 10px;
+    color: #666;
+    text-align: center;
+    max-width: 120px;
+    font-weight: 500;
+}
+
+.socialBlock {
+    text-align: right;
+}
+
+.socialRow {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #444;
+    font-weight: 500;
+}

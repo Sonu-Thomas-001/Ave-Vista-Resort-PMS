@@ -1,0 +1,156 @@
+.container {
+    background: white;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 600px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.header {
+    display: grid;
+    grid-template-columns: 200px repeat(7, 1fr);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.roomLabel {
+    padding: 16px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    border-right: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    background: #FAFAFA;
+}
+
+.dayHeader {
+    padding: 12px;
+    text-align: center;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+}
+
+.dayHeader:last-child {
+    border-right: none;
+}
+
+.dayName {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.dateNum {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+/* Grid */
+.grid {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 200px repeat(7, 1fr);
+    border-bottom: 1px solid var(--border);
+    min-height: 80px;
+}
+
+.row:hover {
+    background: var(--surface-hover);
+}
+
+.roomName {
+    padding: 16px;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    font-weight: 600;
+    color: var(--text-main);
+    background: white;
+    position: sticky;
+    left: 0;
+    z-index: 5;
+}
+
+.cell {
+    border-right: 1px solid var(--border);
+    position: relative;
+    padding: 4px;
+}
+
+.bookingCell {
+    border-right: 1px solid var(--border);
+    padding: 6px;
+    position: relative;
+    z-index: 1;
+}
+
+.bookingBlock {
+    height: 40px;
+    border-radius: 6px;
+    padding: 2px 12px;
+    margin: 20px 8px 0 8px;
+    /* Top margin to center, side for spacing */
+    color: white;
+    font-size: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bookingBlock:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.bookingSource {
+    font-size: 0.7rem;
+    opacity: 0.9;
+    font-weight: 500;
+    margin-top: 2px;
+}
+
+/* Status Colors - Premium Palette */
+.confirmed {
+    background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%);
+}
+
+.checkedin {
+    background: linear-gradient(135deg, #66BB6A 0%, #43A047 100%);
+}
+
+.checkedout {
+    background: linear-gradient(135deg, #BDBDBD 0%, #757575 100%);
+}
+
+.cancelled {
+    background: linear-gradient(135deg, #EF5350 0%, #E53935 100%);
+}
+
+.pending {
+    background: linear-gradient(135deg, #FFA726 0%, #FB8C00 100%);
+}

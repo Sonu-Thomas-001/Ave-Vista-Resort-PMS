@@ -1,0 +1,246 @@
+.container {
+    padding: 0 var(--spacing-lg) var(--spacing-xl);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.stepper {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-xl);
+    padding: var(--spacing-md);
+    background: var(--surface);
+    border-radius: var(--radius-full);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    flex: 1;
+    position: relative;
+}
+
+.activeStep {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.activeStep .stepIcon {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.stepIcon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--background);
+}
+
+.connector {
+    flex: 1;
+    height: 2px;
+    background: var(--border);
+    margin: 0 8px;
+}
+
+.content {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    min-height: 400px;
+}
+
+.stepTitle {
+    margin-bottom: var(--spacing-lg);
+    color: var(--text-main);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: var(--spacing-md);
+}
+
+.searchBox {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+}
+
+.searchBtn {
+    padding: 0 24px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.resultCard {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    background: var(--background);
+}
+
+.resultHeader {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-sm);
+}
+
+.bookingId {
+    font-family: monospace;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.tag {
+    background: #E8F5E9;
+    color: #4CAF50;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.resultDetails h3 {
+    margin-bottom: 4px;
+}
+
+.dates {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-top: 4px;
+}
+
+.selectBtn {
+    margin-top: var(--spacing-lg);
+    width: 100%;
+    padding: 12px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.field label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.uploadArea {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    text-align: center;
+    margin-top: var(--spacing-lg);
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.uploadArea:hover {
+    background: var(--surface-hover);
+    border-color: var(--primary);
+}
+
+.actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 32px;
+}
+
+.backBtn {
+    padding: 12px 24px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+}
+
+.primaryBtn {
+    padding: 12px 24px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.roomGrid {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+}
+
+.roomBtn {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: white;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.roomBtn.selected {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.successState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-xl) 0;
+}
+
+.keyHandover {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #FFF3E0;
+    color: #F57F17;
+    padding: 8px 16px;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+}

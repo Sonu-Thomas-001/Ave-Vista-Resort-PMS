@@ -1,0 +1,38 @@
+.controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.filters {
+    display: flex;
+    background: var(--surface);
+    padding: 4px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+}
+
+.filterBtn {
+    background: none;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+}
+
+.filterBtn.active {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.filterBtn:hover:not(.active) {
+    background: var(--surface-hover);
+}
+
+.calendarWrapper {
+    margin-top: var(--spacing-md);
+}

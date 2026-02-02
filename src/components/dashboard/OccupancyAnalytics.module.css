@@ -1,0 +1,129 @@
+.container {
+    background: white;
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.legendItem {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
+}
+
+.chartContainer {
+    flex: 1;
+    position: relative;
+    min-height: 200px;
+}
+
+.bars {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    height: 100%;
+    position: relative;
+    z-index: 2;
+    padding-bottom: 24px;
+}
+
+.barGroup {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    height: 100%;
+    justify-content: flex-end;
+    cursor: pointer;
+}
+
+.barWrapper {
+    height: 80%;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    position: relative;
+}
+
+.bar {
+    width: 12px;
+    /* Slim bars for elegance */
+    background: linear-gradient(180deg, var(--primary), var(--primary-light));
+    border-radius: 20px 20px 0 0;
+    position: relative;
+}
+
+.barGroup:hover .bar {
+    background: linear-gradient(180deg, var(--secondary), var(--primary));
+    width: 16px;
+    transition: width 0.2s, background 0.3s;
+}
+
+.label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.tooltip {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text-main);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.gridLines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-bottom: 24px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.line {
+    width: 100%;
+    height: 1px;
+    background: var(--surface-hover);
+    border-top: 1px dashed var(--border);
+    opacity: 0.5;
+}
