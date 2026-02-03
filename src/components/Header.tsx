@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Bell, Search, Settings, ChevronDown, Calendar, Clock, Users, BedDouble, LogOut, User, CheckCheck, AlertCircle, Info, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
 import styles from './Header.module.css';
 
 interface HeaderProps {
@@ -19,6 +20,14 @@ interface Notification {
     read: boolean;
 }
 
+interface SearchResult {
+    id: string;
+    type: 'guest' | 'booking' | 'room';
+    title: string;
+    subtitle: string;
+    path: string;
+}
+
 export default function Header({ title = "Dashboard" }: HeaderProps) {
     const { user, logout } = useAuth();
     const pathname = usePathname();
@@ -26,8 +35,12 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [showSearchResults, setShowSearchResults] = useState(false);
+    const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const notificationRef = useRef<HTMLDivElement>(null);
     const profileRef = useRef<HTMLDivElement>(null);
+    const searchRef = useRef<HTMLDivElement>(null);
 
     // Mock notifications data
     const [notifications, setNotifications] = useState<Notification[]>([
@@ -82,11 +95,29 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
             if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
                 setShowProfileMenu(false);
             }
+            if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+                setShowSearchResults(false);
+            }
         };
 
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    // Debounced search
+    useEffect(() => {
+        if (searchQuery.trim().length < 2) {
+            setSearchResults([]);
+            setShowSearchResults(false);
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            performSearch(searchQuery);
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
 
     // Generate breadcrumbs from pathname
     const getBreadcrumbs = () => {
@@ -132,6 +163,138 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
         }
     };
 
+    const performSearch = async (query: string) => {
+        const lowerQuery = query.toLowerCase();
+        const results: SearchResult[] = [];
+
+        try {
+            // Search guests
+            const { data: guests, error: guestsError } = await supabase
+                .from('guests')
+                .select('id, first_name, last_name, email, phone')
+                .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%,phone.ilike.%${query}%`)
+                .limit(5);
+
+            if (!guestsError && guests) {
+                guests.forEach(guest => {
+                    results.push({
+                        id: guest.id,
+                        type: 'guest',
+                        title: `${guest.first_name} ${guest.last_name}`,
+                        subtitle: guest.email,
+                        path: '/guests'
+                    });
+                });
+            }
+
+            // Search bookings with guest and room info
+            const { data: bookings, error: bookingsError } = await supabase
+                .from('bookings')
+                .select(`
+                    id,
+                    status,
+                    guests (first_name, last_name),
+                    rooms (room_number)
+                `)
+                .or(`id::text.ilike.%${query}%`)
+                .limit(5);
+
+            if (!bookingsError && bookings) {
+                bookings.forEach((booking: any) => {
+                    const guestName = booking.guests
+                        ? `${booking.guests.first_name} ${booking.guests.last_name}`
+                        : 'Unknown Guest';
+                    const roomNumber = booking.rooms?.room_number || 'N/A';
+
+                    results.push({
+                        id: booking.id,
+                        type: 'booking',
+                        title: `Booking #${booking.id.slice(0, 8)}`,
+                        subtitle: `${guestName} • Room ${roomNumber}`,
+                        path: '/bookings'
+                    });
+                });
+            }
+
+            // Also search bookings by guest name
+            const { data: bookingsByGuest, error: bookingsByGuestError } = await supabase
+                .from('bookings')
+                .select(`
+                    id,
+                    status,
+                    guests!inner (first_name, last_name),
+                    rooms (room_number)
+                `)
+                .or(`guests.first_name.ilike.%${query}%,guests.last_name.ilike.%${query}%`)
+                .limit(3);
+
+            if (!bookingsByGuestError && bookingsByGuest) {
+                bookingsByGuest.forEach((booking: any) => {
+                    const guestName = booking.guests
+                        ? `${booking.guests.first_name} ${booking.guests.last_name}`
+                        : 'Unknown Guest';
+                    const roomNumber = booking.rooms?.room_number || 'N/A';
+
+                    // Avoid duplicates
+                    if (!results.find(r => r.id === booking.id && r.type === 'booking')) {
+                        results.push({
+                            id: booking.id,
+                            type: 'booking',
+                            title: `Booking #${booking.id.slice(0, 8)}`,
+                            subtitle: `${guestName} • Room ${roomNumber}`,
+                            path: '/bookings'
+                        });
+                    }
+                });
+            }
+
+            // Search rooms
+            const { data: rooms, error: roomsError } = await supabase
+                .from('rooms')
+                .select('id, room_number, room_type, status')
+                .or(`room_number.ilike.%${query}%,room_type.ilike.%${query}%`)
+                .limit(5);
+
+            if (!roomsError && rooms) {
+                rooms.forEach(room => {
+                    results.push({
+                        id: room.id,
+                        type: 'room',
+                        title: `Room ${room.room_number}`,
+                        subtitle: `${room.room_type} • ${room.status}`,
+                        path: '/rooms'
+                    });
+                });
+            }
+
+            setSearchResults(results.slice(0, 8)); // Limit to 8 results
+            setShowSearchResults(true);
+        } catch (error) {
+            console.error('Search error:', error);
+            setSearchResults([]);
+            setShowSearchResults(true);
+        }
+    };
+
+    const handleSearchResultClick = (result: SearchResult) => {
+        router.push(result.path);
+        setSearchQuery('');
+        setShowSearchResults(false);
+    };
+
+    const getResultIcon = (type: string) => {
+        switch (type) {
+            case 'guest':
+                return <User size={18} />;
+            case 'booking':
+                return <Calendar size={18} />;
+            case 'room':
+                return <BedDouble size={18} />;
+            default:
+                return <Search size={18} />;
+        }
+    };
+
     return (
         <header className={styles.header}>
             <div className={styles.leftSection}>
@@ -162,13 +325,52 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
                 </div>
 
                 {/* Search */}
-                <div className={styles.search}>
-                    <Search size={18} className={styles.searchIcon} />
-                    <input
-                        type="text"
-                        placeholder="Search guests, bookings..."
-                        className={styles.searchInput}
-                    />
+                <div className={styles.searchWrapper} ref={searchRef}>
+                    <div className={styles.search}>
+                        <Search size={18} className={styles.searchIcon} />
+                        <input
+                            type="text"
+                            placeholder="Search guests, bookings..."
+                            className={styles.searchInput}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onFocus={() => searchQuery.length >= 2 && setShowSearchResults(true)}
+                        />
+                    </div>
+
+                    {showSearchResults && (
+                        <div className={styles.searchResults}>
+                            {searchResults.length === 0 ? (
+                                <div className={styles.emptySearchState}>
+                                    <Search size={32} />
+                                    <p>No results found for "{searchQuery}"</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className={styles.searchResultsHeader}>
+                                        <span>{searchResults.length} result{searchResults.length !== 1 ? 's' : ''}</span>
+                                    </div>
+                                    <div className={styles.searchResultsList}>
+                                        {searchResults.map(result => (
+                                            <div
+                                                key={`${result.type}-${result.id}`}
+                                                className={styles.searchResultItem}
+                                                onClick={() => handleSearchResultClick(result)}
+                                            >
+                                                <div className={`${styles.searchResultIcon} ${styles[result.type]}`}>
+                                                    {getResultIcon(result.type)}
+                                                </div>
+                                                <div className={styles.searchResultContent}>
+                                                    <h4>{result.title}</h4>
+                                                    <p>{result.subtitle}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Quick Stats */}
