@@ -32,6 +32,8 @@ const menuItems = [
   { icon: Settings, label: 'Settings', href: '/settings' },
 ];
 
+import { hasAccess } from '@/lib/permissions';
+
 export default function Sidebar() {
   const pathname = usePathname();
   const { logout, user } = useAuth();
@@ -83,9 +85,11 @@ export default function Sidebar() {
         )}
       </div>
 
+
+
       {/* Navigation */}
       <nav className={styles.nav}>
-        {menuItems.map((item) => {
+        {menuItems.filter(item => user && hasAccess(user.role, item.href)).map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
 

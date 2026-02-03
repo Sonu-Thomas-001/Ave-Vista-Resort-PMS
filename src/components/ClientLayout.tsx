@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import { useAuth } from '@/contexts/AuthContext';
+import { hasAccess } from '@/lib/permissions';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -38,16 +39,35 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         };
     }, []);
 
+
+
     useEffect(() => {
-        // Redirect to login if not logged in and not on a public/auth page
+        // 1. Redirect to login if not logged in and not on a public/auth page
         if (!loading && !user && !isAuthPage && !isPublicPage) {
             router.push('/login');
+            return;
         }
-        // Redirect to home if logged in and trying to access auth pages (login/signup)
+
+        // 2. Redirect to home if logged in and trying to access auth pages
         if (!loading && user && isAuthPage) {
             router.push('/');
+            return; // Add return to prevent further checks
         }
-    }, [user, loading, isAuthPage, isPublicPage, router]);
+
+        // 3. RBAC Check: If logged in, check if user has access to current path
+        // We skip this check for public pages or the home page to avoid loops
+        if (!loading && user && !isPublicPage && pathname !== '/') {
+            if (!hasAccess(user.role, pathname)) {
+                // If unauthorized, send back to Dashboard (or 403 page)
+                // Using alert for clarity in this demo, usually show a toast
+                // alert(`Access Denied: ${user.role} role cannot access ${pathname}`);
+                router.push('/');
+            }
+        }
+
+    }, [user, loading, isAuthPage, isPublicPage, router, pathname]);
+
+    // ... rest of component
 
     if (loading) {
         return (
