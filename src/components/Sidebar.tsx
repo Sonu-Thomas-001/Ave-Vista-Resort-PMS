@@ -16,7 +16,8 @@ import {
   LogOut,
   BarChart3,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Repeat // For Channel Manager
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
 
