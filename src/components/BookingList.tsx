@@ -102,6 +102,7 @@ export default function BookingList() {
                     <table className={styles.table}>
                         <thead>
                             <tr>
+                                <th>SI No</th>
                                 <th>Details</th>
                                 <th>Guest</th>
                                 <th>Room</th>
@@ -112,8 +113,9 @@ export default function BookingList() {
                             </tr>
                         </thead>
                         <tbody>
-                            {bookings.map((booking) => (
+                            {bookings.map((booking, index) => (
                                 <tr key={booking.id}>
+                                    <td className={styles.siNo}>{index + 1}</td>
                                     <td>
                                         <div className={styles.idCell}>
                                             BK-{booking.id.split('-')[0].toUpperCase()}

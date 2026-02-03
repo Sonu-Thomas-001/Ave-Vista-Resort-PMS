@@ -181,6 +181,7 @@ export default function GuestsPage() {
                         <table className={styles.table}>
                             <thead>
                                 <tr>
+                                    <th>SI No</th>
                                     <th>Guest Name</th>
                                     <th>Contact</th>
                                     <th>Status</th>
@@ -191,12 +192,13 @@ export default function GuestsPage() {
                             </thead>
                             <tbody>
                                 {filteredGuests.length === 0 ? (
-                                    <tr><td colSpan={6} style={{ padding: 40, textAlign: 'center' }}>No guests found.</td></tr>
+                                    <tr><td colSpan={7} style={{ padding: 40, textAlign: 'center' }}>No guests found.</td></tr>
                                 ) : (
-                                    filteredGuests.map((guest) => {
+                                    filteredGuests.map((guest, index) => {
                                         const { status, room } = getGuestStatus(guest.bookings);
                                         return (
                                             <tr key={guest.id} className={styles.row}>
+                                                <td className={styles.siNo}>{index + 1}</td>
                                                 <td className={styles.nameCell}>
                                                     <div className={styles.avatar}>{guest.first_name[0]}</div>
                                                     <div>
