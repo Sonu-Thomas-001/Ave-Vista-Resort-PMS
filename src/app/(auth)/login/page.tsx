@@ -118,9 +118,9 @@ export default function LoginPage() {
                 <div className={styles.footer}>
                     <p>Protected by Ave Vista Secure Auth</p>
                     <div className={styles.links}>
-                        <span>Help</span>
-                        <span>Privacy</span>
-                        <span>Terms</span>
+                        <Link href="/help" className={styles.footerLink}>Help</Link>
+                        <Link href="/privacy" className={styles.footerLink}>Privacy</Link>
+                        <Link href="/terms" className={styles.footerLink}>Terms</Link>
                     </div>
                 </div>
             </div>

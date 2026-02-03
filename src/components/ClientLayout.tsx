@@ -12,7 +12,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     const authPages = ['/login', '/signup', '/forgot-password', '/reset-password'];
+    const publicPages = ['/help', '/privacy', '/terms'];
+
     const isAuthPage = authPages.some(page => pathname.startsWith(page));
+    const isPublicPage = publicPages.some(page => pathname.startsWith(page));
 
     // Sync with sidebar collapse state
     useEffect(() => {
@@ -36,13 +39,15 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     }, []);
 
     useEffect(() => {
-        if (!loading && !user && !isAuthPage) {
+        // Redirect to login if not logged in and not on a public/auth page
+        if (!loading && !user && !isAuthPage && !isPublicPage) {
             router.push('/login');
         }
+        // Redirect to home if logged in and trying to access auth pages (login/signup)
         if (!loading && user && isAuthPage) {
             router.push('/');
         }
-    }, [user, loading, isAuthPage, router]);
+    }, [user, loading, isAuthPage, isPublicPage, router]);
 
     if (loading) {
         return (
@@ -64,10 +69,14 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         );
     }
 
-    if (isAuthPage) {
+    // Render logic:
+    // If not logged in, show full screen (Auth pages + Public pages)
+    // If logged in but on a full-screen page (none currently defined, but logically valid)
+    if (!user) {
         return <main style={{ minHeight: '100vh', backgroundColor: 'var(--background)' }}>{children}</main>;
     }
 
+    // If User is logged in, show Sidebar layout (even for public pages like Help)
     return (
         <div style={{ display: 'flex', minHeight: '100vh' }}>
             <Sidebar />
