@@ -60,8 +60,8 @@ export default function Dashboard() {
     // Simple revenue sum (mock logic for "Today's Revenue" - typically requires invoice table with dates)
     // For now assuming active bookings contribute to potential revenue or similar.
     // Let's just fetch Total Revenue from Invoices if available, else 0.
-    const { data: invoices } = await supabase.from('invoices').select('amount').eq('payment_status', 'Paid'); // Filter by date in real app
-    const totalRevenue = invoices?.reduce((sum, inv) => sum + Number(inv.amount), 0) || 0;
+    const { data: invoices } = await supabase.from('invoices').select('paid_amount').eq('status', 'Paid'); // Corrected column and status
+    const totalRevenue = invoices?.reduce((sum, inv) => sum + Number(inv.paid_amount), 0) || 0;
 
     setMetrics({
       checkIns: checkInsCount || 0,

@@ -124,12 +124,14 @@ export default function GuestsPage() {
 
         // Check for 'Checked In'
         bookings.filter(b => b.status === 'Checked In').forEach(b => {
-            statusList.push({ status: 'Checked In', room: b.rooms?.room_number || '-' });
+            const roomNum = Array.isArray(b.rooms) ? b.rooms[0]?.room_number : b.rooms?.room_number;
+            statusList.push({ status: 'Checked In', room: roomNum || '-' });
         });
 
         // Check for 'Confirmed'
         bookings.filter(b => b.status === 'Confirmed' && b.check_in_date >= today).forEach(b => {
-            statusList.push({ status: 'Reserved', room: b.rooms?.room_number || '-' });
+            const roomNum = Array.isArray(b.rooms) ? b.rooms[0]?.room_number : b.rooms?.room_number;
+            statusList.push({ status: 'Reserved', room: roomNum || '-' });
         });
 
         if (statusList.length === 0) return { status: 'Checked Out', room: '-' };
@@ -213,6 +215,7 @@ export default function GuestsPage() {
                             className={styles.searchInput}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
+                            aria-label="Search guests"
                         />
                     </div>
                     <button
@@ -284,6 +287,7 @@ export default function GuestsPage() {
                                                     <button
                                                         className={styles.actionBtn}
                                                         onClick={() => setShowActionsId(showActionsId === guest.id ? null : guest.id)}
+                                                        aria-label="More Actions"
                                                     >
                                                         <MoreHorizontal size={18} />
                                                     </button>

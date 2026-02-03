@@ -9,6 +9,12 @@
     margin-bottom: var(--spacing-xl);
 }
 
+@media (max-width: 900px) {
+    .statsRow {
+        grid-template-columns: 1fr;
+    }
+}
+
 .statCard {
     background: var(--surface);
     padding: var(--spacing-lg);
@@ -86,6 +92,7 @@
     border-radius: var(--radius-lg);
     border: 1px solid var(--border);
     overflow: hidden;
+    overflow-x: auto;
 }
 
 .table {

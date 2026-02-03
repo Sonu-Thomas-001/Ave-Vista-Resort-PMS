@@ -10,12 +10,17 @@ import { InvoiceTemplate } from '@/components/InvoiceTemplate';
 
 type Invoice = Database['public']['Tables']['invoices']['Row'];
 
+interface InvoiceWithDetails extends Invoice {
+    booking?: any;
+    guest?: any;
+}
+
 export default function BillingPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('Invoices'); // Invoices | DailyReport
     const [invoices, setInvoices] = useState<Invoice[]>([]);
     const [loading, setLoading] = useState(true);
-    const [viewingInvoice, setViewingInvoice] = useState<Invoice | null>(null);
+    const [viewingInvoice, setViewingInvoice] = useState<InvoiceWithDetails | null>(null);
     const invoiceRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -49,9 +54,13 @@ export default function BillingPage() {
     });
 
     const handleCreateInvoice = async () => {
-        const amount = parseFloat(newInv.amount) || 0;
-        const paid = newInv.isPartial ? (parseFloat(newInv.paidAmount) || 0) : amount;
-        const status = paid >= amount ? 'Paid' : 'Partial';
+        const baseAmount = parseFloat(newInv.amount) || 0;
+        const gstPercent = parseInt(newInv.gstRate) || 0;
+        const taxAmount = (baseAmount * gstPercent) / 100;
+        const totalAmount = baseAmount + taxAmount;
+
+        const paid = newInv.isPartial ? (parseFloat(newInv.paidAmount) || 0) : totalAmount;
+        const status = paid >= totalAmount ? 'Paid' : 'Partial';
 
         // Gen random invoice number for now (should be sequential in production)
         const invNum = `INV-2026-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
@@ -61,11 +70,11 @@ export default function BillingPage() {
             guest_name: newInv.guest,
             room_number: newInv.room,
             invoice_date: new Date().toISOString().split('T')[0],
-            total_amount: amount,
+            total_amount: totalAmount,
             paid_amount: paid,
             status: status as 'Paid' | 'Partial',
             payment_mode: newInv.paymentMode as 'Card' | 'Cash' | 'UPI',
-            gst_rate: parseInt(newInv.gstRate),
+            gst_rate: gstPercent,
             is_partial: newInv.isPartial
         };
 
@@ -233,6 +242,7 @@ export default function BillingPage() {
                                                 <button
                                                     className={styles.actionBtn}
                                                     title="View"
+                                                    aria-label={`View Invoice ${inv.invoice_number}`}
                                                     onClick={() => handleViewInvoice(inv)}
                                                 >
                                                     <Eye size={18} />
@@ -240,6 +250,7 @@ export default function BillingPage() {
                                                 <button
                                                     className={styles.actionBtn}
                                                     title="Download"
+                                                    aria-label={`Download Invoice ${inv.invoice_number}`}
                                                     onClick={() => handleDownloadInvoice(inv)}
                                                 >
                                                     <Download size={18} />
@@ -290,7 +301,7 @@ export default function BillingPage() {
                                     />
                                 </div>
                                 <div className={styles.formGroup}>
-                                    <label>Total Amount (₹)</label>
+                                    <label>Base Amount (Excl. Tax) (₹)</label>
                                     <input
                                         type="number"
                                         className={styles.input}

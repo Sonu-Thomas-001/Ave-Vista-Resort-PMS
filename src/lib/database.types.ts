@@ -149,72 +149,73 @@ export interface Database {
                     created_at?: string
                 }
             }
-        }
-        app_settings: {
-            Row: {
-                id: number
-                resort_name: string | null
-                contact_email: string | null
-                address: string | null
-                gst_number: string | null
-                tax_rate: number | null
-                updated_at: string
+
+            app_settings: {
+                Row: {
+                    id: number
+                    resort_name: string | null
+                    contact_email: string | null
+                    address: string | null
+                    gst_number: string | null
+                    tax_rate: number | null
+                    updated_at: string
+                }
+                Update: {
+                    resort_name?: string | null
+                    contact_email?: string | null
+                    address?: string | null
+                    gst_number?: string | null
+                    tax_rate?: number | null
+                }
             }
-            Update: {
-                resort_name?: string | null
-                contact_email?: string | null
-                address?: string | null
-                gst_number?: string | null
-                tax_rate?: number | null
-            }
-        }
-        invoices: {
-            Row: {
-                id: string
-                created_at: string
-                invoice_number: string
-                booking_id: string | null
-                guest_name: string
-                room_number: string
-                total_amount: number
-                paid_amount: number
-                status: 'Paid' | 'Partial' | 'Pending'
-                invoice_date: string
-                payment_mode: 'Cash' | 'Card' | 'UPI' | null
-                gst_rate: number | null
-                is_partial: boolean | null
-            }
-            Insert: {
-                id?: string
-                created_at?: string
-                invoice_number: string
-                booking_id?: string | null
-                guest_name: string
-                room_number: string
-                total_amount?: number
-                paid_amount?: number
-                status?: 'Paid' | 'Partial' | 'Pending'
-                invoice_date?: string
-                payment_mode?: 'Cash' | 'Card' | 'UPI' | null
-                gst_rate?: number | null
-                is_partial?: boolean | null
-            }
-            Update: {
-                id?: string
-                created_at?: string
-                invoice_number?: string
-                booking_id?: string | null
-                guest_name?: string
-                room_number?: string
-                total_amount?: number
-                paid_amount?: number
-                status?: 'Paid' | 'Partial' | 'Pending'
-                invoice_date?: string
-                payment_mode?: 'Cash' | 'Card' | 'UPI' | null
-                gst_rate?: number | null
-                is_partial?: boolean | null
+            invoices: {
+                Row: {
+                    id: string
+                    created_at: string
+                    invoice_number: string
+                    booking_id: string | null
+                    guest_name: string
+                    room_number: string
+                    total_amount: number
+                    paid_amount: number
+                    status: 'Paid' | 'Partial' | 'Pending'
+                    invoice_date: string
+                    payment_mode: 'Cash' | 'Card' | 'UPI' | null
+                    gst_rate: number | null
+                    is_partial: boolean | null
+                }
+                Insert: {
+                    id?: string
+                    created_at?: string
+                    invoice_number: string
+                    booking_id?: string | null
+                    guest_name: string
+                    room_number: string
+                    total_amount?: number
+                    paid_amount?: number
+                    status?: 'Paid' | 'Partial' | 'Pending'
+                    invoice_date?: string
+                    payment_mode?: 'Cash' | 'Card' | 'UPI' | null
+                    gst_rate?: number | null
+                    is_partial?: boolean | null
+                }
+                Update: {
+                    id?: string
+                    created_at?: string
+                    invoice_number?: string
+                    booking_id?: string | null
+                    guest_name?: string
+                    room_number?: string
+                    total_amount?: number
+                    paid_amount?: number
+                    status?: 'Paid' | 'Partial' | 'Pending'
+                    invoice_date?: string
+                    payment_mode?: 'Cash' | 'Card' | 'UPI' | null
+                    gst_rate?: number | null
+                    is_partial?: boolean | null
+                }
             }
         }
     }
 }
-}
+
