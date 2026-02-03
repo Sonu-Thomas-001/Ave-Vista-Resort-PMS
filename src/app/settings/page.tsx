@@ -66,7 +66,7 @@ export default function SettingsPage() {
 
             <div className={styles.container}>
                 <div className={styles.layout}>
-                    {/* Sidebar Navigation */}
+                    {/* Settings Navigation */}
                     <aside className={styles.sidebar}>
                         <button
                             className={`${styles.navBtn} ${activeTopTab === 'Property' ? styles.active : ''}`}

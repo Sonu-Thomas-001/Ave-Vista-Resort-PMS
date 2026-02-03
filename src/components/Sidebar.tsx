@@ -11,7 +11,6 @@ import {
   Users,
 
   CreditCard,
-  UserCog,
   MonitorCheck,
   Settings,
   LogOut,
@@ -29,7 +28,6 @@ const menuItems = [
   { icon: CreditCard, label: 'Billing', href: '/billing' },
 
   { icon: MonitorCheck, label: 'Front Desk', href: '/front-desk' },
-  { icon: UserCog, label: 'Staff', href: '/staff' },
   { icon: BarChart3, label: 'Reports', href: '/reports' },
   { icon: Settings, label: 'Settings', href: '/settings' },
 ];

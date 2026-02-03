@@ -38,7 +38,7 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
                     <div className={styles.avatar}>{user?.name ? user.name[0] : 'U'}</div>
                     <div className={styles.userInfo}>
                         <span className={styles.userName}>{user?.name || 'Guest'}</span>
-                        <span className={styles.userRole}>{user?.role || 'Staff'}</span>
+                        <span className={styles.userRole}>{user?.role || 'User'}</span>
                     </div>
                 </div>
             </div>

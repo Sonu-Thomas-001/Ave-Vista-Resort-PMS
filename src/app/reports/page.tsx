@@ -17,7 +17,7 @@ export default function ReportsPage() {
                 {/* Controls */}
                 <div className={styles.controls}>
                     <div className={styles.tabs}>
-                        {['Overview', 'Revenue', 'Occupancy', 'Staff'].map(tab => (
+                        {['Overview', 'Revenue', 'Occupancy'].map(tab => (
                             <button
                                 key={tab}
                                 className={`${styles.tabBtn} ${activeTab === tab ? styles.active : ''}`}
