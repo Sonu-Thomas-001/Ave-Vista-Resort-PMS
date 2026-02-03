@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Filter, MoreHorizontal, Download, LayoutList, CalendarCheck } from 'lucide-react';
+import { Search, Filter, MoreHorizontal, Download, LayoutList, CalendarCheck, ChevronUp, ChevronDown } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './BookingList.module.css';
 import CustomSelect from './ui/CustomSelect';
@@ -22,6 +22,8 @@ export default function BookingList() {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('All Status');
     const [searchTerm, setSearchTerm] = useState('');
+    const [sortColumn, setSortColumn] = useState<string>('check_in_date');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
     const statusOptions = [
         { label: 'All Status', value: 'All Status' },
@@ -72,6 +74,79 @@ export default function BookingList() {
         }
     };
 
+    const handleSort = (column: string) => {
+        if (sortColumn === column) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortColumn(column);
+            setSortDirection('asc');
+        }
+    };
+
+    const getSortedBookings = () => {
+        let filtered = bookings;
+
+        // Apply status filter
+        if (filter !== 'All Status') {
+            filtered = filtered.filter(b => b.status === filter);
+        }
+
+        // Apply search filter
+        if (searchTerm) {
+            filtered = filtered.filter(b => {
+                const guestName = b.guests ? `${b.guests.first_name} ${b.guests.last_name}`.toLowerCase() : '';
+                const roomNumber = b.rooms?.room_number?.toLowerCase() || '';
+                const bookingId = b.id.toLowerCase();
+                const search = searchTerm.toLowerCase();
+                return guestName.includes(search) || roomNumber.includes(search) || bookingId.includes(search);
+            });
+        }
+
+        // Apply sorting
+        return filtered.sort((a, b) => {
+            let aValue: any;
+            let bValue: any;
+
+            switch (sortColumn) {
+                case 'guest':
+                    aValue = a.guests ? `${a.guests.first_name} ${a.guests.last_name}` : '';
+                    bValue = b.guests ? `${b.guests.first_name} ${b.guests.last_name}` : '';
+                    break;
+                case 'room':
+                    aValue = a.rooms?.room_number || '';
+                    bValue = b.rooms?.room_number || '';
+                    break;
+                case 'check_in_date':
+                    aValue = new Date(a.check_in_date).getTime();
+                    bValue = new Date(b.check_in_date).getTime();
+                    break;
+                case 'check_out_date':
+                    aValue = new Date(a.check_out_date).getTime();
+                    bValue = new Date(b.check_out_date).getTime();
+                    break;
+                case 'status':
+                    aValue = a.status;
+                    bValue = b.status;
+                    break;
+                case 'amount':
+                    aValue = a.total_amount;
+                    bValue = b.total_amount;
+                    break;
+                default:
+                    return 0;
+            }
+
+            if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+            if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+            return 0;
+        });
+    };
+
+    const SortIcon = ({ column }: { column: string }) => {
+        if (sortColumn !== column) return null;
+        return sortDirection === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />;
+    };
+
     return (
         <div className={styles.container}>
             <div className={styles.toolbar}>
@@ -104,16 +179,28 @@ export default function BookingList() {
                             <tr>
                                 <th>SI No</th>
                                 <th>Details</th>
-                                <th>Guest</th>
-                                <th>Room</th>
-                                <th>Check-in</th>
-                                <th>Check-out</th>
-                                <th>Status</th>
-                                <th>Amount</th>
+                                <th className={styles.sortable} onClick={() => handleSort('guest')}>
+                                    Guest <SortIcon column="guest" />
+                                </th>
+                                <th className={styles.sortable} onClick={() => handleSort('room')}>
+                                    Room <SortIcon column="room" />
+                                </th>
+                                <th className={styles.sortable} onClick={() => handleSort('check_in_date')}>
+                                    Check-in <SortIcon column="check_in_date" />
+                                </th>
+                                <th className={styles.sortable} onClick={() => handleSort('check_out_date')}>
+                                    Check-out <SortIcon column="check_out_date" />
+                                </th>
+                                <th className={styles.sortable} onClick={() => handleSort('status')}>
+                                    Status <SortIcon column="status" />
+                                </th>
+                                <th className={styles.sortable} onClick={() => handleSort('amount')}>
+                                    Amount <SortIcon column="amount" />
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
-                            {bookings.map((booking, index) => (
+                            {getSortedBookings().map((booking, index) => (
                                 <tr key={booking.id}>
                                     <td className={styles.siNo}>{index + 1}</td>
                                     <td>

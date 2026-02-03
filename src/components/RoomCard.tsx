@@ -11,10 +11,11 @@ interface RoomCardProps {
     guest?: string;
     imageUrl?: string;
     onBlock?: () => void;
+    onClean?: () => void;
     onDetails?: () => void;
 }
 
-export default function RoomCard({ number, type, status, price, occupancy, guest, imageUrl, onBlock, onDetails }: RoomCardProps) {
+export default function RoomCard({ number, type, status, price, occupancy, guest, imageUrl, onBlock, onClean, onDetails }: RoomCardProps) {
     return (
         <div className={styles.card}>
             <div className={styles.imageWrapper}>
@@ -62,7 +63,7 @@ export default function RoomCard({ number, type, status, price, occupancy, guest
                 )}
 
                 {status === 'Dirty' ? (
-                    <button className={`${styles.actionBtn} ${styles.primaryAction}`}>
+                    <button onClick={onClean} className={`${styles.actionBtn} ${styles.primaryAction}`}>
                         <Brush size={14} style={{ marginRight: 4 }} /> Clean
                     </button>
                 ) : (

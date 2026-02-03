@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Header from '@/components/Header';
-import { Search, MoreHorizontal, Star, Crown, Edit2, Trash2, Plus } from 'lucide-react';
+import { Search, MoreHorizontal, Star, Crown, Edit2, Trash2, Plus, ChevronUp, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import styles from './page.module.css';
 import { supabase } from '@/lib/supabase';
@@ -28,6 +28,8 @@ export default function GuestsPage() {
     const [guests, setGuests] = useState<Guest[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
+    const [sortColumn, setSortColumn] = useState<string>('first_name');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
     // Modal State
     const [showModal, setShowModal] = useState(false);
@@ -140,6 +142,56 @@ export default function GuestsPage() {
         return { status: statusList.some(s => s.status === 'Checked In') ? 'Checked In' : 'Reserved', room: rooms };
     };
 
+    const handleSort = (column: string) => {
+        if (sortColumn === column) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortColumn(column);
+            setSortDirection('asc');
+        }
+    };
+
+    const getSortedGuests = () => {
+        return filteredGuests.sort((a, b) => {
+            let aValue: any;
+            let bValue: any;
+
+            switch (sortColumn) {
+                case 'first_name':
+                    aValue = `${a.first_name} ${a.last_name}`.toLowerCase();
+                    bValue = `${b.first_name} ${b.last_name}`.toLowerCase();
+                    break;
+                case 'email':
+                    aValue = a.email?.toLowerCase() || '';
+                    bValue = b.email?.toLowerCase() || '';
+                    break;
+                case 'phone':
+                    aValue = a.phone || '';
+                    bValue = b.phone || '';
+                    break;
+                case 'status':
+                    aValue = getGuestStatus(a.bookings).status;
+                    bValue = getGuestStatus(b.bookings).status;
+                    break;
+                case 'room':
+                    aValue = getGuestStatus(a.bookings).room;
+                    bValue = getGuestStatus(b.bookings).room;
+                    break;
+                default:
+                    return 0;
+            }
+
+            if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+            if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+            return 0;
+        });
+    };
+
+    const SortIcon = ({ column }: { column: string }) => {
+        if (sortColumn !== column) return null;
+        return sortDirection === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />;
+    };
+
     const filteredGuests = guests.filter(guest => {
         const fullName = `${guest.first_name} ${guest.last_name}`.toLowerCase();
         return fullName.includes(searchTerm.toLowerCase()) ||
@@ -182,10 +234,18 @@ export default function GuestsPage() {
                             <thead>
                                 <tr>
                                     <th>SI No</th>
-                                    <th>Guest Name</th>
-                                    <th>Contact</th>
-                                    <th>Status</th>
-                                    <th>Current Room</th>
+                                    <th className={styles.sortable} onClick={() => handleSort('first_name')}>
+                                        Guest Name <SortIcon column="first_name" />
+                                    </th>
+                                    <th className={styles.sortable} onClick={() => handleSort('phone')}>
+                                        Contact <SortIcon column="phone" />
+                                    </th>
+                                    <th className={styles.sortable} onClick={() => handleSort('status')}>
+                                        Status <SortIcon column="status" />
+                                    </th>
+                                    <th className={styles.sortable} onClick={() => handleSort('room')}>
+                                        Current Room <SortIcon column="room" />
+                                    </th>
                                     <th>Tags</th>
                                     <th>Actions</th>
                                 </tr>
@@ -194,7 +254,7 @@ export default function GuestsPage() {
                                 {filteredGuests.length === 0 ? (
                                     <tr><td colSpan={7} style={{ padding: 40, textAlign: 'center' }}>No guests found.</td></tr>
                                 ) : (
-                                    filteredGuests.map((guest, index) => {
+                                    getSortedGuests().map((guest, index) => {
                                         const { status, room } = getGuestStatus(guest.bookings);
                                         return (
                                             <tr key={guest.id} className={styles.row}>

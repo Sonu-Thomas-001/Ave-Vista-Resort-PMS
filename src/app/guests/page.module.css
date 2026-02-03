@@ -219,3 +219,19 @@
     text-align: center;
     width: 60px;
 }
+
+.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+}
+
+.sortable:hover {
+    background: var(--surface-hover);
+}
+
+.sortable svg {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 4px;
+}

@@ -1,17 +1,39 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEffect } from 'react';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const { user, loading } = useAuth();
     const router = useRouter();
+    const [isCollapsed, setIsCollapsed] = useState(false);
 
     const authPages = ['/login', '/signup', '/forgot-password', '/reset-password'];
     const isAuthPage = authPages.some(page => pathname.startsWith(page));
+
+    // Sync with sidebar collapse state
+    useEffect(() => {
+        const handleStorage = () => {
+            const saved = localStorage.getItem('sidebarCollapsed');
+            if (saved !== null) {
+                setIsCollapsed(JSON.parse(saved));
+            }
+        };
+
+        handleStorage();
+        window.addEventListener('storage', handleStorage);
+
+        // Poll for changes (since localStorage events don't fire in same tab)
+        const interval = setInterval(handleStorage, 100);
+
+        return () => {
+            window.removeEventListener('storage', handleStorage);
+            clearInterval(interval);
+        };
+    }, []);
 
     useEffect(() => {
         if (!loading && !user && !isAuthPage) {
@@ -51,9 +73,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             <Sidebar />
             <main style={{
                 flex: 1,
-                marginLeft: '250px',
-                width: 'calc(100% - 250px)',
-                backgroundColor: 'var(--background)'
+                marginLeft: isCollapsed ? '80px' : '260px',
+                width: isCollapsed ? 'calc(100% - 80px)' : 'calc(100% - 260px)',
+                backgroundColor: 'var(--background)',
+                transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
             }}>
                 {children}
             </main>

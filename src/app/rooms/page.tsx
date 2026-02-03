@@ -97,6 +97,26 @@ export default function RoomsPage() {
         }
     };
 
+    const handleCleanRoom = async (room: Room) => {
+        if (room.status !== 'Dirty') {
+            return;
+        }
+
+        // Optimistic UI update
+        setRooms(prev => prev.map(r => r.id === room.id ? { ...r, status: 'Clean' } : r));
+
+        const { error } = await supabase
+            .from('rooms')
+            .update({ status: 'Clean' })
+            .eq('id', room.id);
+
+        if (error) {
+            console.error('Error cleaning room:', error);
+            // Revert on error
+            fetchRooms();
+        }
+    };
+
     const handleViewDetails = (room: Room) => {
         setSelectedRoom(room);
     };
@@ -168,6 +188,7 @@ export default function RoomsPage() {
                                         occupancy={room.max_occupancy}
                                         imageUrl={room.image_url || getRoomImage(room.room_number, room.type)}
                                         onBlock={() => handleBlockRoom(room)}
+                                        onClean={() => handleCleanRoom(room)}
                                         onDetails={() => handleViewDetails(room)}
                                     />
                                 ))
