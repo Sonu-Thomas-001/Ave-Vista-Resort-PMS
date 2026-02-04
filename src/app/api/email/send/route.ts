@@ -14,6 +14,9 @@ const transporter = nodemailer.createTransport({
     },
 });
 
+export const dynamic = 'force-dynamic'; // Ensure this route is never static
+export const maxDuration = 60; // Set timeout to 60 seconds
+
 export async function POST(request: Request) {
     let type = '';
     let payload: any = {};
