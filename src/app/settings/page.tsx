@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
 import styles from './page.module.css';
 import EmailSettingsPage from './email/page';
+import RoomModal from '@/components/RoomModal';
 
 type SettingsData = Database['public']['Tables']['app_settings']['Row'];
 type RoomData = Database['public']['Tables']['rooms']['Row'];
@@ -16,6 +17,8 @@ export default function SettingsPage() {
     const [loading, setLoading] = useState(false);
     const [settings, setSettings] = useState<SettingsData | null>(null);
     const [rooms, setRooms] = useState<RoomData[]>([]);
+    const [showRoomModal, setShowRoomModal] = useState(false);
+    const [editingRoom, setEditingRoom] = useState<RoomData | null>(null);
 
     useEffect(() => {
         fetchSettings();
@@ -59,6 +62,39 @@ export default function SettingsPage() {
     const handleInputChange = (field: keyof SettingsData, value: string | number) => {
         if (!settings) return;
         setSettings({ ...settings, [field]: value });
+    };
+
+    const handleAddRoom = () => {
+        setEditingRoom(null);
+        setShowRoomModal(true);
+    };
+
+    const handleEditRoom = (room: RoomData) => {
+        setEditingRoom(room);
+        setShowRoomModal(true);
+    };
+
+    const handleDeleteRoom = async (roomId: string) => {
+        if (!confirm('Are you sure you want to delete this room?')) return;
+
+        try {
+            const { error } = await supabase
+                .from('rooms')
+                .delete()
+                .eq('id', roomId);
+
+            if (error) throw error;
+            fetchRooms();
+        } catch (error) {
+            console.error('Error deleting room:', error);
+            alert('Failed to delete room.');
+        }
+    };
+
+    const handleRoomSuccess = () => {
+        setShowRoomModal(false);
+        setEditingRoom(null);
+        fetchRooms();
     };
 
     return (
@@ -161,7 +197,7 @@ export default function SettingsPage() {
                             <div className={styles.section}>
                                 <div className={styles.headerRow}>
                                     <h2>Room Configuration</h2>
-                                    <button className={styles.secondaryBtn}>
+                                    <button className={styles.secondaryBtn} onClick={handleAddRoom}>
                                         <Plus size={16} /> Add Room
                                     </button>
                                 </div>
@@ -193,8 +229,8 @@ export default function SettingsPage() {
                                                     </td>
                                                     <td>
                                                         <div className={styles.actions}>
-                                                            <button className={styles.iconBtn}><Edit2 size={16} /></button>
-                                                            <button className={`${styles.iconBtn} ${styles.danger}`}><Trash2 size={16} /></button>
+                                                            <button className={styles.iconBtn} onClick={() => handleEditRoom(room)}><Edit2 size={16} /></button>
+                                                            <button className={`${styles.iconBtn} ${styles.danger}`} onClick={() => handleDeleteRoom(room.id)}><Trash2 size={16} /></button>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -243,6 +279,15 @@ export default function SettingsPage() {
                     </main>
                 </div>
             </div>
+
+            {/* Room Modal */}
+            {showRoomModal && (
+                <RoomModal
+                    room={editingRoom}
+                    onClose={() => setShowRoomModal(false)}
+                    onSuccess={handleRoomSuccess}
+                />
+            )}
         </>
     );
 }
