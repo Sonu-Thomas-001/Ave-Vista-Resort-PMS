@@ -1,7 +1,7 @@
 -- Update Guest Welcome Template
 UPDATE public.email_templates
 SET 
-  subject_template = 'Welcome to Ave Vista Resort, {{first_name}}!',
+  subject_template = 'Welcome to the Family! - Ave Vista Resort',
   body_html = '<!DOCTYPE html>
 <html>
 <head>
@@ -29,7 +29,7 @@ box-shadow:0 10px 30px rgba(0,0,0,0.5);">
 style="max-width:160px;margin-bottom:10px;" alt="Ave Vista Resorts Logo"/>
 
 <h2 style="margin:0;color:#38bdf8;font-weight:600;letter-spacing:1px;">
-Welcome to Ave Vista
+The Journey Begins
 </h2>
 </td>
 </tr>
@@ -43,9 +43,40 @@ Hello {{first_name}} {{last_name}},
 </h3>
 
 <p style="font-size:15px;line-height:1.7;color:#cbd5f5;">
-Thank you for registering with <strong>Ave Vista Resorts & Hotels</strong>. 
-We are delighted to welcome you to our community. We look forward to hosting you for a peaceful and premium stay experience soon.
+Thank you for joining the <strong>Ave Vista Resorts</strong> family. 
+We are more than just a place to stay—we are a sanctuary where calm meets celebration.
 </p>
+
+<p style="font-size:15px;line-height:1.7;color:#cbd5f5;">
+As a registered guest, you will enjoy seamless bookings, exclusive offers, and personalized concierge services.
+</p>
+
+</td>
+</tr>
+
+<!-- FEATURES GRID -->
+<tr>
+<td style="padding:0 30px 20px;">
+<div style="margin-bottom: 12px; border-bottom: 1px solid #1e293b; padding-bottom: 8px;">
+<strong style="color:#ffffff;font-size:15px;">Discover Our World</strong>
+</div>
+
+<table width="100%" cellpadding="10" cellspacing="0">
+<tr>
+<td width="33%" align="center" style="border:1px solid #1e293b;border-radius:8px;background:#0f172a;">
+<div style="font-size:24px;margin-bottom:5px;">🏊</div>
+<div style="font-size:13px;color:#93c5fd;font-weight:600;">Infinity Pool</div>
+</td>
+<td width="33%" align="center" style="border:1px solid #1e293b;border-radius:8px;background:#0f172a;">
+<div style="font-size:24px;margin-bottom:5px;">🍽️</div>
+<div style="font-size:13px;color:#93c5fd;font-weight:600;">Fine Dining</div>
+</td>
+<td width="33%" align="center" style="border:1px solid #1e293b;border-radius:8px;background:#0f172a;">
+<div style="font-size:24px;margin-bottom:5px;">🧘</div>
+<div style="font-size:13px;color:#93c5fd;font-weight:600;">Spa & Yoga</div>
+</td>
+</tr>
+</table>
 
 </td>
 </tr>
@@ -59,9 +90,10 @@ style="background:#020617;border-radius:10px;border:1px solid #1e293b;">
 <tr>
 <td style="color:#93c5fd;font-size:14px;line-height:1.8;">
 
-<strong>Contact Us:</strong> +91 90615 54545<br>
-<strong>Email:</strong> info@avevistaresorts.com<br>
-<strong>Location:</strong> Balapuram, Vayattuparamba, Kannur
+<strong>Need Assistance?</strong><br>
+We are here for you 24/7.<br>
+<span style="color:#ffffff;">📞 +91 90615 54545</span><br>
+<span style="color:#ffffff;">📧 info@avevistaresorts.com</span>
 
 </td>
 </tr>
@@ -85,7 +117,7 @@ font-weight:600;
 display:inline-block;
 box-shadow:0 4px 14px rgba(37,99,235,0.4);
 ">
-Explore Our Rooms
+Plan Your Stay
 </a>
 </td>
 </tr>
@@ -98,17 +130,7 @@ color:#94a3b8;font-size:13px;line-height:1.7;">
 <strong style="color:#38bdf8;font-size:15px;">
 Ave Vista Resorts & Hotels
 </strong><br>
-
-Balapuram, Vayattuparamba, Kannur<br>
-
-<span style="color:#38bdf8;">📞</span> +91 90615 54545 &nbsp; | &nbsp;
-<span style="color:#38bdf8;">🌐</span> www.avevistaresorts.com
-
-<br><br>
-
-<span style="font-size:12px;color:#64748b;">
 Experience Calm. Comfort. Celebration.
-</span>
 
 </td>
 </tr>
