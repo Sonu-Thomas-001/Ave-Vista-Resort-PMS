@@ -20,7 +20,7 @@ export const InvoiceTemplate = ({ invoice, booking, guest, printRef }: InvoiceTe
     const invoiceData = {
         no: invoice.invoice_number,
         date: new Date(invoice.created_at || invoice.generated_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
-        bookingRef: booking.id.slice(0, 8).toUpperCase(),
+        bookingRef: booking.booking_number || booking.id.slice(0, 8).toUpperCase(),
         mode: invoice.payment_mode || invoice.payment_method || 'Direct',
     };
 

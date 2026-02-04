@@ -29,7 +29,7 @@ export default function BookingDetailsModal({ booking, onClose }: BookingDetails
         try {
             setSendingEmail(true);
             await EmailService.triggerEmail('invoice-email', {
-                invoice_number: booking.id.split('-')[0].toUpperCase(),
+                invoice_number: booking.booking_number || booking.id.split('-')[0].toUpperCase(),
                 guest_name: guestName,
                 email: email,
                 room_number: booking.rooms?.room_number || 'N/A',
@@ -73,7 +73,7 @@ export default function BookingDetailsModal({ booking, onClose }: BookingDetails
                             </button>
                         </div>
                         <div className={styles.bookingMeta}>
-                            <span className={styles.bookingId}>#{booking.id.split('-')[0].toUpperCase()}</span>
+                            <span className={styles.bookingId}>#{booking.booking_number || booking.id.split('-')[0].toUpperCase()}</span>
                             <span className={`${styles.statusPill} ${styles[booking.status.toLowerCase().replace(' ', '')]}`}>
                                 {booking.status}
                             </span>

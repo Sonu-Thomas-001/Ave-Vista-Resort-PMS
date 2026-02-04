@@ -43,6 +43,7 @@ export default function CheckInPage() {
             const match = data.find((b: any) =>
                 b.guests.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 b.guests.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                b.booking_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 b.id.includes(searchQuery)
             );
 
@@ -136,7 +137,7 @@ export default function CheckInPage() {
                             {foundBooking && (
                                 <div className={styles.resultCard}>
                                     <div className={styles.resultHeader}>
-                                        <span className={styles.bookingId}>#{foundBooking.id.slice(0, 8)}...</span>
+                                        <span className={styles.bookingId}>#{foundBooking.booking_number || foundBooking.id.slice(0, 8)}</span>
                                         <span className={styles.tag}>{foundBooking.status}</span>
                                     </div>
                                     <div className={styles.resultDetails}>

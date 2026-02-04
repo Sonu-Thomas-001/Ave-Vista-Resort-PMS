@@ -9,6 +9,7 @@ import BookingDetailsModal from './BookingDetailsModal';
 
 interface Booking {
     id: string;
+    booking_number: string;
     check_in_date: string;
     check_out_date: string;
     status: string;
@@ -58,6 +59,7 @@ export default function BookingList() {
                 .from('bookings')
                 .select(`
                     id,
+                    booking_number,
                     check_in_date,
                     check_out_date,
                     status,
@@ -86,7 +88,7 @@ export default function BookingList() {
         if (!confirm(`Send booking confirmation to ${booking.guests.email}?`)) return;
 
         setSendingEmailId(booking.id);
-        const formattedId = `BK-${booking.id.split('-')[0].toUpperCase()}`;
+        const formattedId = booking.booking_number || `BK-${booking.id.split('-')[0].toUpperCase()}`;
 
         try {
             const body = {
@@ -144,9 +146,9 @@ export default function BookingList() {
             filtered = filtered.filter(b => {
                 const guestName = b.guests ? `${b.guests.first_name} ${b.guests.last_name}`.toLowerCase() : '';
                 const roomNumber = b.rooms?.room_number?.toLowerCase() || '';
-                const bookingId = b.id.toLowerCase();
+                const bookingNumber = b.booking_number?.toLowerCase() || '';
                 const search = searchTerm.toLowerCase();
-                return guestName.includes(search) || roomNumber.includes(search) || bookingId.includes(search);
+                return guestName.includes(search) || roomNumber.includes(search) || bookingNumber.includes(search);
             });
         }
 
@@ -254,7 +256,7 @@ export default function BookingList() {
                                     <td className={styles.siNo}>{index + 1}</td>
                                     <td>
                                         <div className={styles.idCell}>
-                                            BK-{booking.id.split('-')[0].toUpperCase()}
+                                            {booking.booking_number || `BK-${booking.id.split('-')[0].toUpperCase()}`}
                                         </div>
                                         <span className={styles.sourceTag}>{booking.source || 'Direct'}</span>
                                     </td>
