@@ -256,6 +256,7 @@ export default function SettingsPage() {
                                                 value={settings.gst_number || ''}
                                                 onChange={(e) => handleInputChange('gst_number', e.target.value)}
                                                 className={styles.input}
+                                                placeholder="02AAAAA0000A1Z5"
                                             />
                                         </div>
                                         <div className={styles.formGroup}>
@@ -265,10 +266,112 @@ export default function SettingsPage() {
                                                 value={settings.tax_rate || 0}
                                                 onChange={(e) => handleInputChange('tax_rate', Number(e.target.value))}
                                                 className={styles.input}
+                                                placeholder="18"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.formGrid}>
+                                        <div className={styles.formGroup}>
+                                            <label>CGST Rate (%)</label>
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                className={styles.input}
+                                                placeholder="9"
+                                                defaultValue="9"
+                                            />
+                                        </div>
+                                        <div className={styles.formGroup}>
+                                            <label>SGST Rate (%)</label>
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                className={styles.input}
+                                                placeholder="9"
+                                                defaultValue="9"
                                             />
                                         </div>
                                     </div>
                                 </div>
+
+                                <div className={styles.card}>
+                                    <h3>Service Charges</h3>
+                                    <div className={styles.formGrid}>
+                                        <div className={styles.formGroup}>
+                                            <label>Service Charge (%)</label>
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                className={styles.input}
+                                                placeholder="10"
+                                                defaultValue="0"
+                                            />
+                                        </div>
+                                        <div className={styles.formGroup}>
+                                            <label>Apply Service Charge</label>
+                                            <select className={styles.input}>
+                                                <option value="always">Always</option>
+                                                <option value="optional">Optional</option>
+                                                <option value="never">Never</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className={styles.card}>
+                                    <h3>Payment Methods</h3>
+                                    <div className={styles.formGrid}>
+                                        <div className={styles.formGroup}>
+                                            <label className={styles.checkboxLabel}>
+                                                <input type="checkbox" defaultChecked />
+                                                <span>Cash</span>
+                                            </label>
+                                        </div>
+                                        <div className={styles.formGroup}>
+                                            <label className={styles.checkboxLabel}>
+                                                <input type="checkbox" defaultChecked />
+                                                <span>Card</span>
+                                            </label>
+                                        </div>
+                                        <div className={styles.formGroup}>
+                                            <label className={styles.checkboxLabel}>
+                                                <input type="checkbox" defaultChecked />
+                                                <span>UPI</span>
+                                            </label>
+                                        </div>
+                                        <div className={styles.formGroup}>
+                                            <label className={styles.checkboxLabel}>
+                                                <input type="checkbox" defaultChecked />
+                                                <span>Bank Transfer</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className={styles.card}>
+                                    <h3>Currency & Rounding</h3>
+                                    <div className={styles.formGrid}>
+                                        <div className={styles.formGroup}>
+                                            <label>Currency</label>
+                                            <select className={styles.input}>
+                                                <option value="INR">₹ INR - Indian Rupee</option>
+                                                <option value="USD">$ USD - US Dollar</option>
+                                                <option value="EUR">€ EUR - Euro</option>
+                                            </select>
+                                        </div>
+                                        <div className={styles.formGroup}>
+                                            <label>Rounding</label>
+                                            <select className={styles.input}>
+                                                <option value="none">No Rounding</option>
+                                                <option value="nearest">Nearest Rupee</option>
+                                                <option value="up">Round Up</option>
+                                                <option value="down">Round Down</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div className={styles.actionRow}>
                                     <button type="submit" disabled={loading} className={styles.primaryBtn}>
                                         <Save size={16} /> Save Finance Settings
