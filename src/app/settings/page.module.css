@@ -1,228 +1,314 @@
 .container {
     padding: 0 var(--spacing-lg) var(--spacing-xl);
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 0 auto;
 }
 
 .layout {
     display: grid;
-    grid-template-columns: 240px 1fr;
-    gap: var(--spacing-xl);
+    grid-template-columns: 260px 1fr;
+    gap: 32px;
     align-items: start;
 }
 
 .sidebar {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
+    background: white;
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid #E8EEF7;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    position: sticky;
+    top: 100px;
 }
 
 .navBtn {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
+    gap: 14px;
+    padding: 14px 16px;
     border: none;
     background: none;
-    border-radius: var(--radius-md);
+    border-radius: 12px;
     cursor: pointer;
-    color: var(--text-secondary);
-    font-weight: 500;
+    color: #64748B;
+    font-weight: 600;
     text-align: left;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
 }
 
 .navBtn:hover {
-    background: var(--surface-hover);
-    color: var(--text-main);
+    background: #F8FAFC;
+    color: #039BE5;
+    transform: translateX(4px);
 }
 
 .navBtn.active {
-    background: var(--primary-light);
-    color: var(--primary);
-    font-weight: 600;
+    background: linear-gradient(135deg, #039BE5 0%, #0277BD 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(3, 155, 229, 0.3);
+}
+
+.navBtn svg {
+    flex-shrink: 0;
 }
 
 .content {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
+    background: white;
+    border: 1px solid #E8EEF7;
+    border-radius: 16px;
     min-height: 500px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
 }
 
 .section {
-    padding: var(--spacing-xl);
+    padding: 32px;
 }
 
 .section h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-main);
-    margin-bottom: 4px;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #1E293B;
+    margin-bottom: 6px;
 }
 
 .subtitle {
-    color: var(--text-secondary);
-    margin-bottom: var(--spacing-xl);
+    color: #64748B;
+    margin-bottom: 32px;
+    font-size: 0.95rem;
 }
 
 .formGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-lg);
-    margin-bottom: var(--spacing-xl);
+    gap: 24px;
+    margin-bottom: 32px;
 }
 
 .formGroup {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 10px;
 }
 
 .formGroup label {
     font-size: 0.9rem;
-    color: var(--text-secondary);
-    font-weight: 500;
+    color: #475569;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .input,
 .textarea {
-    padding: 10px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    border: 2px solid #E2E8F0;
+    border-radius: 12px;
     font-size: 1rem;
     width: 100%;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.input:focus,
+.textarea:focus {
+    outline: none;
+    border-color: #039BE5;
+    box-shadow: 0 0 0 4px rgba(3, 155, 229, 0.1), 0 4px 12px rgba(3, 155, 229, 0.15);
 }
 
 .textarea {
-    min-height: 100px;
+    min-height: 120px;
     resize: vertical;
+    font-family: inherit;
 }
 
 .actionRow {
     display: flex;
     justify-content: flex-end;
-    border-top: 1px solid var(--border);
-    padding-top: var(--spacing-lg);
+    border-top: 2px solid #F1F5F9;
+    padding-top: 24px;
+    margin-top: 24px;
 }
 
 .primaryBtn {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 24px;
-    background: var(--primary);
+    gap: 10px;
+    padding: 14px 32px;
+    background: linear-gradient(135deg, #039BE5 0%, #0277BD 100%);
     color: white;
     border: none;
-    border-radius: var(--radius-md);
+    border-radius: 12px;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 1rem;
+    box-shadow: 0 4px 12px rgba(3, 155, 229, 0.3);
+    transition: all 0.3s ease;
+}
+
+.primaryBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(3, 155, 229, 0.4);
+}
+
+.primaryBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
 }
 
 .secondaryBtn {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 16px;
+    padding: 10px 20px;
     background: white;
-    border: 1px solid var(--border);
-    color: var(--text-main);
-    border-radius: var(--radius-md);
+    border: 2px solid #E2E8F0;
+    color: #1E293B;
+    border-radius: 10px;
     cursor: pointer;
-    font-weight: 500;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.secondaryBtn:hover {
+    border-color: #039BE5;
+    background: #F8FAFC;
+    color: #039BE5;
 }
 
 .headerRow {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
 /* Table Styles */
 .tableWrapper {
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
+    border: 1px solid #E8EEF7;
+    border-radius: 12px;
     overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
 .table th,
 .table td {
-    padding: 12px 16px;
+    padding: 16px 20px;
     text-align: left;
-    border-bottom: 1px solid var(--border);
 }
 
 .table th {
-    background: var(--surface-hover);
-    font-weight: 600;
-    color: var(--text-secondary);
+    background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+    font-weight: 700;
+    color: #475569;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #E2E8F0;
+}
+
+.table tbody tr {
+    border-bottom: 1px solid #F1F5F9;
+    transition: all 0.3s ease;
+}
+
+.table tbody tr:hover {
+    background: linear-gradient(to right, #FAFBFF 0%, #F8FAFC 100%);
+    transform: translateX(4px);
 }
 
 .badge {
-    padding: 4px 8px;
-    border-radius: 12px;
+    padding: 6px 12px;
+    border-radius: 20px;
     font-size: 0.8rem;
-    font-weight: 600;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    display: inline-block;
 }
 
 .badge.clean {
-    background: #E8F5E9;
-    color: #2E7D32;
+    background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+    color: white;
 }
 
 .badge.dirty {
-    background: #FFF3E0;
-    color: #EF6C00;
+    background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+    color: white;
 }
 
 .badge.maintenance {
-    background: #FFEBEE;
-    color: #C62828;
+    background: linear-gradient(135deg, #EF5350 0%, #D32F2F 100%);
+    color: white;
 }
 
 .badge.occupied {
-    background: #E3F2FD;
-    color: #1565C0;
+    background: linear-gradient(135deg, #039BE5 0%, #0277BD 100%);
+    color: white;
 }
 
 .actions {
     display: flex;
-    gap: 8px;
+    gap: 10px;
 }
 
 .iconBtn {
-    padding: 6px;
+    padding: 8px;
     border: none;
-    background: transparent;
+    background: #F1F5F9;
     cursor: pointer;
-    color: var(--text-secondary);
-    border-radius: 4px;
+    color: #64748B;
+    border-radius: 8px;
+    transition: all 0.3s ease;
 }
 
 .iconBtn:hover {
-    background: var(--surface-hover);
-    color: var(--primary);
+    background: #039BE5;
+    color: white;
+    transform: scale(1.1);
 }
 
 .iconBtn.danger:hover {
-    color: #C62828;
+    background: #EF5350;
+    color: white;
 }
 
 .card {
-    border: 1px solid var(--border);
-    padding: 16px;
-    border-radius: var(--radius-md);
-    margin-bottom: 16px;
+    border: 2px solid #E8EEF7;
+    padding: 24px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    background: linear-gradient(to bottom, #FAFBFF 0%, #FFFFFF 100%);
+}
+
+.card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1E293B;
+    margin-bottom: 20px;
 }
 
 @media (max-width: 768px) {
     .layout {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        position: static;
+    }
+
+    .formGrid {
         grid-template-columns: 1fr;
     }
 }
