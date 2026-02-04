@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, User, Calendar, CreditCard, Mail, Phone, CheckCircle2 } from 'lucide-react';
+import { X, User, Calendar, CreditCard, Mail, Phone, Send, MessageCircle, Building2, Users, Moon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import styles from './BookingDetailsModal.module.css';
 import { EmailService } from '@/lib/email-service';
@@ -19,115 +19,164 @@ export default function BookingDetailsModal({ booking, onClose }: BookingDetails
     const email = booking.guests?.email || '';
     const phone = booking.guests?.phone || '';
 
+    // Calculate nights
+    const checkIn = new Date(booking.check_in_date);
+    const checkOut = new Date(booking.check_out_date);
+    const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+
+    const handleEmailInvoice = async () => {
+        if (!email) return alert('No email address for this guest.');
+        try {
+            setSendingEmail(true);
+            await EmailService.triggerEmail('invoice-email', {
+                invoice_number: booking.id.split('-')[0].toUpperCase(),
+                guest_name: guestName,
+                email: email,
+                room_number: booking.rooms?.room_number || 'N/A',
+                total_amount: booking.total_amount,
+                payment_status: booking.status === 'Checked Out' ? 'Paid' : 'Pending'
+            });
+            alert('Invoice sent successfully!');
+        } catch (e) {
+            console.error(e);
+            alert('Failed to send invoice.');
+        } finally {
+            setSendingEmail(false);
+        }
+    };
 
     return (
-        <div className={styles.overlay}>
+        <div className={styles.overlay} onClick={onClose}>
             <motion.div
                 className={styles.modal}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                onClick={(e) => e.stopPropagation()}
             >
+                {/* Header with gradient */}
                 <div className={styles.header}>
-                    <div className={styles.headerTitle}>
-                        <h2>Booking Details</h2>
-                        <span className={styles.bookingId}>#{booking.id.split('-')[0].toUpperCase()}</span>
+                    <div className={styles.headerContent}>
+                        <div className={styles.headerTop}>
+                            <h2>Booking Details</h2>
+                            <button onClick={onClose} className={styles.closeBtn}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className={styles.bookingMeta}>
+                            <span className={styles.bookingId}>#{booking.id.split('-')[0].toUpperCase()}</span>
+                            <span className={`${styles.statusPill} ${styles[booking.status.toLowerCase().replace(' ', '')]}`}>
+                                {booking.status}
+                            </span>
+                        </div>
                     </div>
-                    <button onClick={onClose} className={styles.closeBtn}><X size={20} /></button>
                 </div>
 
+                {/* Content */}
                 <div className={styles.content}>
-                    <div className={styles.section}>
-                        <div className={styles.sectionHeader}>
-                            <User size={18} className={styles.icon} />
+                    {/* Guest Card */}
+                    <div className={styles.card}>
+                        <div className={styles.cardHeader}>
+                            <div className={styles.cardIcon}>
+                                <User size={18} />
+                            </div>
                             <h3>Guest Information</h3>
                         </div>
-                        <div className={styles.infoGrid}>
-                            <div className={styles.infoItem}>
-                                <label>Full Name</label>
-                                <span>{guestName}</span>
-                            </div>
-                            <div className={styles.infoItem}>
-                                <label>Email</label>
-                                <div className={styles.contactRow}><Mail size={14} /> {email}</div>
-                            </div>
-                            <div className={styles.infoItem}>
-                                <label>Phone</label>
-                                <div className={styles.contactRow}><Phone size={14} /> {phone}</div>
+                        <div className={styles.cardBody}>
+                            <div className={styles.guestName}>{guestName}</div>
+                            <div className={styles.contactList}>
+                                <div className={styles.contactItem}>
+                                    <Mail size={16} />
+                                    <span>{email || 'No email provided'}</span>
+                                </div>
+                                <div className={styles.contactItem}>
+                                    <Phone size={16} />
+                                    <span>{phone || 'No phone provided'}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className={styles.divider}></div>
-
-                    <div className={styles.section}>
-                        <div className={styles.sectionHeader}>
-                            <Calendar size={18} className={styles.icon} />
+                    {/* Stay Details Card */}
+                    <div className={styles.card}>
+                        <div className={styles.cardHeader}>
+                            <div className={styles.cardIcon}>
+                                <Calendar size={18} />
+                            </div>
                             <h3>Stay Details</h3>
                         </div>
-                        <div className={styles.infoGrid}>
-                            <div className={styles.infoItem}>
-                                <label>Check-in</label>
-                                <span>{booking.check_in_date}</span>
+                        <div className={styles.cardBody}>
+                            <div className={styles.stayGrid}>
+                                <div className={styles.stayItem}>
+                                    <div className={styles.stayLabel}>Check-in</div>
+                                    <div className={styles.stayValue}>{new Date(booking.check_in_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                                </div>
+                                <div className={styles.stayItem}>
+                                    <div className={styles.stayLabel}>Check-out</div>
+                                    <div className={styles.stayValue}>{new Date(booking.check_out_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                                </div>
+                                <div className={styles.stayItem}>
+                                    <div className={styles.stayLabel}>
+                                        <Moon size={14} />
+                                        Nights
+                                    </div>
+                                    <div className={styles.stayValue}>{nights}</div>
+                                </div>
+                                <div className={styles.stayItem}>
+                                    <div className={styles.stayLabel}>
+                                        <Users size={14} />
+                                        Guests
+                                    </div>
+                                    <div className={styles.stayValue}>{(booking.adults || 1) + (booking.children || 0)}</div>
+                                </div>
                             </div>
-                            <div className={styles.infoItem}>
-                                <label>Check-out</label>
-                                <span>{booking.check_out_date}</span>
-                            </div>
-                            <div className={styles.infoItem}>
-                                <label>Status</label>
-                                <span className={`${styles.statusBadge} ${styles[booking.status.toLowerCase().replace(' ', '')]}`}>
-                                    {booking.status}
-                                </span>
-                            </div>
+                            {booking.rooms?.room_number && (
+                                <div className={styles.roomBadge}>
+                                    <Building2 size={16} />
+                                    Room {booking.rooms.room_number}
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    <div className={styles.divider}></div>
-
-                    <div className={styles.section}>
-                        <div className={styles.sectionHeader}>
-                            <CreditCard size={18} className={styles.icon} />
+                    {/* Payment Card */}
+                    <div className={styles.paymentCard}>
+                        <div className={styles.cardHeader}>
+                            <div className={styles.cardIcon}>
+                                <CreditCard size={18} />
+                            </div>
                             <h3>Payment</h3>
                         </div>
-                        <div className={styles.paymentRow}>
-                            <span className={styles.totalLabel}>Total Amount</span>
-                            <span className={styles.totalAmount}>₹{booking.total_amount?.toLocaleString()}</span>
+                        <div className={styles.paymentBody}>
+                            <div className={styles.paymentRow}>
+                                <span>Total Amount</span>
+                                <span className={styles.amount}>₹{booking.total_amount?.toLocaleString()}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
+                {/* Footer Actions */}
                 <div className={styles.footer}>
-                    <button disabled={sendingEmail} className={styles.outlineBtn} onClick={async () => {
-                        if (!email) return alert('No email address for this guest.');
-                        try {
-                            setSendingEmail(true);
-                            await EmailService.triggerEmail('invoice-email', {
-                                invoice_number: booking.id.split('-')[0].toUpperCase(),
-                                guest_name: guestName,
-                                email: email,
-                                room_number: booking.rooms?.room_number || 'N/A', // Assuming joined
-                                total_amount: booking.total_amount,
-                                payment_status: booking.status === 'Checked Out' ? 'Paid' : 'Pending'
-                            });
-                            alert('Invoice sent successfully!');
-                        } catch (e) {
-                            console.error(e);
-                            alert('Failed to send invoice.');
-                        } finally {
-                            setSendingEmail(false);
-                        }
-                    }}>
+                    <button
+                        disabled={sendingEmail || !email}
+                        className={styles.actionBtn}
+                        onClick={handleEmailInvoice}
+                    >
+                        <Send size={16} />
                         {sendingEmail ? 'Sending...' : 'Email Invoice'}
                     </button>
-                    <button className={styles.outlineBtn} onClick={() => {
-                        window.open(`https://wa.me/${phone.replace(/\D/g, '')}?text=Hi ${guestName}, this is regarding your booking at Ave Vista.`);
-                    }}>
+                    <button
+                        className={styles.actionBtn}
+                        disabled={!phone}
+                        onClick={() => {
+                            window.open(`https://wa.me/${phone.replace(/\D/g, '')}?text=Hi ${guestName}, this is regarding your booking at Ave Vista.`);
+                        }}
+                    >
+                        <MessageCircle size={16} />
                         WhatsApp
                     </button>
-                    <button onClick={onClose} className={styles.closeActionBtn}>Close</button>
                 </div>
-
             </motion.div>
         </div>
     );
