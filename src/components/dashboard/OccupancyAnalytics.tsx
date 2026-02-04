@@ -4,18 +4,15 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import styles from './OccupancyAnalytics.module.css';
 
-const mockData = [
-    { day: 'Mon', value: 65 },
-    { day: 'Tue', value: 58 },
-    { day: 'Wed', value: 72 },
-    { day: 'Thu', value: 85 },
-    { day: 'Fri', value: 92 },
-    { day: 'Sat', value: 98 },
-    { day: 'Sun', value: 88 },
-];
+interface OccupancyAnalyticsProps {
+    data: { day: string; value: number }[];
+}
 
-export default function OccupancyAnalytics() {
+export default function OccupancyAnalytics({ data }: OccupancyAnalyticsProps) {
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+    // Default to empty array if no data
+    const chartData = data || [];
 
     return (
         <div className={styles.container}>
@@ -28,7 +25,7 @@ export default function OccupancyAnalytics() {
 
             <div className={styles.chartContainer}>
                 <div className={styles.bars}>
-                    {mockData.map((item, index) => (
+                    {chartData.map((item, index) => (
                         <div
                             key={index}
                             className={styles.barGroup}
