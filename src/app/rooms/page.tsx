@@ -183,7 +183,7 @@ export default function RoomsPage() {
                                         key={room.id}
                                         number={room.room_number}
                                         type={room.type}
-                                        status={room.displayStatus || 'Free'}
+                                        status={(room.displayStatus || 'Free') as "Clean" | "Dirty" | "Maintenance" | "Occupied" | "Free"}
                                         price={`₹${room.price_per_night.toLocaleString()}`}
                                         occupancy={room.max_occupancy}
                                         imageUrl={room.image_url || getRoomImage(room.room_number, room.type)}

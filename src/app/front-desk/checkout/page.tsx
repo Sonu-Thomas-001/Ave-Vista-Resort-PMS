@@ -378,25 +378,23 @@ export default function CheckOutPage() {
                                             console.error(e);
                                             alert('Failed to send email');
                                         }
-
-                                    }
                                     }}>Email Invoice</button>
-                                <button className={styles.shareBtn}>WhatsApp</button>
-                                <button className={styles.shareBtn} onClick={handlePrint}>Print Invoice</button>
-                            </div>
+                                    <button className={styles.shareBtn}>WhatsApp</button>
+                                    <button className={styles.shareBtn} onClick={handlePrint}>Print Invoice</button>
+                                </div>
 
-                            <button
-                                className={styles.primaryBtn}
-                                onClick={() => { setStep(1); setRoomNum(''); }}
-                                style={{ marginTop: 20 }}
-                            >
-                                Back to Front Desk
-                            </button>
-                        </div>
+                                <button
+                                    className={styles.primaryBtn}
+                                    onClick={() => { setStep(1); setRoomNum(''); }}
+                                    style={{ marginTop: 20 }}
+                                >
+                                    Back to Front Desk
+                                </button>
+                            </div>
                         </div>
                     )}
-            </div>
-        </div >
+                </div>
+            </div >
         </>
     );
 }
