@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Filter, MoreHorizontal, Download, LayoutList, CalendarCheck, ChevronUp, ChevronDown } from 'lucide-react';
+import { Search, Filter, ChevronUp, ChevronDown, Mail, Eye } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './BookingList.module.css';
 import CustomSelect from './ui/CustomSelect';
+import BookingDetailsModal from './BookingDetailsModal';
 
 interface Booking {
     id: string;
@@ -13,8 +14,8 @@ interface Booking {
     status: string;
     source: string;
     total_amount: number;
-    guests: { first_name: string; last_name: string } | null;
-    rooms: { room_number: string } | null;
+    guests: { first_name: string; last_name: string; email: string; phone?: string } | null;
+    rooms: { room_number: string; type: string } | null;
 }
 
 export default function BookingList() {
@@ -24,6 +25,8 @@ export default function BookingList() {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortColumn, setSortColumn] = useState<string>('check_in_date');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+    const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
+    const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
     const statusOptions = [
         { label: 'All Status', value: 'All Status' },
@@ -60,8 +63,8 @@ export default function BookingList() {
                     status,
                     source,
                     total_amount,
-                    guests (first_name, last_name),
-                    rooms (room_number)
+                    guests (first_name, last_name, email, phone),
+                    rooms (room_number, type)
                 `)
                 .order('created_at', { ascending: false });
 
@@ -71,6 +74,51 @@ export default function BookingList() {
             console.error('Error fetching bookings:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleSendEmail = async (booking: Booking) => {
+        if (!booking.guests?.email) {
+            alert('No email address found for this guest.');
+            return;
+        }
+
+        if (!confirm(`Send booking confirmation to ${booking.guests.email}?`)) return;
+
+        setSendingEmailId(booking.id);
+        const formattedId = `BK-${booking.id.split('-')[0].toUpperCase()}`;
+
+        try {
+            const body = {
+                type: 'booking-confirmation',
+                payload: {
+                    booking_id: formattedId,
+                    email: booking.guests.email,
+                    guest_name: `${booking.guests.first_name} ${booking.guests.last_name}`,
+                    room_type: booking.rooms?.type || 'Standard Room',
+                    check_in_date: booking.check_in_date,
+                    check_out_date: booking.check_out_date,
+                    room_number: booking.rooms?.room_number || 'N/A',
+                    guests: '1',
+                    total_amount: booking.total_amount,
+                    advance_amount: 0
+                }
+            };
+
+            const response = await fetch('/api/email/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+
+            if (!response.ok) throw new Error('Failed to send email');
+
+            alert('Booking confirmation email sent successfully!');
+        } catch (error) {
+            console.error('Error sending email:', error);
+            alert('Failed to send email. Please check the logs.');
+        } finally {
+            setSendingEmailId(null);
         }
     };
 
@@ -197,6 +245,7 @@ export default function BookingList() {
                                 <th className={styles.sortable} onClick={() => handleSort('amount')}>
                                     Amount <SortIcon column="amount" />
                                 </th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -221,12 +270,42 @@ export default function BookingList() {
                                         </span>
                                     </td>
                                     <td className={styles.amount}>₹{booking.total_amount.toLocaleString()}</td>
+                                    <td>
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            <button
+                                                className={styles.actionBtn}
+                                                title="View Details"
+                                                onClick={() => setSelectedBooking(booking)}
+                                            >
+                                                <Eye size={18} />
+                                            </button>
+                                            <button
+                                                className={styles.actionBtn}
+                                                title="Resend Confirmation Email"
+                                                onClick={() => handleSendEmail(booking)}
+                                                disabled={sendingEmailId === booking.id}
+                                            >
+                                                {sendingEmailId === booking.id ? (
+                                                    <div style={{ width: 18, height: 18, border: '2px solid var(--primary)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                                                ) : (
+                                                    <Mail size={18} />
+                                                )}
+                                            </button>
+                                        </div>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 )}
             </div>
+
+            {selectedBooking && (
+                <BookingDetailsModal
+                    booking={selectedBooking}
+                    onClose={() => setSelectedBooking(null)}
+                />
+            )}
         </div>
     );
 }
