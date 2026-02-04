@@ -15,8 +15,14 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function POST(request: Request) {
+    let type = '';
+    let payload: any = {};
+
     try {
-        const { type, payload } = await request.json();
+        const body = await request.json();
+        type = body.type;
+        payload = body.payload;
+
         console.log(`[API] Processing email type: ${type}`, payload);
 
         // 1. Check if Emails are Global Enabled
@@ -90,18 +96,43 @@ export async function POST(request: Request) {
 
         console.log("Message sent: %s", info.messageId);
 
-        // 7. Log Success
-        await supabase.from("email_logs").insert({
-            recipient: to,
-            template_slug: type,
-            status: "Sent",
-            metadata: { ...payload, messageId: info.messageId },
-        });
+        // 7. Log Success to Database
+        try {
+            const logResult = await supabase.from("email_logs").insert({
+                recipient: to,
+                template_slug: type,
+                status: "Sent",
+                metadata: { ...payload, messageId: info.messageId },
+            });
+
+            if (logResult.error) {
+                console.error("Error logging email to database:", logResult.error);
+                // Don't fail the request, email was sent successfully
+            } else {
+                console.log("Email logged successfully to database");
+            }
+        } catch (logError) {
+            console.error("Exception while logging email:", logError);
+            // Don't fail the request, email was sent successfully
+        }
 
         return NextResponse.json({ success: true, id: info.messageId });
 
     } catch (err: any) {
         console.error("Error sending email:", err);
+
+        // Log failure to database
+        try {
+            await supabase.from("email_logs").insert({
+                recipient: payload.email || 'unknown',
+                template_slug: type,
+                status: "Failed",
+                metadata: { error: err.message, ...payload },
+            });
+        } catch (logError) {
+            console.error("Failed to log error to database:", logError);
+        }
+
         return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }

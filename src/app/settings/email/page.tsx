@@ -14,6 +14,13 @@ export default function EmailSettingsPage() {
 
     useEffect(() => {
         loadData();
+
+        // Set up polling for real-time updates every 10 seconds
+        const interval = setInterval(() => {
+            loadLogs();
+        }, 10000);
+
+        return () => clearInterval(interval);
     }, []);
 
     async function loadData() {
@@ -28,9 +35,18 @@ export default function EmailSettingsPage() {
             setLogs(lg || []);
             setEnabled(st);
         } catch (error) {
-            console.error(error);
+            console.error('Error loading email data:', error);
         } finally {
             setLoading(false);
+        }
+    }
+
+    async function loadLogs() {
+        try {
+            const lg = await EmailService.getLogs();
+            setLogs(lg || []);
+        } catch (error) {
+            console.error('Error loading email logs:', error);
         }
     }
 
