@@ -158,6 +158,10 @@ export default function BookingList() {
             let bValue: any;
 
             switch (sortColumn) {
+                case 'booking_number':
+                    aValue = a.booking_number || a.id;
+                    bValue = b.booking_number || b.id;
+                    break;
                 case 'guest':
                     aValue = a.guests ? `${a.guests.first_name} ${a.guests.last_name}` : '';
                     bValue = b.guests ? `${b.guests.first_name} ${b.guests.last_name}` : '';
@@ -228,7 +232,9 @@ export default function BookingList() {
                         <thead>
                             <tr>
                                 <th>SI No</th>
-                                <th>Details</th>
+                                <th className={styles.sortable} onClick={() => handleSort('booking_number')}>
+                                    Details <SortIcon column="booking_number" />
+                                </th>
                                 <th className={styles.sortable} onClick={() => handleSort('guest')}>
                                     Guest <SortIcon column="guest" />
                                 </th>
