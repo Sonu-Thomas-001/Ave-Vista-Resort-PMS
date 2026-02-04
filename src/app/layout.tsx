@@ -18,7 +18,8 @@ export const metadata: Metadata = {
   title: "Ave Vista Resort PMS",
   description: "Property Management System for Ave Vista Resort",
   icons: {
-    icon: '/logo.png', // Uses the brand logo
+    icon: '/favicon.png',
+    apple: '/favicon.png',
   }
 };
 
