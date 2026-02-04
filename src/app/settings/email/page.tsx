@@ -65,7 +65,11 @@ export default function EmailSettingsPage() {
             room_number: '101',
             check_in_date: '2026-03-10',
             check_out_date: '2026-03-15',
-            booking_id: 'BK-2026-001'
+            booking_id: 'BK-2026-001',
+            guests: '2 Adults',
+            advance_amount: '2000',
+            room_type: 'Deluxe Suite',
+            total_amount: '5000'
         };
 
         if (slug === 'invoice-email') {

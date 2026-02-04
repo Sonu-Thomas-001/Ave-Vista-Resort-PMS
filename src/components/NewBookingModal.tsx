@@ -125,7 +125,9 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                             check_out_date: dates.checkOut,
                             room_number: selectedRoom.room_number,
                             room_type: selectedRoom.type,
-                            total_amount: totalAmount
+                            total_amount: totalAmount,
+                            guests: '1',
+                            advance_amount: '0.00'
                         });
                     }
                 } catch (emailErr) {
