@@ -263,7 +263,7 @@ export default function GuestsPage() {
                                             <tr key={guest.id} className={styles.row}>
                                                 <td className={styles.siNo}>{index + 1}</td>
                                                 <td className={styles.nameCell}>
-                                                    <div className={styles.avatar}>{guest.first_name[0]}</div>
+                                                    <div className={styles.avatar} data-letter={guest.first_name[0].toUpperCase()}>{guest.first_name[0]}</div>
                                                     <div>
                                                         <span className={styles.name}>{guest.first_name} {guest.last_name}</span>
                                                         <span className={styles.email}>{guest.email || 'No Email'}</span>
