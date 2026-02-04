@@ -57,6 +57,36 @@ export default function EmailSettingsPage() {
         }
     }
 
+    function getDummyData(slug: string) {
+        const base = {
+            guest_name: 'John Doe',
+            first_name: 'John',
+            last_name: 'Doe',
+            room_number: '101',
+            check_in_date: '2026-03-10',
+            check_out_date: '2026-03-15',
+            booking_id: 'BK-2026-001'
+        };
+
+        if (slug === 'invoice-email') {
+            return {
+                ...base,
+                invoice_number: 'INV-001',
+                total_amount: '$500.00',
+                payment_status: 'Paid'
+            };
+        }
+        if (slug === 'admin-alert') {
+            return {
+                event_type: 'New Booking',
+                description: 'John Doe booked Room 101',
+                timestamp: new Date().toLocaleString(),
+                dashboard_link: '#'
+            };
+        }
+        return base;
+    }
+
     if (loading) return <div className={styles.container}><div className="flex justify-center p-10"><Loader2 className="animate-spin" /></div></div>;
 
     return (
@@ -92,7 +122,7 @@ export default function EmailSettingsPage() {
                                 <div className={styles.templateHeader}>
                                     <h4 className={styles.templateName}>{t.name}</h4>
                                     <button
-                                        onClick={() => setEditingTemplate(t)}
+                                        onClick={() => setEditingTemplate({ ...t, view: 'edit' })}
                                         className={styles.editBtn}
                                     >
                                         Edit
@@ -157,24 +187,62 @@ export default function EmailSettingsPage() {
                             </div>
 
                             <div className={styles.modalBody}>
-                                <div className={styles.formGroup}>
-                                    <label>Email Subject</label>
-                                    <input
-                                        className={styles.input}
-                                        value={editingTemplate.subject_template}
-                                        onChange={e => setEditingTemplate({ ...editingTemplate, subject_template: e.target.value })}
-                                    />
-                                    <p className={styles.helperText}>Supports {'{{variable}}'} placeholders.</p>
+                                <div className={styles.tabs}>
+                                    <button
+                                        type="button"
+                                        className={`${styles.tab} ${editingTemplate.view === 'edit' ? styles.tabActive : ''}`}
+                                        onClick={() => setEditingTemplate({ ...editingTemplate, view: 'edit' })}
+                                    >
+                                        Edit Template
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={`${styles.tab} ${editingTemplate.view === 'preview' ? styles.tabActive : ''}`}
+                                        onClick={() => setEditingTemplate({ ...editingTemplate, view: 'preview' })}
+                                    >
+                                        Live Preview
+                                    </button>
                                 </div>
 
-                                <div className={styles.formGroup} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                    <label>HTML Body</label>
-                                    <textarea
-                                        className={styles.textarea}
-                                        value={editingTemplate.body_html}
-                                        onChange={e => setEditingTemplate({ ...editingTemplate, body_html: e.target.value })}
-                                    />
-                                </div>
+                                {editingTemplate.view === 'preview' ? (
+                                    <div className={styles.previewContainer}>
+                                        <div
+                                            className={styles.previewFrame}
+                                            dangerouslySetInnerHTML={{
+                                                __html: (() => {
+                                                    let html = editingTemplate.body_html || '';
+                                                    const dummyData = getDummyData(editingTemplate.slug);
+                                                    Object.keys(dummyData).forEach(key => {
+                                                        const regex = new RegExp(`{{${key}}}`, 'g');
+                                                        html = html.replace(regex, (dummyData as any)[key]);
+                                                    });
+                                                    return html;
+                                                })()
+                                            }}
+                                        />
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className={styles.formGroup}>
+                                            <label>Email Subject</label>
+                                            <input
+                                                className={styles.input}
+                                                value={editingTemplate.subject_template}
+                                                onChange={e => setEditingTemplate({ ...editingTemplate, subject_template: e.target.value })}
+                                            />
+                                            <p className={styles.helperText}>Supports {'{{variable}}'} placeholders.</p>
+                                        </div>
+
+                                        <div className={styles.formGroup} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                            <label>HTML Body</label>
+                                            <textarea
+                                                className={styles.textarea}
+                                                value={editingTemplate.body_html}
+                                                onChange={e => setEditingTemplate({ ...editingTemplate, body_html: e.target.value })}
+                                            />
+                                        </div>
+                                    </>
+                                )}
                             </div>
 
                             <div className={styles.modalFooter}>
