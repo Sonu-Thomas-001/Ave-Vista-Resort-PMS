@@ -49,7 +49,7 @@ export default function CheckOutPage() {
             .select(`
                 *,
                 rooms (room_number),
-                guests (first_name, last_name)
+                guests (first_name, last_name, email)
             `)
             .eq('status', 'Checked In');
 
@@ -140,18 +140,23 @@ export default function CheckOutPage() {
             .eq('id', selectedBooking.room_id);
 
         // 4. Trigger Auto-Invoice Email
-        try {
-            await EmailService.triggerEmail('invoice-email', {
-                invoice_number: formattedInvoice.invoice_number,
-                guest_name: selectedBooking.guests ? `${selectedBooking.guests.first_name} ${selectedBooking.guests.last_name}` : 'Guest',
-                email: selectedBooking.guests?.email,
-                room_number: selectedBooking.rooms?.room_number || 'N/A',
-                amount: formattedInvoice.amount,
-                payment_status: 'Paid',
-                payment_method: paymentMode
-            });
-        } catch (e) {
-            console.error('Invoice email failed', e);
+        if (selectedBooking.guests?.email) {
+            try {
+                await EmailService.triggerEmail('invoice-email', {
+                    invoice_number: formattedInvoice.invoice_number,
+                    guest_name: selectedBooking.guests ? `${selectedBooking.guests.first_name} ${selectedBooking.guests.last_name}` : 'Guest',
+                    email: selectedBooking.guests.email,
+                    room_number: selectedBooking.rooms?.room_number || 'N/A',
+                    amount: formattedInvoice.amount,
+                    payment_status: 'Paid',
+                    payment_method: paymentMode
+                });
+            } catch (e) {
+                console.error('Invoice email failed', e);
+            }
+        } else {
+            console.warn('Skipping email invoice: No guest email found.');
+            // Optional: alert('Invoice generated, but no email sent (Guest email missing).');
         }
 
         nextStep();
@@ -334,17 +339,28 @@ export default function CheckOutPage() {
 
                                 <div className={styles.shareOptions}>
                                     <button className={styles.shareBtn} onClick={async () => {
+                                        let targetEmail = selectedBooking?.guests?.email;
+
+                                        if (!targetEmail) {
+                                            const manualEmail = window.prompt('Guest email not found. Please enter an email address to send the invoice to:');
+                                            if (!manualEmail) return; // User cancelled or entered empty
+                                            targetEmail = manualEmail;
+                                        }
+
                                         try {
                                             await EmailService.triggerEmail('invoice-email', {
                                                 invoice_number: generatedInvoice?.invoice_number,
-                                                guest_name: selectedBooking?.guests?.first_name + ' ' + selectedBooking?.guests?.last_name,
-                                                email: selectedBooking?.guests?.email,
-                                                room_number: selectedBooking?.rooms?.room_number,
+                                                guest_name: selectedBooking.guests ? `${selectedBooking.guests.first_name} ${selectedBooking.guests.last_name}` : 'Guest',
+                                                email: targetEmail,
+                                                room_number: selectedBooking.rooms?.room_number || 'N/A',
                                                 amount: generatedInvoice?.amount,
                                                 payment_status: 'Paid'
                                             });
-                                            alert('Invoice sent!');
-                                        } catch (e) { alert('Failed to send'); }
+                                            alert(`Invoice sent to ${targetEmail}!`);
+                                        } catch (e) {
+                                            console.error(e);
+                                            alert('Failed to send email');
+                                        }
                                     }}>Email Invoice</button>
                                     <button className={styles.shareBtn}>WhatsApp</button>
                                     <button className={styles.shareBtn} onClick={handlePrint}>Print Invoice</button>

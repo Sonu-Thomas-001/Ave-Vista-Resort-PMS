@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Header from '@/components/Header';
-import { Download, Eye, Plus, FileText, X, Check, CreditCard, DollarSign } from 'lucide-react';
+import { Download, Eye, FileText, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
 import styles from './page.module.css';
@@ -16,7 +16,6 @@ interface InvoiceWithDetails extends Invoice {
 }
 
 export default function BillingPage() {
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('Invoices'); // Invoices | DailyReport
     const [invoices, setInvoices] = useState<Invoice[]>([]);
     const [loading, setLoading] = useState(true);
@@ -42,57 +41,7 @@ export default function BillingPage() {
         setLoading(false);
     };
 
-    // New Invoice Form State
-    const [newInv, setNewInv] = useState({
-        guest: '',
-        room: '',
-        amount: '',
-        gstRate: '12', // 12 or 18
-        paymentMode: 'Card',
-        isPartial: false,
-        paidAmount: ''
-    });
 
-    const handleCreateInvoice = async () => {
-        const baseAmount = parseFloat(newInv.amount) || 0;
-        const gstPercent = parseInt(newInv.gstRate) || 0;
-        const taxAmount = (baseAmount * gstPercent) / 100;
-        const totalAmount = baseAmount + taxAmount;
-
-        const paid = newInv.isPartial ? (parseFloat(newInv.paidAmount) || 0) : totalAmount;
-        const status = paid >= totalAmount ? 'Paid' : 'Partial';
-
-        // Gen random invoice number for now (should be sequential in production)
-        const invNum = `INV-2026-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
-
-        const newInvoice = {
-            invoice_number: invNum,
-            guest_name: newInv.guest,
-            room_number: newInv.room,
-            invoice_date: new Date().toISOString().split('T')[0],
-            total_amount: totalAmount,
-            paid_amount: paid,
-            status: status as 'Paid' | 'Partial',
-            payment_mode: newInv.paymentMode as 'Card' | 'Cash' | 'UPI',
-            gst_rate: gstPercent,
-            is_partial: newInv.isPartial
-        };
-
-        const { data, error } = await supabase
-            .from('invoices')
-            .insert([newInvoice])
-            .select();
-
-        if (data) {
-            setInvoices([data[0], ...invoices]);
-            setIsModalOpen(false);
-            // Reset form
-            setNewInv({ guest: '', room: '', amount: '', gstRate: '12', paymentMode: 'Card', isPartial: false, paidAmount: '' });
-        } else if (error) {
-            console.error('Error creating invoice:', error);
-            alert('Failed to create invoice');
-        }
-    };
 
     const handleViewInvoice = async (invoice: Invoice) => {
         // Fetch related booking and guest data
@@ -200,9 +149,7 @@ export default function BillingPage() {
                             Daily Reports
                         </button>
                     </div>
-                    <button className={styles.primaryBtn} onClick={() => setIsModalOpen(true)}>
-                        <Plus size={18} /> Create Invoice
-                    </button>
+
                 </div>
 
                 {activeTab === 'Invoices' ? (
@@ -269,119 +216,6 @@ export default function BillingPage() {
                     </div>
                 )}
             </div>
-
-            {/* Create Invoice Modal */}
-            {isModalOpen && (
-                <div className={styles.modalOverlay}>
-                    <div className={styles.modal}>
-                        <div className={styles.modalHeader}>
-                            <h2>Generate Invoice</h2>
-                            <button onClick={() => setIsModalOpen(false)} className={styles.closeBtn}><X size={20} /></button>
-                        </div>
-                        <div className={styles.modalBody}>
-                            <div className={styles.formGroup}>
-                                <label>Guest Name</label>
-                                <input
-                                    type="text"
-                                    className={styles.input}
-                                    value={newInv.guest}
-                                    onChange={e => setNewInv({ ...newInv, guest: e.target.value })}
-                                    placeholder="Enter guest name"
-                                />
-                            </div>
-                            <div className={styles.row}>
-                                <div className={styles.formGroup}>
-                                    <label>Room No.</label>
-                                    <input
-                                        type="text"
-                                        className={styles.input}
-                                        value={newInv.room}
-                                        onChange={e => setNewInv({ ...newInv, room: e.target.value })}
-                                        placeholder="101"
-                                    />
-                                </div>
-                                <div className={styles.formGroup}>
-                                    <label>Base Amount (Excl. Tax) (₹)</label>
-                                    <input
-                                        type="number"
-                                        className={styles.input}
-                                        value={newInv.amount}
-                                        onChange={e => setNewInv({ ...newInv, amount: e.target.value })}
-                                        placeholder="0.00"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className={styles.gstBox}>
-                                <label>GST Applicable</label>
-                                <div className={styles.radioGroup}>
-                                    <label className={styles.radioLabel}>
-                                        <input
-                                            type="radio"
-                                            name="gst"
-                                            checked={newInv.gstRate === '12'}
-                                            onChange={() => setNewInv({ ...newInv, gstRate: '12' })}
-                                        /> 12% (<span className={styles.gstVal}>CGST 6% + SGST 6%</span>)
-                                    </label>
-                                    <label className={styles.radioLabel}>
-                                        <input
-                                            type="radio"
-                                            name="gst"
-                                            checked={newInv.gstRate === '18'}
-                                            onChange={() => setNewInv({ ...newInv, gstRate: '18' })}
-                                        /> 18% (<span className={styles.gstVal}>CGST 9% + SGST 9%</span>)
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div className={styles.formGroup}>
-                                <label>Payment Mode</label>
-                                <div className={styles.modeGrid}>
-                                    {['Cash', 'Card', 'UPI'].map(mode => (
-                                        <button
-                                            key={mode}
-                                            className={`${styles.modeBtn} ${newInv.paymentMode === mode ? styles.modeActive : ''}`}
-                                            onClick={() => setNewInv({ ...newInv, paymentMode: mode })}
-                                        >
-                                            {mode === 'Card' ? <CreditCard size={16} /> : <DollarSign size={16} />}
-                                            {mode}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className={styles.formGroup}>
-                                <label className={styles.checkboxLabel}>
-                                    <input
-                                        type="checkbox"
-                                        checked={newInv.isPartial}
-                                        onChange={e => setNewInv({ ...newInv, isPartial: e.target.checked })}
-                                    />
-                                    Partial Payment?
-                                </label>
-                            </div>
-
-                            {newInv.isPartial && (
-                                <div className={styles.formGroup}>
-                                    <label>Amount Paid Now (₹)</label>
-                                    <input
-                                        type="number"
-                                        className={styles.input}
-                                        value={newInv.paidAmount}
-                                        onChange={e => setNewInv({ ...newInv, paidAmount: e.target.value })}
-                                    />
-                                </div>
-                            )}
-                        </div>
-                        <div className={styles.modalFooter}>
-                            <button className={styles.cancelBtn} onClick={() => setIsModalOpen(false)}>Cancel</button>
-                            <button className={styles.submitBtn} onClick={handleCreateInvoice}>
-                                <Check size={18} /> Rate Invoice
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Invoice Viewer Modal */}
             {viewingInvoice && viewingInvoice.booking && (

@@ -6,7 +6,7 @@ interface InvoiceTemplateProps {
     invoice: any;
     booking: any;
     guest: any;
-    printRef?: React.RefObject<HTMLDivElement>;
+    printRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export const InvoiceTemplate = ({ invoice, booking, guest, printRef }: InvoiceTemplateProps) => {
