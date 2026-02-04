@@ -91,7 +91,7 @@ export default function CheckOutPage() {
         if (!selectedBooking) return;
 
         // 1. Create Final Invoice
-        const invNum = `INV-2026-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
+        const invNum = `AVE-INV-${String(1000 + Math.floor(Math.random() * 9000))}`;
         const newInvoice = {
             invoice_number: invNum,
             booking_id: selectedBooking.id,

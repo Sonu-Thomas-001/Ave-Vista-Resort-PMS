@@ -24,6 +24,13 @@ export default function BillingPage() {
 
     useEffect(() => {
         fetchInvoices();
+
+        // Set up polling for real-time updates every 15 seconds
+        const interval = setInterval(() => {
+            fetchInvoices();
+        }, 15000);
+
+        return () => clearInterval(interval);
     }, []);
 
     const fetchInvoices = async () => {
