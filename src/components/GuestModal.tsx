@@ -195,14 +195,13 @@ export default function GuestModal({ guest, onClose, onSuccess }: GuestModalProp
                         </div>
 
                         <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
-                            <label className={styles.checkboxLabel} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                            <label className={styles.checkboxLabel}>
                                 <input
                                     type="checkbox"
                                     checked={formData.is_vip}
                                     onChange={(e) => setFormData({ ...formData, is_vip: e.target.checked })}
-                                    style={{ width: 18, height: 18 }}
                                 />
-                                <span style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text-main)' }}>Mark as VIP Guest</span>
+                                <span>Mark as VIP Guest</span>
                                 {formData.is_vip && <Crown size={18} color="#FFD700" />}
                             </label>
                         </div>
