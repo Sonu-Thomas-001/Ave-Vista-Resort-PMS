@@ -148,8 +148,16 @@ export default function CheckOutPage() {
                     email: selectedBooking.guests.email,
                     room_number: selectedBooking.rooms?.room_number || 'N/A',
                     amount: formattedInvoice.amount,
+                    total_amount: formattedInvoice.amount,
                     payment_status: 'Paid',
-                    payment_method: paymentMode
+                    payment_method: paymentMode,
+                    check_in_date: selectedBooking.check_in_date,
+                    check_out_date: selectedBooking.check_out_date,
+                    nights: Math.ceil((new Date(selectedBooking.check_out_date).getTime() - new Date(selectedBooking.check_in_date).getTime()) / (1000 * 60 * 60 * 24)),
+                    guests_count: (selectedBooking.adults || 1) + (selectedBooking.children || 0),
+                    gst_rate: 12,
+                    paid_amount: formattedInvoice.amount,
+                    booking_id: selectedBooking.id
                 });
             } catch (e) {
                 console.error('Invoice email failed', e);
@@ -354,30 +362,41 @@ export default function CheckOutPage() {
                                                 email: targetEmail,
                                                 room_number: selectedBooking.rooms?.room_number || 'N/A',
                                                 amount: generatedInvoice?.amount,
-                                                payment_status: 'Paid'
+                                                total_amount: generatedInvoice?.amount,
+                                                payment_status: 'Paid',
+                                                payment_method: paymentMode || 'Direct',
+                                                check_in_date: selectedBooking.check_in_date,
+                                                check_out_date: selectedBooking.check_out_date,
+                                                nights: Math.ceil((new Date(selectedBooking.check_out_date).getTime() - new Date(selectedBooking.check_in_date).getTime()) / (1000 * 60 * 60 * 24)),
+                                                guests_count: (selectedBooking.adults || 1) + (selectedBooking.children || 0),
+                                                gst_rate: 12,
+                                                paid_amount: generatedInvoice?.amount,
+                                                booking_id: selectedBooking.id
                                             });
                                             alert(`Invoice sent to ${targetEmail}!`);
                                         } catch (e) {
                                             console.error(e);
                                             alert('Failed to send email');
                                         }
-                                    }}>Email Invoice</button>
-                                    <button className={styles.shareBtn}>WhatsApp</button>
-                                    <button className={styles.shareBtn} onClick={handlePrint}>Print Invoice</button>
-                                </div>
 
-                                <button
-                                    className={styles.primaryBtn}
-                                    onClick={() => { setStep(1); setRoomNum(''); }}
-                                    style={{ marginTop: 20 }}
-                                >
-                                    Back to Front Desk
-                                </button>
+                                    }
+                                    }}>Email Invoice</button>
+                                <button className={styles.shareBtn}>WhatsApp</button>
+                                <button className={styles.shareBtn} onClick={handlePrint}>Print Invoice</button>
                             </div>
+
+                            <button
+                                className={styles.primaryBtn}
+                                onClick={() => { setStep(1); setRoomNum(''); }}
+                                style={{ marginTop: 20 }}
+                            >
+                                Back to Front Desk
+                            </button>
+                        </div>
                         </div>
                     )}
-                </div>
             </div>
+        </div >
         </>
     );
 }

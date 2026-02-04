@@ -34,7 +34,16 @@ export default function BookingDetailsModal({ booking, onClose }: BookingDetails
                 email: email,
                 room_number: booking.rooms?.room_number || 'N/A',
                 total_amount: booking.total_amount,
-                payment_status: booking.status === 'Checked Out' ? 'Paid' : 'Pending'
+                amount: booking.total_amount,
+                payment_status: booking.status === 'Checked Out' ? 'Paid' : 'Pending',
+                payment_method: 'Direct',
+                check_in_date: booking.check_in_date,
+                check_out_date: booking.check_out_date,
+                nights: Math.ceil((new Date(booking.check_out_date).getTime() - new Date(booking.check_in_date).getTime()) / (1000 * 60 * 60 * 24)),
+                guests_count: (booking.adults || 1) + (booking.children || 0),
+                gst_rate: 12,
+                paid_amount: booking.total_amount,
+                booking_id: booking.id
             });
             alert('Invoice sent successfully!');
         } catch (e) {
