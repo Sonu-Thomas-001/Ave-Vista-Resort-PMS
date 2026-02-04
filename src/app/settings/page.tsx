@@ -6,6 +6,7 @@ import { Save, Building, CreditCard, LayoutGrid, Bell, Plus, Trash2, Edit2 } fro
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
 import styles from './page.module.css';
+import EmailSettingsPage from './email/page';
 
 type SettingsData = Database['public']['Tables']['app_settings']['Row'];
 type RoomData = Database['public']['Tables']['rooms']['Row'];
@@ -86,10 +87,17 @@ export default function SettingsPage() {
                         >
                             <CreditCard size={18} /> Taxes & Payments
                         </button>
+                        <button
+                            className={`${styles.navBtn} ${activeTopTab === 'Email' ? styles.active : ''}`}
+                            onClick={() => setActiveTopTab('Email')}
+                        >
+                            <Bell size={18} /> Email Notifications
+                        </button>
                     </aside>
 
                     {/* Content Area */}
                     <main className={styles.content}>
+                        {activeTopTab === 'Email' && <EmailSettingsPage />}
                         {activeTopTab === 'Property' && settings && (
                             <form onSubmit={handleSaveSettings} className={styles.section}>
                                 <h2>Property Details</h2>

@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { X, User, Calendar, CreditCard, Mail, Phone, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import styles from './BookingDetailsModal.module.css';
+import { EmailService } from '@/lib/email-service';
 
 interface BookingDetailsModalProps {
     booking: any;
@@ -10,6 +12,7 @@ interface BookingDetailsModalProps {
 }
 
 export default function BookingDetailsModal({ booking, onClose }: BookingDetailsModalProps) {
+    const [sendingEmail, setSendingEmail] = useState(false);
     if (!booking) return null;
 
     const guestName = booking.guests ? `${booking.guests.first_name} ${booking.guests.last_name}` : 'Unknown Guest';
@@ -95,10 +98,27 @@ export default function BookingDetailsModal({ booking, onClose }: BookingDetails
                 </div>
 
                 <div className={styles.footer}>
-                    <button className={styles.outlineBtn} onClick={() => {
-                        window.open(`mailto:${email}?subject=Invoice for Booking #${booking.id}&body=Dear ${guestName}, please find your invoice attached.`);
+                    <button disabled={sendingEmail} className={styles.outlineBtn} onClick={async () => {
+                        if (!email) return alert('No email address for this guest.');
+                        try {
+                            setSendingEmail(true);
+                            await EmailService.triggerEmail('invoice-email', {
+                                invoice_number: booking.id.split('-')[0].toUpperCase(),
+                                guest_name: guestName,
+                                email: email,
+                                room_number: booking.rooms?.room_number || 'N/A', // Assuming joined
+                                total_amount: booking.total_amount,
+                                payment_status: booking.status === 'Checked Out' ? 'Paid' : 'Pending'
+                            });
+                            alert('Invoice sent successfully!');
+                        } catch (e) {
+                            console.error(e);
+                            alert('Failed to send invoice.');
+                        } finally {
+                            setSendingEmail(false);
+                        }
                     }}>
-                        Email Invoice
+                        {sendingEmail ? 'Sending...' : 'Email Invoice'}
                     </button>
                     <button className={styles.outlineBtn} onClick={() => {
                         window.open(`https://wa.me/${phone.replace(/\D/g, '')}?text=Hi ${guestName}, this is regarding your booking at Ave Vista.`);

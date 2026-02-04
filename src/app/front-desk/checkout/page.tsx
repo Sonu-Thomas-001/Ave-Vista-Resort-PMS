@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
 import { InvoiceTemplate } from '@/components/InvoiceTemplate';
 import styles from './page.module.css';
+import { EmailService } from '@/lib/email-service';
 
 const STEPS = [
     { id: 1, label: 'Select Room', icon: Search },
@@ -137,6 +138,21 @@ export default function CheckOutPage() {
             .from('rooms')
             .update({ status: 'Dirty' })
             .eq('id', selectedBooking.room_id);
+
+        // 4. Trigger Auto-Invoice Email
+        try {
+            await EmailService.triggerEmail('invoice-email', {
+                invoice_number: formattedInvoice.invoice_number,
+                guest_name: selectedBooking.guests ? `${selectedBooking.guests.first_name} ${selectedBooking.guests.last_name}` : 'Guest',
+                email: selectedBooking.guests?.email,
+                room_number: selectedBooking.rooms?.room_number || 'N/A',
+                amount: formattedInvoice.amount,
+                payment_status: 'Paid',
+                payment_method: paymentMode
+            });
+        } catch (e) {
+            console.error('Invoice email failed', e);
+        }
 
         nextStep();
     };
@@ -317,7 +333,19 @@ export default function CheckOutPage() {
                                 <p>Invoice #{generatedInvoice?.invoice_number} generated successfully.</p>
 
                                 <div className={styles.shareOptions}>
-                                    <button className={styles.shareBtn}>Email Invoice</button>
+                                    <button className={styles.shareBtn} onClick={async () => {
+                                        try {
+                                            await EmailService.triggerEmail('invoice-email', {
+                                                invoice_number: generatedInvoice?.invoice_number,
+                                                guest_name: selectedBooking?.guests?.first_name + ' ' + selectedBooking?.guests?.last_name,
+                                                email: selectedBooking?.guests?.email,
+                                                room_number: selectedBooking?.rooms?.room_number,
+                                                amount: generatedInvoice?.amount,
+                                                payment_status: 'Paid'
+                                            });
+                                            alert('Invoice sent!');
+                                        } catch (e) { alert('Failed to send'); }
+                                    }}>Email Invoice</button>
                                     <button className={styles.shareBtn}>WhatsApp</button>
                                     <button className={styles.shareBtn} onClick={handlePrint}>Print Invoice</button>
                                 </div>

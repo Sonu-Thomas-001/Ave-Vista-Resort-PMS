@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './NewBookingModal.module.css';
+import { EmailService } from '@/lib/email-service';
 
 interface NewBookingModalProps {
     onClose: () => void;
@@ -97,7 +98,7 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                 const nights = Math.max(1, Math.ceil((new Date(dates.checkOut).getTime() - new Date(dates.checkIn).getTime()) / (1000 * 60 * 60 * 24)));
                 const totalAmount = (selectedRoom.price_per_night * nights);
 
-                const { error: bookingError } = await supabase
+                const { data: bookingData, error: bookingError } = await supabase
                     .from('bookings')
                     .insert([{
                         guest_id: guestId,
@@ -107,9 +108,30 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                         status: 'Confirmed',
                         total_amount: totalAmount,
                         source: 'Direct'
-                    }]);
+                    }])
+                    .select()
+                    .single();
 
                 if (bookingError) throw new Error(`Booking Error: ${bookingError.message}`);
+
+                // Trigger Email
+                try {
+                    if (bookingData) {
+                        await EmailService.triggerEmail('booking-confirmation', {
+                            booking_id: bookingData.id,
+                            guest_name: `${guestDetails.firstName} ${guestDetails.lastName}`,
+                            email: guestDetails.email,
+                            check_in_date: dates.checkIn,
+                            check_out_date: dates.checkOut,
+                            room_number: selectedRoom.room_number,
+                            room_type: selectedRoom.type,
+                            total_amount: totalAmount
+                        });
+                    }
+                } catch (emailErr) {
+                    console.error('Failed to send email:', emailErr);
+                    // Don't block success message
+                }
 
                 onSuccess();
             }

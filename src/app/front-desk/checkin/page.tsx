@@ -6,6 +6,7 @@ import { Search, User, CreditCard, Key, CheckCircle, ArrowRight, ArrowLeft } fro
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
 import styles from './page.module.css';
+import { EmailService } from '@/lib/email-service';
 
 const STEPS = [
     { id: 1, label: 'Find Booking', icon: Search },
@@ -76,6 +77,20 @@ export default function CheckInPage() {
                 .from('rooms')
                 .update({ status: 'Occupied' })
                 .eq('id', foundBooking.room_id);
+        }
+
+        // 3. Trigger Email
+        try {
+            await EmailService.triggerEmail('checkin-confirmation', {
+                booking_id: foundBooking.id,
+                guest_name: `${foundBooking.guests.first_name} ${foundBooking.guests.last_name}`,
+                email: foundBooking.guests.email,
+                room_number: foundBooking.rooms?.room_number || 'Assigned',
+                check_in_date: new Date().toISOString().split('T')[0], // Today
+                check_out_date: foundBooking.check_out_date,
+            });
+        } catch (e) {
+            console.error('Email failed', e);
         }
 
         nextStep();
