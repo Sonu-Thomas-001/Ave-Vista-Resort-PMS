@@ -2,10 +2,13 @@ import Header from '@/components/Header';
 import { User, Phone, Mail, MapPin, Clock, FileText, Shield, Star } from 'lucide-react';
 import styles from './page.module.css';
 
-export default function GuestProfile({ params }: { params: { id: string } }) {
-    // Mock data - in real app fetch based on params.id
+import { use } from 'react';
+
+export default async function GuestProfile({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    // Mock data - in real app fetch based on id
     const guest = {
-        id: params.id,
+        id: id,
         name: 'John Doe',
         email: 'john.doe@example.com',
         phone: '+91 98765 43210',
