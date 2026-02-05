@@ -203,16 +203,6 @@
     color: #15803d;
 }
 
-.statusFailed {
-    background-color: #fee2e2;
-    color: #b91c1c;
-}
-
-.statusPending {
-    background-color: #fef9c3;
-    color: #a16207;
-}
-
 /* Modal */
 .modalOverlay {
     position: fixed;
@@ -345,49 +335,49 @@
 .saveBtn:hover {
     background-color: #1d4ed8;
 }
+
 .tabs {
-  display: flex;
-  gap: 1rem;
-  border-bottom: 1px solid #e5e7eb;
-  margin-bottom: 1rem;
+    display: flex;
+    gap: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 1rem;
 }
 
 .tab {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #6b7280;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s;
-  background: none;
-  border-left: none;
-  border-right: none;
-  border-top: none;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #6b7280;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    background: none;
+    border-left: none;
+    border-right: none;
+    border-top: none;
 }
 
 .tab:hover {
-  color: #374151;
+    color: #374151;
 }
 
 .tabActive {
-  color: #2563eb;
-  border-bottom-color: #2563eb;
+    color: #2563eb;
+    border-bottom-color: #2563eb;
 }
 
 .previewContainer {
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  background: #f9fafb;
-  height: 16rem;
-  overflow: auto;
-  padding: 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    background: #f9fafb;
+    height: 16rem;
+    overflow: auto;
+    padding: 1rem;
 }
 
 .previewFrame {
-  background: white;
-  min-height: 100%;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  padding: 1rem;
+    background: white;
+    min-height: 100%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
 }
-

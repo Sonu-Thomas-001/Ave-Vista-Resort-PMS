@@ -306,9 +306,72 @@
 
     .sidebar {
         position: static;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 12px;
+    }
+
+    .navBtn {
+        white-space: nowrap;
+        padding: 10px 12px;
+        font-size: 0.9rem;
     }
 
     .formGrid {
         grid-template-columns: 1fr;
+    }
+
+    /* Card View for Rooms Table */
+    .tableWrapper {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        overflow: visible;
+    }
+
+    .table thead {
+        display: none;
+    }
+
+    .table,
+    .table tbody,
+    .table tr,
+    .table td {
+        display: block;
+    }
+
+    .table tbody tr {
+        display: flex;
+        flex-direction: column;
+        background: white;
+        margin-bottom: 16px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border);
+        padding: 16px;
+    }
+
+    .table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #f1f5f9;
+        text-align: right;
+    }
+
+    .table td:last-child {
+        border-bottom: none;
+        justify-content: flex-end;
+    }
+
+    .table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #64748B;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        margin-right: 16px;
+        text-align: left;
     }
 }

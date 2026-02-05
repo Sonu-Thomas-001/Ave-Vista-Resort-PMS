@@ -93,10 +93,10 @@ export default function GuestProfile({ params }: { params: { id: string } }) {
                             <tbody>
                                 {guest.history.map(stay => (
                                     <tr key={stay.id}>
-                                        <td>{stay.room}</td>
-                                        <td>{stay.checkIn}</td>
-                                        <td>{stay.checkOut}</td>
-                                        <td>
+                                        <td data-label="Room">{stay.room}</td>
+                                        <td data-label="Check-in">{stay.checkIn}</td>
+                                        <td data-label="Check-out">{stay.checkOut}</td>
+                                        <td data-label="Status">
                                             <span className={`${styles.status} ${styles[stay.status.toLowerCase()]}`}>
                                                 {stay.status}
                                             </span>

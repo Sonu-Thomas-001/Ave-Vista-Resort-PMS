@@ -654,9 +654,7 @@
 /* Print Optimization */
 /* Print Optimization */
 @media print {
-    body * {
-        visibility: hidden;
-    }
+
 
     .container,
     .container * {

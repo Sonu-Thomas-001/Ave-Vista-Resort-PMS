@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bell, Search, Settings, ChevronDown, Calendar, Clock, Users, BedDouble, LogOut, User, CheckCheck, AlertCircle, Info, CheckCircle } from 'lucide-react';
+import { Bell, Search, Settings, ChevronDown, Calendar, Clock, Users, BedDouble, LogOut, User, CheckCheck, AlertCircle, Info, CheckCircle, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import styles from './Header.module.css';
@@ -37,6 +37,7 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
     const [showNotifications, setShowNotifications] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [showSearchResults, setShowSearchResults] = useState(false);
+    const [showMobileSearch, setShowMobileSearch] = useState(false);
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const notificationRef = useRef<HTMLDivElement>(null);
     const profileRef = useRef<HTMLDivElement>(null);
@@ -79,6 +80,13 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
     ]);
 
     const unreadCount = notifications.filter(n => !n.read).length;
+
+    // Mounted state to prevent hydration mismatch
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Update time every minute
     useEffect(() => {
@@ -313,19 +321,29 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
 
             <div className={styles.rightSection}>
                 {/* Date & Time */}
-                <div className={styles.dateTime}>
-                    <div className={styles.dateTimeItem}>
-                        <Calendar size={14} />
-                        <span>{currentTime.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                {mounted && (
+                    <div className={styles.dateTime}>
+                        <div className={styles.dateTimeItem}>
+                            <Calendar size={14} />
+                            <span>{currentTime.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                        </div>
+                        <div className={styles.dateTimeItem}>
+                            <Clock size={14} />
+                            <span>{currentTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
                     </div>
-                    <div className={styles.dateTimeItem}>
-                        <Clock size={14} />
-                        <span>{currentTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
-                    </div>
-                </div>
+                )}
 
                 {/* Search */}
-                <div className={styles.searchWrapper} ref={searchRef}>
+                <div className={`${styles.searchWrapper} ${showMobileSearch ? styles.mobileSearchOpen : ''}`} ref={searchRef}>
+                    {/* Mobile Search Toggle */}
+                    <button
+                        className={styles.mobileSearchToggle}
+                        onClick={() => setShowMobileSearch(!showMobileSearch)}
+                    >
+                        <Search size={20} />
+                    </button>
+
                     <div className={styles.search}>
                         <Search size={18} className={styles.searchIcon} />
                         <input
@@ -336,6 +354,16 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onFocus={() => searchQuery.length >= 2 && setShowSearchResults(true)}
                         />
+                        {/* Close button for mobile search */}
+                        <button
+                            className={styles.mobileSearchClose}
+                            onClick={() => {
+                                setShowMobileSearch(false);
+                                setSearchQuery('');
+                            }}
+                        >
+                            <X size={18} />
+                        </button>
                     </div>
 
                     {showSearchResults && (

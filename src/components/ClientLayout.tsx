@@ -5,6 +5,9 @@ import { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import { useAuth } from '@/contexts/AuthContext';
 import { hasAccess } from '@/lib/permissions';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { Menu } from 'lucide-react';
+import sidebarStyles from './Sidebar.module.css'; // Find where to import styles for button, or inline styles
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -12,13 +15,17 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     const router = useRouter();
     const [isCollapsed, setIsCollapsed] = useState(false);
 
+    // Mobile State
+    const isMobile = useMediaQuery('(max-width: 768px)');
+    const [isMobileOpen, setIsMobileOpen] = useState(false);
+
     const authPages = ['/login', '/signup', '/forgot-password', '/reset-password'];
     const publicPages = ['/help', '/privacy', '/terms'];
 
     const isAuthPage = authPages.some(page => pathname.startsWith(page));
     const isPublicPage = publicPages.some(page => pathname.startsWith(page));
 
-    // Sync with sidebar collapse state
+    // Sync with sidebar collapse state (Desktop)
     useEffect(() => {
         const handleStorage = () => {
             const saved = localStorage.getItem('sidebarCollapsed');
@@ -31,7 +38,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         window.addEventListener('storage', handleStorage);
 
         // Poll for changes (since localStorage events don't fire in same tab)
-        const interval = setInterval(handleStorage, 100);
+        // Kept from original code, though strictly passing props makes this less critical within the same app session
+        const interval = setInterval(handleStorage, 500);
 
         return () => {
             window.removeEventListener('storage', handleStorage);
@@ -39,7 +47,11 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         };
     }, []);
 
-
+    const toggleDesktop = () => {
+        const newState = !isCollapsed;
+        setIsCollapsed(newState);
+        localStorage.setItem('sidebarCollapsed', JSON.stringify(newState));
+    };
 
     useEffect(() => {
         // 1. Redirect to login if not logged in and not on a public/auth page
@@ -51,23 +63,17 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         // 2. Redirect to home if logged in and trying to access auth pages
         if (!loading && user && isAuthPage) {
             router.push('/');
-            return; // Add return to prevent further checks
+            return;
         }
 
-        // 3. RBAC Check: If logged in, check if user has access to current path
-        // We skip this check for public pages or the home page to avoid loops
+        // 3. RBAC Check
         if (!loading && user && !isPublicPage && pathname !== '/') {
             if (!hasAccess(user.role, pathname)) {
-                // If unauthorized, send back to Dashboard (or 403 page)
-                // Using alert for clarity in this demo, usually show a toast
-                // alert(`Access Denied: ${user.role} role cannot access ${pathname}`);
                 router.push('/');
             }
         }
 
     }, [user, loading, isAuthPage, isPublicPage, router, pathname]);
-
-    // ... rest of component
 
     if (loading) {
         return (
@@ -90,23 +96,48 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     }
 
     // Render logic:
-    // If not logged in, show full screen (Auth pages + Public pages)
-    // If logged in but on a full-screen page (none currently defined, but logically valid)
     if (!user) {
         return <main style={{ minHeight: '100vh', backgroundColor: 'var(--background)' }}>{children}</main>;
     }
 
-    // If User is logged in, show Sidebar layout (even for public pages like Help)
+    // Calculate Main Content style
+    const mainStyle = isMobile ? {
+        flex: 1,
+        marginLeft: 0,
+        width: '100%',
+        backgroundColor: 'var(--background)',
+        transition: 'none',
+        paddingTop: '0px' // Removed padding to align header with toggle
+    } : {
+        flex: 1,
+        marginLeft: isCollapsed ? '80px' : '260px',
+        width: isCollapsed ? 'calc(100% - 80px)' : 'calc(100% - 260px)',
+        backgroundColor: 'var(--background)',
+        transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+    };
+
     return (
         <div style={{ display: 'flex', minHeight: '100vh' }}>
-            <Sidebar />
-            <main style={{
-                flex: 1,
-                marginLeft: isCollapsed ? '80px' : '260px',
-                width: isCollapsed ? 'calc(100% - 80px)' : 'calc(100% - 260px)',
-                backgroundColor: 'var(--background)',
-                transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-            }}>
+            <Sidebar
+                isMobile={isMobile}
+                isOpen={isMobileOpen}
+                isCollapsed={isCollapsed}
+                onToggle={toggleDesktop}
+                onCloseMobile={() => setIsMobileOpen(false)}
+            />
+
+            {/* Mobile Toggle Button (Visible when sidebar is closed) */}
+            {isMobile && !isMobileOpen && (
+                <button
+                    className={sidebarStyles.mobileToggleBtn}
+                    onClick={() => setIsMobileOpen(true)}
+                    aria-label="Open menu"
+                >
+                    <Menu size={20} />
+                </button>
+            )}
+
+            <main style={mainStyle}>
                 {children}
             </main>
         </div>

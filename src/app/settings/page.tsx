@@ -218,17 +218,17 @@ export default function SettingsPage() {
                                         <tbody>
                                             {rooms.map((room) => (
                                                 <tr key={room.id}>
-                                                    <td>{room.room_number}</td>
-                                                    <td>{room.type}</td>
-                                                    <td>₹{room.price_per_night}</td>
-                                                    <td>{room.max_occupancy}</td>
-                                                    <td>
+                                                    <td data-label="Room No">{room.room_number}</td>
+                                                    <td data-label="Type">{room.type}</td>
+                                                    <td data-label="Price">₹{room.price_per_night}</td>
+                                                    <td data-label="Occupancy">{room.max_occupancy}</td>
+                                                    <td data-label="Status">
                                                         <span className={`${styles.badge} ${styles[room.status?.toLowerCase() || 'clean']}`}>
                                                             {room.status}
                                                         </span>
                                                     </td>
-                                                    <td>
-                                                        <div className={styles.actions}>
+                                                    <td data-label="Actions">
+                                                        <div className={styles.actions} style={{ justifyContent: 'flex-end', width: '100%' }}>
                                                             <button className={styles.iconBtn} onClick={() => handleEditRoom(room)}><Edit2 size={16} /></button>
                                                             <button className={`${styles.iconBtn} ${styles.danger}`} onClick={() => handleDeleteRoom(room.id)}><Trash2 size={16} /></button>
                                                         </div>

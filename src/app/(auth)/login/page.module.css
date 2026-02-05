@@ -317,8 +317,24 @@
     color: var(--primary);
 }
 
-.dropdownItem.selected {
-    background: var(--primary);
-    color: white;
-    font-weight: 600;
+
+@media (max-width: 480px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .card {
+        padding: 1.5rem;
+        max-width: 100%;
+        box-shadow: var(--shadow-md);
+    }
+
+    .brandHeader {
+        margin-bottom: 2rem;
+    }
+
+    .input {
+        font-size: 16px;
+        /* Prevent IOS zoom on focus */
+    }
 }

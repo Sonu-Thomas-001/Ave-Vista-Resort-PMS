@@ -148,3 +148,51 @@
     background: #F5F5F0;
     color: #757575;
 }
+
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Card View for History Table */
+    .historyTable thead {
+        display: none;
+    }
+
+    .historyTable,
+    .historyTable tbody,
+    .historyTable tr,
+    .historyTable td {
+        display: block;
+    }
+
+    .historyTable tbody tr {
+        background: var(--background);
+        margin-bottom: 16px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        padding: 12px;
+    }
+
+    .historyTable td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+        text-align: right;
+    }
+
+    .historyTable td:last-child {
+        border-bottom: none;
+    }
+
+    .historyTable td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        margin-right: 16px;
+        text-align: left;
+    }
+}

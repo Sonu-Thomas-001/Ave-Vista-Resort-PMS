@@ -259,27 +259,27 @@ export default function BookingList() {
                         <tbody>
                             {getSortedBookings().map((booking, index) => (
                                 <tr key={booking.id}>
-                                    <td className={styles.siNo}>{index + 1}</td>
-                                    <td>
+                                    <td className={styles.siNo} data-label="SI No">{index + 1}</td>
+                                    <td data-label="Details">
                                         <div className={styles.idCell}>
                                             {booking.booking_number || `BK-${booking.id.split('-')[0].toUpperCase()}`}
                                         </div>
                                         <span className={styles.sourceTag}>{booking.source || 'Direct'}</span>
                                     </td>
-                                    <td className={styles.guestCell}>
+                                    <td className={styles.guestCell} data-label="Guest">
                                         {booking.guests ? `${booking.guests.first_name} ${booking.guests.last_name}` : 'Unknown'}
                                     </td>
-                                    <td><strong>{booking.rooms?.room_number || 'N/A'}</strong></td>
-                                    <td>{new Date(booking.check_in_date).toLocaleDateString()}</td>
-                                    <td>{new Date(booking.check_out_date).toLocaleDateString()}</td>
-                                    <td>
+                                    <td data-label="Room"><strong>{booking.rooms?.room_number || 'N/A'}</strong></td>
+                                    <td data-label="Check-in">{new Date(booking.check_in_date).toLocaleDateString()}</td>
+                                    <td data-label="Check-out">{new Date(booking.check_out_date).toLocaleDateString()}</td>
+                                    <td data-label="Status">
                                         <span className={`${styles.status} ${styles[booking.status.toLowerCase().replace(' ', '')]}`}>
                                             {booking.status}
                                         </span>
                                     </td>
-                                    <td className={styles.amount}>₹{booking.total_amount.toLocaleString()}</td>
-                                    <td>
-                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                    <td className={styles.amount} data-label="Amount">₹{booking.total_amount.toLocaleString()}</td>
+                                    <td data-label="Actions">
+                                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', width: '100%' }}>
                                             <button
                                                 className={styles.actionBtn}
                                                 title="View Details"

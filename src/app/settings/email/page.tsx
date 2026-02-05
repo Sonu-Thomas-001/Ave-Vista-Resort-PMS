@@ -177,10 +177,10 @@ export default function EmailSettingsPage() {
                             {logs.length === 0 && <tr><td colSpan={4} style={{ textAlign: 'center', color: '#9ca3af' }}>No emails sent recently</td></tr>}
                             {logs.map(log => (
                                 <tr key={log.id}>
-                                    <td>{new Date(log.created_at).toLocaleString()}</td>
-                                    <td style={{ fontWeight: 500 }}>{log.template_slug}</td>
-                                    <td>{log.recipient}</td>
-                                    <td>
+                                    <td data-label="Time">{new Date(log.created_at).toLocaleString()}</td>
+                                    <td data-label="Type" style={{ fontWeight: 500 }}>{log.template_slug}</td>
+                                    <td data-label="Recipient">{log.recipient}</td>
+                                    <td data-label="Status">
                                         <span className={`${styles.status} ${log.status === 'Sent' ? styles.statusSent :
                                             log.status === 'Failed' ? styles.statusFailed : styles.statusPending
                                             }`}>

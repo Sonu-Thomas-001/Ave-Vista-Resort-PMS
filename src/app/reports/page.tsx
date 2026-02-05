@@ -315,13 +315,13 @@ export default function ReportsPage() {
                                 ) : (
                                     recentTransactions.map((tx) => (
                                         <tr key={tx.id}>
-                                            <td>{new Date(tx.created_at).toLocaleDateString()}</td>
-                                            <td>
+                                            <td data-label="Date">{new Date(tx.created_at).toLocaleDateString()}</td>
+                                            <td data-label="Source">
                                                 {tx.bookings?.guests?.first_name} {tx.bookings?.guests?.last_name}
                                                 <span style={{ color: '#888', fontSize: '0.8em' }}> (Room {tx.bookings?.rooms?.room_number})</span>
                                             </td>
-                                            <td>₹{Number(tx.amount).toLocaleString()}</td>
-                                            <td>
+                                            <td data-label="Amount">₹{Number(tx.amount).toLocaleString()}</td>
+                                            <td data-label="Status">
                                                 <span className={styles.tag}>
                                                     {tx.payment_status || 'Paid'}
                                                 </span>

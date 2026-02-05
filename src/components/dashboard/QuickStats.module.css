@@ -71,6 +71,18 @@
 }
 
 @media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+        /* 2 cols often fit on mobile for small stats */
+        gap: 12px;
+    }
+}
+
+@media (max-width: 380px) {
     .grid {
         grid-template-columns: 1fr;
     }

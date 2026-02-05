@@ -7,6 +7,12 @@
     border-bottom: 1px solid var(--border);
     margin-bottom: var(--spacing-lg);
     gap: var(--spacing-lg);
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    z-index: 99;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    /* Subtle shadow for depth */
 }
 
 .leftSection {
@@ -602,27 +608,167 @@
     }
 }
 
+/* Mobile Search Styles */
+.mobileSearchToggle {
+    display: none;
+}
+
+.mobileSearchClose {
+    display: none;
+}
+
 @media (max-width: 768px) {
     .header {
-        flex-wrap: wrap;
-        gap: var(--spacing-md);
+        /* position: relative; Removed to allow global sticky to work */
+        /* Ensure specific positioning context */
+        padding: 12px 16px 12px 56px;
+        /* Added left padding for menu toggle */
+        gap: 12px;
     }
 
     .leftSection {
-        flex: 1 1 100%;
+        flex: 1;
+        min-width: 0;
+        /* Allow text truncation */
+    }
+
+    .title {
+        font-size: 1.2rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .rightSection {
-        flex: 1 1 100%;
-        justify-content: space-between;
-    }
-
-    .search {
-        order: -1;
-        width: 100%;
+        flex: 0 0 auto;
+        width: auto;
+        gap: 8px;
     }
 
     .breadcrumbs {
         display: none;
+    }
+
+    /* Mobile Search Implementation */
+    .searchWrapper {
+        width: auto;
+        position: static;
+        /* Allow search to overlay header */
+    }
+
+    .search {
+        display: none;
+    }
+
+    .mobileSearchToggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+    }
+
+    .mobileSearchToggle:hover {
+        background: var(--background);
+        color: var(--primary);
+    }
+
+    /* expanded search state */
+    .mobileSearchOpen .search {
+        display: flex;
+        align-items: center;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--surface);
+        padding: 0 16px;
+        z-index: 200;
+        animation: fadeIn 0.2s ease-out;
+    }
+
+    .mobileSearchOpen .searchInput {
+        border: none;
+        background: transparent;
+        padding-left: 36px;
+        padding-right: 36px;
+        height: 100%;
+        font-size: 1rem;
+        border-radius: 0;
+    }
+
+    .mobileSearchOpen .searchIcon {
+        left: 16px;
+    }
+
+    .mobileSearchClose {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+    }
+
+    /* Hide other interactions when search is open */
+    .mobileSearchOpen~.icons,
+    .mobileSearchOpen~.profileWrapper,
+    .mobileSearchOpen~.quickStats {
+        display: none;
+    }
+
+    /* Compact Profile for Mobile */
+    .userInfo,
+    .chevron {
+        display: none;
+    }
+
+    .profile {
+        padding: 0;
+        border: none;
+        background: transparent;
+    }
+
+    .profile:hover {
+        background: transparent;
+        border: none;
+        opacity: 0.8;
+    }
+
+    .avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+        box-shadow: none;
+    }
+
+    /* Adjust Right Section spacing */
+    .rightSection {
+        gap: 12px;
+    }
+
+    /* Ensure icons aren't too big */
+    .iconBtn {
+        padding: 6px;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
     }
 }

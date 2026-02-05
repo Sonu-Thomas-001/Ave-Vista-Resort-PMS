@@ -177,22 +177,24 @@ export default function BillingPage() {
                             <tbody>
                                 {invoices.map((inv) => (
                                     <tr key={inv.id}>
-                                        <td className={styles.idCell}>
-                                            <FileText size={16} />
-                                            {inv.invoice_number}
+                                        <td className={styles.idCell} data-label="Invoice ID">
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <FileText size={16} />
+                                                {inv.invoice_number}
+                                            </div>
                                         </td>
-                                        <td>{inv.guest_name}</td>
-                                        <td><span className={styles.roomBadge}>{inv.room_number}</span></td>
-                                        <td>{inv.invoice_date}</td>
-                                        <td className={styles.amount}>₹{inv.total_amount.toLocaleString()}</td>
-                                        <td className={styles.amount}>₹{inv.paid_amount.toLocaleString()}</td>
-                                        <td>
+                                        <td data-label="Guest">{inv.guest_name}</td>
+                                        <td data-label="Room"><span className={styles.roomBadge}>{inv.room_number}</span></td>
+                                        <td data-label="Date">{inv.invoice_date}</td>
+                                        <td className={styles.amount} data-label="Amount">₹{inv.total_amount.toLocaleString()}</td>
+                                        <td className={styles.amount} data-label="Paid">₹{inv.paid_amount.toLocaleString()}</td>
+                                        <td data-label="Status">
                                             <span className={`${styles.status} ${styles[inv.status.toLowerCase()]}`}>
                                                 {inv.status}
                                             </span>
                                         </td>
-                                        <td>
-                                            <div className={styles.actions}>
+                                        <td data-label="Actions">
+                                            <div className={styles.actions} style={{ justifyContent: 'flex-end', width: '100%' }}>
                                                 <button
                                                     className={styles.actionBtn}
                                                     title="View"

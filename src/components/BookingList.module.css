@@ -211,3 +211,78 @@
     opacity: 0.5;
     cursor: not-allowed;
 }
+
+@media (max-width: 768px) {
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search {
+        width: 100%;
+        max-width: none;
+    }
+
+    /* Card View */
+    .tableWrapper {
+        background: transparent;
+        overflow: visible;
+        /* Allow shadow to show */
+    }
+
+    .table {
+        display: block;
+    }
+
+    .table thead {
+        display: none;
+    }
+
+    .table tbody {
+        display: block;
+    }
+
+    .table tbody tr {
+        display: flex;
+        flex-direction: column;
+        background: white;
+        margin-bottom: 16px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border);
+        padding: 16px;
+    }
+
+    .table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #f1f5f9;
+        text-align: right;
+        font-size: 0.95rem;
+    }
+
+    .table td:last-child {
+        border-bottom: none;
+    }
+
+    .table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        margin-right: 16px;
+        text-align: left;
+    }
+
+    .siNo {
+        display: none !important;
+    }
+
+    /* Make ID bold and bigger on mobile row header */
+    .idCell {
+        font-size: 1.1rem;
+    }
+}

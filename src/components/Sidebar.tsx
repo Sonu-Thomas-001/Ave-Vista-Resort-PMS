@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -17,9 +16,11 @@ import {
   BarChart3,
   ChevronLeft,
   ChevronRight,
-  Repeat // For Channel Manager
+  Menu,
+  X
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
+import { hasAccess } from '@/lib/permissions';
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/' },
@@ -32,108 +33,127 @@ const menuItems = [
   { icon: Settings, label: 'Settings', href: '/settings' },
 ];
 
-import { hasAccess } from '@/lib/permissions';
+interface SidebarProps {
+  isMobile: boolean;
+  isOpen: boolean;       // For mobile: true = open, false = closed
+  isCollapsed: boolean;  // For desktop: true = collapsed, false = expanded
+  onToggle: () => void;  // Toggles relevant state
+  onCloseMobile?: () => void;
+}
 
-export default function Sidebar() {
+export default function Sidebar({ isMobile, isOpen, isCollapsed, onToggle, onCloseMobile }: SidebarProps) {
   const pathname = usePathname();
   const { logout, user } = useAuth();
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
-  // Load collapse state from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('sidebarCollapsed');
-    if (saved !== null) {
-      setIsCollapsed(JSON.parse(saved));
-    }
-  }, []);
-
-  // Save collapse state to localStorage
-  const toggleCollapse = () => {
-    const newState = !isCollapsed;
-    setIsCollapsed(newState);
-    localStorage.setItem('sidebarCollapsed', JSON.stringify(newState));
-  };
+  // On desktop, use isCollapsed. On mobile, use isOpen.
+  // When mobile, adding 'collapsed' class might break layout if reused, but we use 'mobileOpen' for transform.
+  const containerClasses = `
+    ${styles.sidebar} 
+    ${!isMobile && isCollapsed ? styles.collapsed : ''} 
+    ${isMobile && isOpen ? styles.mobileOpen : ''}
+  `;
 
   return (
-    <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''}`}>
-      {/* Toggle Button */}
-      <button
-        className={styles.toggleBtn}
-        onClick={toggleCollapse}
-        aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-      >
-        {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-      </button>
+    <>
+      {/* Mobile Backdrop */}
+      {isMobile && isOpen && (
+        <div className={styles.backdrop} onClick={onCloseMobile} />
+      )}
 
-      {/* Brand */}
-      <div className={styles.brand}>
-        {isCollapsed ? (
-          <div className={styles.logoCollapsed}>
-            <span className={styles.logoInitial}>AV</span>
-          </div>
-        ) : (
-          <div className={styles.logoWrapper}>
-            <Image
-              src="/logo.png"
-              alt="Ave Vista"
-              width={160}
-              height={70}
-              style={{ objectFit: 'contain' }}
-              priority
-            />
-          </div>
-        )}
-      </div>
-
-
-
-      {/* Navigation */}
-      <nav className={styles.nav}>
-        {menuItems.filter(item => user && hasAccess(user.role, item.href)).map((item) => {
-          const Icon = item.icon;
-          const isActive = pathname === item.href;
-
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`${styles.navItem} ${isActive ? styles.active : ''}`}
-              title={isCollapsed ? item.label : ''}
-            >
-              <Icon size={20} className={styles.navIcon} />
-              {!isCollapsed && <span className={styles.navLabel}>{item.label}</span>}
-              {isActive && <div className={styles.activeIndicator}></div>}
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* Footer */}
-      <div className={styles.footer}>
-        {/* User Info */}
-        {!isCollapsed && user && (
-          <div className={styles.userInfo}>
-            <div className={styles.userAvatar}>
-              {user.name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
-            </div>
-            <div className={styles.userDetails}>
-              <div className={styles.userName}>{user.name}</div>
-              <div className={styles.userRole}>{user.role}</div>
-            </div>
-          </div>
-        )}
-
-        {/* Logout Button */}
+      {/* Desktop Toggle Button (Inside Sidebar) */}
+      {!isMobile && (
         <button
-          className={styles.logoutBtn}
-          onClick={logout}
-          aria-label="Logout"
-          title={isCollapsed ? 'Logout' : ''}
+          className={styles.toggleBtn}
+          onClick={onToggle}
+          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          <LogOut size={20} className={styles.navIcon} />
-          {!isCollapsed && <span className={styles.navLabel}>Logout</span>}
+          {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </button>
-      </div>
-    </aside>
+      )}
+
+      {/* Sidebar Container */}
+      <aside className={containerClasses}>
+        {/* Mobile Close Button */}
+        {isMobile && (
+          <button
+            className={styles.toggleBtn}
+            style={{ top: '12px', right: '12px', position: 'absolute' }}
+            onClick={onCloseMobile}
+          >
+            <X size={20} />
+          </button>
+        )}
+
+        {/* Brand */}
+        <div className={styles.brand}>
+          {!isMobile && isCollapsed ? (
+            <div className={styles.logoCollapsed}>
+              <span className={styles.logoInitial}>AV</span>
+            </div>
+          ) : (
+            <div className={styles.logoWrapper}>
+              <Image
+                src="/logo.png"
+                alt="Ave Vista"
+                width={160}
+                height={70}
+                style={{ objectFit: 'contain' }}
+                priority
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Navigation */}
+        <nav className={styles.nav}>
+          {menuItems.filter(item => user && hasAccess(user.role, item.href)).map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.href;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`${styles.navItem} ${isActive ? styles.active : ''}`}
+                title={!isMobile && isCollapsed ? item.label : ''}
+                onClick={() => isMobile && onCloseMobile?.()}
+              >
+                <Icon size={20} className={styles.navIcon} />
+                {/* Show label if: Mobile (always expanded when open) OR Desktop & Not Collapsed */}
+                {(isMobile || !isCollapsed) && <span className={styles.navLabel}>{item.label}</span>}
+                {isActive && <div className={styles.activeIndicator}></div>}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Footer */}
+        <div className={styles.footer}>
+          {/* User Info */}
+          {(isMobile || !isCollapsed) && user && (
+            <div className={styles.userInfo}>
+              <div className={styles.userAvatar}>
+                {user.name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
+              </div>
+              <div className={styles.userDetails}>
+                <div className={styles.userName}>{user.name}</div>
+                <div className={styles.userRole}>{user.role}</div>
+              </div>
+            </div>
+          )}
+
+          {/* Logout Button */}
+          <button
+            className={styles.logoutBtn}
+            onClick={logout}
+            aria-label="Logout"
+            title={!isMobile && isCollapsed ? 'Logout' : ''}
+          >
+            <LogOut size={20} className={styles.navIcon} />
+            {(isMobile || !isCollapsed) && <span className={styles.navLabel}>Logout</span>}
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }

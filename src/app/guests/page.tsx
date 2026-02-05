@@ -261,36 +261,38 @@ export default function GuestsPage() {
                                         const { status, room } = getGuestStatus(guest.bookings);
                                         return (
                                             <tr key={guest.id} className={styles.row}>
-                                                <td className={styles.siNo}>{index + 1}</td>
-                                                <td className={styles.nameCell}>
+                                                <td className={styles.siNo} data-label="SI No">{index + 1}</td>
+                                                <td className={styles.nameCell} data-label="Guest Name">
                                                     <div className={styles.avatar} data-letter={guest.first_name[0].toUpperCase()}>{guest.first_name[0]}</div>
                                                     <div>
                                                         <span className={styles.name}>{guest.first_name} {guest.last_name}</span>
                                                         <span className={styles.email}>{guest.email || 'No Email'}</span>
                                                     </div>
                                                 </td>
-                                                <td>{guest.phone || '-'}</td>
-                                                <td>
+                                                <td data-label="Contact">{guest.phone || '-'}</td>
+                                                <td data-label="Status">
                                                     <span className={`${styles.status} ${styles[status.toLowerCase().replace(' ', '')] || styles.checkedout}`}>
                                                         {status}
                                                     </span>
                                                 </td>
-                                                <td>{room}</td>
-                                                <td>
+                                                <td data-label="Current Room">{room}</td>
+                                                <td data-label="Tags">
                                                     <div className={styles.tags}>
                                                         {guest.is_vip && (
                                                             <span className={`${styles.tag} ${styles.vip}`}><Crown size={12} /> VIP</span>
                                                         )}
                                                     </div>
                                                 </td>
-                                                <td style={{ position: 'relative' }}>
-                                                    <button
-                                                        className={styles.actionBtn}
-                                                        onClick={() => setShowActionsId(showActionsId === guest.id ? null : guest.id)}
-                                                        aria-label="More Actions"
-                                                    >
-                                                        <MoreHorizontal size={18} />
-                                                    </button>
+                                                <td style={{ position: 'relative' }} data-label="Actions">
+                                                    <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+                                                        <button
+                                                            className={styles.actionBtn}
+                                                            onClick={() => setShowActionsId(showActionsId === guest.id ? null : guest.id)}
+                                                            aria-label="More Actions"
+                                                        >
+                                                            <MoreHorizontal size={18} />
+                                                        </button>
+                                                    </div>
                                                     {showActionsId === guest.id && (
                                                         <div className={styles.actionsMenu} ref={actionsRef}>
                                                             <button onClick={() => {
