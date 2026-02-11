@@ -18,8 +18,20 @@ export const metadata: Metadata = {
   title: "Ave Vista Resort PMS",
   description: "Property Management System for Ave Vista Resort",
   icons: {
-    icon: '/favicon.png',
-    apple: '/favicon.png',
+    icon: [
+      { url: '/favicon/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/favicon/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+    other: [
+      {
+        rel: 'icon',
+        type: 'image/x-icon',
+        url: '/favicon/favicon.ico',
+      },
+    ],
   },
   manifest: "/manifest.webmanifest",
   appleWebApp: {
