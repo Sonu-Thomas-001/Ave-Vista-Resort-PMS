@@ -16,9 +16,16 @@ export default function AuthScreen({ initialMode }: AuthScreenProps) {
     const [isRightPanelActive, setIsRightPanelActive] = useState(initialMode === 'signup');
     const router = useRouter();
 
+    const [isMounted, setIsMounted] = useState(false);
+
     useEffect(() => {
+        setIsMounted(true);
         setIsRightPanelActive(initialMode === 'signup');
     }, [initialMode]);
+
+    if (!isMounted) {
+        return null; // Prevent hydration mismatch
+    }
 
     const handleSignUpClick = () => {
         setIsRightPanelActive(true);
@@ -44,12 +51,12 @@ export default function AuthScreen({ initialMode }: AuthScreenProps) {
             {/* Sign Up Container (Left, but moves to Right/Visible when Active) */}
             <div className={`${styles.formContainer} ${styles.signUpContainer}`}>
                 <div className={styles.formHeader}>
-                    <h1 className={styles.formTitle}>Create Account</h1>
-                    <p className={styles.formSubtitle}>Join Ave Vista PMS</p>
+                    <h1 className={styles.formTitle}><span>Create Account</span></h1>
+                    <p className={styles.formSubtitle}><span>Join Ave Vista PMS</span></p>
                 </div>
                 <SignupForm />
                 <div className={styles.mobileToggle}>
-                    Already have an account? <span onClick={toggleMobileMode}>Sign In</span>
+                    <span>Already have an account?</span> <span onClick={toggleMobileMode}>Sign In</span>
                 </div>
                 <div style={{ marginTop: '2rem' }}>
                     <AuthFooter />
@@ -59,12 +66,12 @@ export default function AuthScreen({ initialMode }: AuthScreenProps) {
             {/* Sign In Container (Right, but moves to Left/Hidden when Active) */}
             <div className={`${styles.formContainer} ${styles.signInContainer}`}>
                 <div className={styles.formHeader}>
-                    <h1 className={styles.formTitle}>Welcome Back</h1>
-                    <p className={styles.formSubtitle}>Sign in to your dashboard</p>
+                    <h1 className={styles.formTitle}><span>Welcome Back</span></h1>
+                    <p className={styles.formSubtitle}><span>Sign in to your dashboard</span></p>
                 </div>
                 <LoginForm />
                 <div className={styles.mobileToggle}>
-                    Don't have an account? <span onClick={toggleMobileMode}>Sign Up</span>
+                    <span>Don't have an account?</span> <span onClick={toggleMobileMode}>Sign Up</span>
                 </div>
                 <div style={{ marginTop: '2rem' }}>
                     <AuthFooter />
@@ -85,12 +92,12 @@ export default function AuthScreen({ initialMode }: AuthScreenProps) {
                             height={60}
                             style={{ objectFit: 'contain', opacity: 0.9, marginBottom: '20px' }}
                         />
-                        <h1 className={styles.title}>Welcome Back!</h1>
+                        <h1 className={styles.title}><span>Welcome Back!</span></h1>
                         <p className={styles.description}>
-                            To keep connected with us please login with your personal info
+                            <span>To keep connected with us please login with your personal info</span>
                         </p>
                         <button className={styles.ghost} onClick={handleSignInClick}>
-                            Sign In
+                            <span>Sign In</span>
                         </button>
                     </div>
 
@@ -103,12 +110,12 @@ export default function AuthScreen({ initialMode }: AuthScreenProps) {
                             height={60}
                             style={{ objectFit: 'contain', opacity: 0.9, marginBottom: '20px' }}
                         />
-                        <h1 className={styles.title}>Hello, Friend!</h1>
+                        <h1 className={styles.title}><span>Hello, Friend!</span></h1>
                         <p className={styles.description}>
-                            Enter your personal details and start your journey with us
+                            <span>Enter your personal details and start your journey with us</span>
                         </p>
                         <button className={styles.ghost} onClick={handleSignUpClick}>
-                            Sign Up
+                            <span>Sign Up</span>
                         </button>
                     </div>
                 </div>

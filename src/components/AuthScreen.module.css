@@ -174,52 +174,7 @@
 }
 
 /* Responsive */
-@media (max-width: 900px) {
-    .container {
-        min-height: auto;
-        height: auto;
-        padding-bottom: 2rem;
-        /* Disable slide on mobile? Or stack vertically? */
-        /* Sliding on mobile is weird if width is small. Standard is to hide overlay and just show form. */
-        overflow-y: auto;
-    }
-
-    .formContainer {
-        position: relative;
-        width: 100%;
-        height: auto;
-        padding: 2rem;
-        opacity: 1 !important;
-        transform: none !important;
-        z-index: 10 !important;
-    }
-
-    .signInContainer {
-        display: flex;
-        /* Default show login */
-    }
-
-    .signUpContainer {
-        display: none;
-        /* Hide signup initially */
-    }
-
-    /* Logic to toggle visibility on mobile requires JS class changes that might conflict with this CSS. 
-       Let's assume the component helps us. */
-
-    .container.rightPanelActive .signInContainer {
-        display: none;
-    }
-
-    .container.rightPanelActive .signUpContainer {
-        display: flex;
-    }
-
-    .overlayContainer {
-        display: none;
-        /* Hide overlay on mobile */
-    }
-}
+/* Previous media query removed to consolidate mobile styles below */
 
 /* Content Styling */
 .title {
@@ -270,7 +225,98 @@
 }
 
 @media (max-width: 900px) {
+    .container {
+        min-height: 100vh;
+        height: auto;
+        padding: 2rem 1rem;
+        overflow-y: auto;
+        /* Mobile Background - Animated Gradient */
+        background: linear-gradient(-45deg, #0277BD, #0091EA, #00B0FF, #40C4FF);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+        display: flex;
+        /* Flex to center the card */
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Remove dark overlay references if they exist, or just don't include them */
+    .container::before {
+        display: none;
+    }
+
+    .formContainer {
+        position: relative;
+        width: 100%;
+        max-width: 400px;
+        /* Card width */
+        height: auto;
+        padding: 2.5rem 2rem;
+        opacity: 1 !important;
+        transform: none !important;
+        z-index: 10 !important;
+        /* Card Styling */
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        margin: auto;
+        /* Ensure centering if flex fails */
+    }
+
+    @keyframes gradientBG {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    .signInContainer {
+        display: flex;
+        /* Default show login */
+    }
+
+    .signUpContainer {
+        display: none;
+        /* Hide signup initially */
+    }
+
+    .container.rightPanelActive .signInContainer {
+        display: none;
+    }
+
+    .container.rightPanelActive .signUpContainer {
+        display: flex;
+        animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .overlayContainer {
+        display: none;
+        /* Hide overlay on mobile */
+    }
+
     .mobileToggle {
         display: block;
+        margin-top: 1.5rem;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
     }
 }

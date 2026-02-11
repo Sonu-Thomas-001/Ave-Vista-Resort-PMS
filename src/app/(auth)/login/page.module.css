@@ -148,28 +148,31 @@
 
 .input {
     width: 100%;
-    padding: 0.85rem 1rem 0.85rem 2.75rem;
-    border: 1px solid #CBD5E1;
-    /* Slightly darker border */
-    border-radius: 8px;
+    padding: 0.95rem 1rem 0.95rem 2.85rem;
+    border: 1px solid transparent;
+    /* Transparent border to prevent layout shift */
+    border-radius: 12px;
+    /* Smooth rounded corners */
     font-size: 0.95rem;
-    background: #F8FAFC;
-    /* Subtle background */
-    transition: all 0.2s ease;
+    background: #F1F5F9;
+    /* Light filled background */
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     color: var(--text-main);
     font-family: inherit;
+    font-weight: 500;
 }
 
 .input:focus {
     outline: none;
-    border-color: var(--primary);
     background: #FFFFFF;
-    box-shadow: 0 0 0 4px var(--primary-light);
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    /* Soft float effect */
 }
 
 .togglePassword {
     position: absolute;
-    right: 1rem;
+    right: 1.2rem;
     background: none;
     border: none;
     color: var(--text-secondary);
@@ -189,6 +192,7 @@
     align-items: center;
     font-size: 0.9rem;
     width: 100%;
+    margin-top: 0.5rem;
 }
 
 .remember {
@@ -197,6 +201,7 @@
     gap: 0.5rem;
     color: var(--text-secondary);
     cursor: pointer;
+    font-weight: 500;
 }
 
 .forgotLink {
@@ -204,34 +209,37 @@
     font-weight: 600;
     text-decoration: none;
     font-size: 0.9rem;
+    transition: opacity 0.2s;
 }
 
 .forgotLink:hover {
-    text-decoration: underline;
+    text-decoration: none;
+    opacity: 0.8;
 }
 
 .submitBtn {
-    background: var(--primary);
+    background: linear-gradient(135deg, #0288D1 0%, #00B0FF 100%);
+    /* Vibrant gradient */
     color: white;
-    padding: 0.9rem;
+    padding: 1rem;
     border: none;
-    border-radius: 8px;
-    font-size: 0.95rem;
+    border-radius: 12px;
+    font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s;
-    margin-top: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: 1.5rem;
     width: 100%;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 4px 6px rgba(2, 119, 189, 0.2);
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(2, 136, 209, 0.3);
+    /* Colored glow */
 }
 
 .submitBtn:hover {
-    background: var(--primary-hover);
-    /* Ensure this var exists or darken slightly */
-    transform: translateY(-1px);
-    box-shadow: 0 6px 12px rgba(2, 119, 189, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(2, 136, 209, 0.4);
+    filter: brightness(1.05);
 }
 
 .submitBtn:active {
@@ -242,6 +250,7 @@
     opacity: 0.7;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
 }
 
 .errorBanner {
@@ -296,18 +305,19 @@
 
 .selectedValue {
     width: 100%;
-    padding: 0.85rem 1rem 0.85rem 2.75rem;
-    border: 1px solid #CBD5E1;
-    border-radius: 8px;
+    padding: 0.95rem 1rem 0.95rem 2.85rem;
+    border: 1px solid transparent;
+    border-radius: 12px;
     font-size: 0.95rem;
-    background: #F8FAFC;
+    background: #F1F5F9;
     cursor: pointer;
     color: var(--text-main);
-    transition: all 0.2s;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 500;
 }
 
 .selectedValue:hover {
-    background: #F1F5F9;
+    background: #E2E8F0;
 }
 
 .dropdownMenu {
