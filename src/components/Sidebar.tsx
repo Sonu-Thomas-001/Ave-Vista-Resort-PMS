@@ -60,19 +60,17 @@ export default function Sidebar({ isMobile, isOpen, isCollapsed, onToggle, onClo
         <div className={styles.backdrop} onClick={onCloseMobile} />
       )}
 
-      {/* Desktop Toggle Button (Inside Sidebar) */}
-      {!isMobile && (
+      {/* Sidebar Container */}
+      <aside className={containerClasses}>
+        {/* Desktop Toggle Button (Inside Sidebar) */}
         <button
-          className={styles.toggleBtn}
+          className={`${styles.toggleBtn} ${isMobile ? styles.hidden : ''}`}
           onClick={onToggle}
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </button>
-      )}
 
-      {/* Sidebar Container */}
-      <aside className={containerClasses}>
         {/* Mobile Close Button */}
         {isMobile && (
           <button

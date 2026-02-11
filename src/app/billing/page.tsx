@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Header from '@/components/Header';
-import { Download, Eye, FileText, X } from 'lucide-react';
+import { Download, Eye, FileText, X, Pencil } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
 import styles from './page.module.css';
@@ -20,6 +20,8 @@ export default function BillingPage() {
     const [invoices, setInvoices] = useState<Invoice[]>([]);
     const [loading, setLoading] = useState(true);
     const [viewingInvoice, setViewingInvoice] = useState<InvoiceWithDetails | null>(null);
+    const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
+    const [pendingUpdate, setPendingUpdate] = useState(false);
     const invoiceRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -46,6 +48,30 @@ export default function BillingPage() {
         }
         if (data) setInvoices(data);
         setLoading(false);
+    };
+
+    const handleUpdateInvoice = async () => {
+        if (!editingInvoice) return;
+        setPendingUpdate(true);
+
+        const { error } = await supabase
+            .from('invoices')
+            .update({
+                total_amount: editingInvoice.total_amount,
+                paid_amount: editingInvoice.paid_amount,
+                status: editingInvoice.status,
+                payment_mode: editingInvoice.payment_mode
+            })
+            .eq('id', editingInvoice.id);
+
+        if (error) {
+            console.error('Error updating invoice:', error);
+            alert('Failed to update invoice');
+        } else {
+            setEditingInvoice(null);
+            fetchInvoices(); // Refresh list
+        }
+        setPendingUpdate(false);
     };
 
 
@@ -197,6 +223,14 @@ export default function BillingPage() {
                                             <div className={styles.actions} style={{ justifyContent: 'flex-end', width: '100%' }}>
                                                 <button
                                                     className={styles.actionBtn}
+                                                    title="Edit"
+                                                    aria-label={`Edit Invoice ${inv.invoice_number}`}
+                                                    onClick={() => setEditingInvoice(inv)}
+                                                >
+                                                    <Pencil size={18} />
+                                                </button>
+                                                <button
+                                                    className={styles.actionBtn}
                                                     title="View"
                                                     aria-label={`View Invoice ${inv.invoice_number}`}
                                                     onClick={() => handleViewInvoice(inv)}
@@ -239,6 +273,83 @@ export default function BillingPage() {
                                 booking={viewingInvoice.booking}
                                 guest={viewingInvoice.guest}
                             />
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Invoice Modal */}
+            {editingInvoice && (
+                <div className={styles.modalOverlay} onClick={() => setEditingInvoice(null)}>
+                    <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles.modalHeader}>
+                            <h3>Edit Invoice #{editingInvoice.invoice_number}</h3>
+                            <button onClick={() => setEditingInvoice(null)} className={styles.closeBtn}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <div className={styles.formGroup}>
+                                <label>Total Amount</label>
+                                <input
+                                    type="number"
+                                    className={styles.input}
+                                    value={editingInvoice.total_amount}
+                                    onChange={(e) => setEditingInvoice({ ...editingInvoice, total_amount: Number(e.target.value) })}
+                                />
+                            </div>
+                            <div className={styles.formGroup}>
+                                <label>Paid Amount</label>
+                                <input
+                                    type="number"
+                                    className={styles.input}
+                                    value={editingInvoice.paid_amount || 0}
+                                    onChange={(e) => {
+                                        const paid = Number(e.target.value);
+                                        const total = editingInvoice.total_amount || 0;
+                                        let status: any = editingInvoice.status;
+
+                                        if (paid >= total) status = 'Paid';
+                                        else if (paid > 0) status = 'Partial';
+                                        else status = 'Pending';
+
+                                        setEditingInvoice({ ...editingInvoice, paid_amount: paid, status });
+                                    }}
+                                />
+                            </div>
+                            <div className={styles.row}>
+                                <div className={styles.formGroup}>
+                                    <label>Status</label>
+                                    <select
+                                        className={styles.input}
+                                        value={editingInvoice.status}
+                                        onChange={(e) => setEditingInvoice({ ...editingInvoice, status: e.target.value as any })}
+                                    >
+                                        <option value="Paid">Paid</option>
+                                        <option value="Partial">Partial</option>
+                                        <option value="Pending">Pending</option>
+                                    </select>
+                                </div>
+                                <div className={styles.formGroup}>
+                                    <label>Payment Mode</label>
+                                    <select
+                                        className={styles.input}
+                                        value={editingInvoice.payment_mode || ''}
+                                        onChange={(e) => setEditingInvoice({ ...editingInvoice, payment_mode: e.target.value as any })}
+                                    >
+                                        <option value="">Select Mode</option>
+                                        <option value="Cash">Cash</option>
+                                        <option value="Card">Card</option>
+                                        <option value="UPI">UPI</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div className={styles.modalFooter}>
+                            <button className={styles.cancelBtn} onClick={() => setEditingInvoice(null)}>Cancel</button>
+                            <button className={styles.submitBtn} onClick={handleUpdateInvoice} disabled={pendingUpdate}>
+                                {pendingUpdate ? 'Saving...' : 'Save Changes'}
+                            </button>
                         </div>
                     </div>
                 </div>

@@ -11,8 +11,6 @@ interface HeaderProps {
     title?: string;
 }
 
-
-
 interface SearchResult {
     id: string;
     type: 'guest' | 'booking' | 'room';
@@ -33,28 +31,85 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
     const [showMobileSearch, setShowMobileSearch] = useState(false);
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 
+    // Real-time stats state
+    const [todaysBookings, setTodaysBookings] = useState(0);
+    const [roomStats, setRoomStats] = useState({ occupied: 0, total: 0 });
+
     const profileRef = useRef<HTMLDivElement>(null);
     const searchRef = useRef<HTMLDivElement>(null);
-
-
 
     // Mounted state to prevent hydration mismatch
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true);
+        fetchRealTimeStats();
+
+        // Subscribe to changes
+        const bookingsSubscription = supabase
+            .channel('header-bookings')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
+                fetchTodaysBookings();
+            })
+            .subscribe();
+
+        const roomsSubscription = supabase
+            .channel('header-rooms')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms' }, () => {
+                fetchRoomStats();
+            })
+            .subscribe();
+
+        return () => {
+            bookingsSubscription.unsubscribe();
+            roomsSubscription.unsubscribe();
+        };
     }, []);
 
-    // Update time every minute
+    const fetchRealTimeStats = () => {
+        fetchTodaysBookings();
+        fetchRoomStats();
+    };
+
+    const fetchTodaysBookings = async () => {
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        const { count, error } = await supabase
+            .from('bookings')
+            .select('*', { count: 'exact', head: true })
+            .gte('created_at', `${todayStr}T00:00:00`);
+
+        if (!error && count !== null) {
+            setTodaysBookings(count);
+        }
+    };
+
+    const fetchRoomStats = async () => {
+        // Get total rooms
+        const { count: total, error: totalError } = await supabase
+            .from('rooms')
+            .select('*', { count: 'exact', head: true });
+
+        // Get occupied rooms
+        const { count: occupied, error: occupiedError } = await supabase
+            .from('rooms')
+            .select('*', { count: 'exact', head: true })
+            .eq('status', 'Occupied');
+
+        if (!totalError && !occupiedError && total !== null && occupied !== null) {
+            setRoomStats({ occupied, total });
+        }
+    };
+
+    // Update time every second for real-time feel
     useEffect(() => {
-        const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
 
     // Click outside to close dropdowns
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-
             if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
                 setShowProfileMenu(false);
             }
@@ -104,8 +159,6 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
         setShowProfileMenu(false);
         router.push('/settings');
     };
-
-
 
     const performSearch = async (query: string) => {
         const lowerQuery = query.toLowerCase();
@@ -265,7 +318,7 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
                         </div>
                         <div className={styles.dateTimeItem}>
                             <Clock size={14} />
-                            <span>{currentTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
+                            <span>{currentTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                         </div>
                     </div>
                 )}
@@ -339,20 +392,18 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
 
                 {/* Quick Stats */}
                 <div className={styles.quickStats}>
-                    <div className={styles.statItem}>
+                    <div className={styles.statItem} title="Today's Bookings">
                         <Users size={16} />
-                        <span className={styles.statValue}>12</span>
+                        <span className={styles.statValue}>{todaysBookings}</span>
                     </div>
-                    <div className={styles.statItem}>
+                    <div className={styles.statItem} title="Room Occupancy">
                         <BedDouble size={16} />
-                        <span className={styles.statValue}>8/15</span>
+                        <span className={styles.statValue}>{roomStats.occupied}/{roomStats.total}</span>
                     </div>
                 </div>
 
                 {/* Action Icons */}
                 <div className={styles.icons}>
-
-
                     <button
                         className={styles.iconBtn}
                         onClick={navigateToSettings}
