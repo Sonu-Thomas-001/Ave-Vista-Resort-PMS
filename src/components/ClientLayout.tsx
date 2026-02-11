@@ -96,6 +96,14 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     }
 
     // Render logic:
+    if (!user && !isAuthPage && !isPublicPage) {
+        return null; // Or a loading spinner, but null is fine for a quick redirect
+    }
+
+    if (user && isAuthPage) {
+        return null; // Prevent login page flash if already logged in
+    }
+
     if (!user) {
         return <main style={{ minHeight: '100vh', backgroundColor: 'var(--background)' }}>{children}</main>;
     }
