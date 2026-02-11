@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { Mail, Lock, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import styles from './page.module.css';
+import AuthFooter from '@/components/AuthFooter';
 
 export default function LoginPage() {
     const { login } = useAuth();
@@ -122,12 +123,14 @@ export default function LoginPage() {
                         <Link href="/privacy" className={styles.footerLink}>Privacy</Link>
                         <Link href="/terms" className={styles.footerLink}>Terms</Link>
                     </div>
+                    <AuthFooter />
                 </div>
             </div>
 
             <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.9rem' }}>
                 <p>Don't have an account? <Link href="/signup" style={{ color: 'var(--primary)', fontWeight: 600 }}>Sign Up</Link></p>
             </div>
+
         </div>
     );
 }

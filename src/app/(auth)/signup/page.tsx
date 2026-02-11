@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { Mail, Lock, User, Briefcase, AlertCircle, Eye, EyeOff, ChevronDown } from 'lucide-react';
 import styles from '../login/page.module.css';
+import AuthFooter from '@/components/AuthFooter';
 
 export default function SignupPage() {
     const { signup } = useAuth();
@@ -193,6 +194,8 @@ export default function SignupPage() {
                         Already have an account? <Link href="/login" className={styles.forgotLink}>Login</Link>
                     </div>
                 </form>
+
+                <AuthFooter />
             </div>
         </div>
     );
