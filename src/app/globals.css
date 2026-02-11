@@ -63,7 +63,7 @@ body {
 body {
   color: var(--text-main);
   background: var(--background);
-  font-family: 'Inter', Arial, sans-serif;
+  font-family: var(--font-geist-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
