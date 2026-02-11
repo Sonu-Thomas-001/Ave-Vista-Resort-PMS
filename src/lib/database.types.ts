@@ -122,6 +122,7 @@ export interface Database {
                     source: string | null
                     created_at: string
                     booking_number: string
+                    advance_amount: number | null
                 }
                 Insert: {
                     id?: string
@@ -136,6 +137,7 @@ export interface Database {
                     source?: string | null
                     created_at?: string
                     booking_number?: string
+                    advance_amount?: number | null
                 }
                 Update: {
                     id?: string
@@ -150,6 +152,7 @@ export interface Database {
                     source?: string | null
                     created_at?: string
                     booking_number?: string
+                    advance_amount?: number | null
                 }
             }
 

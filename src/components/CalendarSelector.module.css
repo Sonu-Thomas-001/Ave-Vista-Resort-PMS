@@ -1,0 +1,142 @@
+/* Calendar Container */
+.container {
+    background: white;
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid #E2E8F0;
+    user-select: none;
+    width: 100%;
+    max-width: 100%;
+    /* Fill available space */
+    margin: 0 auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1E293B;
+}
+
+.navBtn {
+    background: transparent;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 10px;
+    cursor: pointer;
+    color: #64748B;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.navBtn:hover {
+    background: #F8FAFC;
+    color: #1E293B;
+    border-color: #CBD5E1;
+}
+
+/* Grid */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 12px;
+    /* Increased gap */
+    text-align: center;
+    flex: 1;
+    /* Take available height if flex col */
+}
+
+.weekday {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #94A3B8;
+    text-transform: uppercase;
+    padding-bottom: 16px;
+}
+
+.day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #334155;
+    border-radius: 50%;
+    /* Circle for single selection */
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    z-index: 1;
+}
+
+.day:hover:not(.disabled):not(.selected):not(.inRange) {
+    background: #F1F5F9;
+    color: #1E293B;
+}
+
+.disabled {
+    color: #CBD5E1;
+    cursor: not-allowed;
+}
+
+/* Selection Styles */
+.selected {
+    background: #039BE5;
+    color: white !important;
+    font-weight: 600;
+}
+
+.rangeStart {
+    border-radius: 50% 0 0 50%;
+    /* Left rounded */
+    /* If purely start date, maybe full circle if end is null? 
+       Actually circle is safer for single */
+    border-radius: 8px 0 0 8px;
+}
+
+.rangeEnd {
+    border-radius: 0 8px 8px 0;
+}
+
+/* Range Middle */
+.inRange {
+    background: #E1F5FE;
+    color: #0277BD;
+    border-radius: 0;
+}
+
+/* Special case: Start AND End on same day or single selection */
+.selected.rangeStart.rangeEnd {
+    border-radius: 8px;
+}
+
+/* Today Indicator */
+.today::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: #EF5350;
+    border-radius: 50%;
+}
+
+.selected.today::after {
+    background: white;
+}
