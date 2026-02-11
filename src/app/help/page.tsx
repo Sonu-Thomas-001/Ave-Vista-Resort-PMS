@@ -1,7 +1,7 @@
 'use client';
 
 import Header from '@/components/Header';
-import { HelpCircle, Phone, Mail, Book, MessageCircle } from 'lucide-react';
+import { HelpCircle, Phone, Mail, Book, MessageCircle, CreditCard, Home, Info } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function HelpPage() {
@@ -9,56 +9,62 @@ export default function HelpPage() {
         <>
             <Header title="Help Center" />
             <div className={styles.container}>
+                <div className={styles.intro}>
+                    <h1>Help & Support</h1>
+                    <p className={styles.subtitle}>Everything you need to manage bookings and stay information</p>
+                    <p className={styles.overview}>
+                        Welcome to the Help Center of Ave Vista Resorts & Hotels. This section provides guidance for guests, booking partners, and administrators using our property management system. Here you can find answers related to reservations, payments, check-in procedures, facilities access, and booking policies.
+                    </p>
+                </div>
 
-                {/* Support Options */}
                 <div className={styles.grid}>
-                    <div className={styles.card}>
-                        <div className={styles.iconWrapper}><Phone size={24} /></div>
-                        <h3>24/7 Support</h3>
-                        <p>Call our dedicated support line for urgent issues.</p>
-                        <a href="tel:+1234567890" className={styles.link}>+91 98765 43210</a>
-                    </div>
-
-                    <div className={styles.card}>
-                        <div className={styles.iconWrapper}><Mail size={24} /></div>
-                        <h3>Email Us</h3>
-                        <p>Send us an email and we'll reply within 2 hours.</p>
-                        <a href="mailto:support@avevista.com" className={styles.link}>support@avevista.com</a>
-                    </div>
-
+                    {/* Booking Assistance */}
                     <div className={styles.card}>
                         <div className={styles.iconWrapper}><Book size={24} /></div>
-                        <h3>Documentation</h3>
-                        <p>Read detailed guides on how to use PMS features.</p>
-                        <a href="#" className={styles.link}>View Docs &raarr;</a>
+                        <h3>Booking Assistance</h3>
+                        <ul className={styles.cardList}>
+                            <li>How to make a reservation</li>
+                            <li>How to modify or cancel bookings</li>
+                            <li>Pre-booking requirements</li>
+                            <li>Day package & event guidelines</li>
+                        </ul>
+                    </div>
+
+                    {/* Stay & Property */}
+                    <div className={styles.card}>
+                        <div className={styles.iconWrapper}><Home size={24} /></div>
+                        <h3>Stay & Property</h3>
+                        <ul className={styles.cardList}>
+                            <li>Check-in & check-out timings</li>
+                            <li>Pool usage and amenities access</li>
+                            <li>Group booking requirements</li>
+                            <li>Resort facilities and experiences</li>
+                        </ul>
+                    </div>
+
+                    {/* Payment Support */}
+                    <div className={styles.card}>
+                        <div className={styles.iconWrapper}><CreditCard size={24} /></div>
+                        <h3>Payment Support</h3>
+                        <ul className={styles.cardList}>
+                            <li>Accepted payment methods</li>
+                            <li>Advance payment confirmation</li>
+                            <li>Refund processing timelines</li>
+                        </ul>
+                    </div>
+
+                    {/* Technical Support */}
+                    <div className={styles.card}>
+                        <div className={styles.iconWrapper}><Phone size={24} /></div>
+                        <h3>Technical Support</h3>
+                        <p>If you experience issues while booking or accessing the system, contact us:</p>
+                        <div className={styles.contactInfo}>
+                            <a href="tel:+919061554545" className={styles.link}>+91 90615 54545</a>
+                            <a href="tel:+919446595722" className={styles.link}>+91 94465 95722</a>
+                            <a href="mailto:avevistaresort@gmail.com" className={styles.link}>avevistaresort@gmail.com</a>
+                        </div>
                     </div>
                 </div>
-
-                {/* FAQs */}
-                <div className={styles.faqSection}>
-                    <h2>Frequently Asked Questions</h2>
-
-                    <div className={styles.faqItem}>
-                        <h3>How do I change a room status?</h3>
-                        <p>Go to the <strong>Rooms</strong> tab, select the room you want to update, and use the status dropdown (Clean/Dirty/Maintenance) in the room details card.</p>
-                    </div>
-
-                    <div className={styles.faqItem}>
-                        <h3>Can I refund a payment?</h3>
-                        <p>Yes, navigate to <strong>Billing</strong>, find the invoice, and click the "Refund" action button. Note that this requires Manager or Admin permissions.</p>
-                    </div>
-
-                    <div className={styles.faqItem}>
-                        <h3>How do I export monthly reports?</h3>
-                        <p>Visit the <strong>Reports</strong> section via the sidebar. Select your date range to "This Month" and click the "Export PDF" button at the top right.</p>
-                    </div>
-
-                    <div className={styles.faqItem}>
-                        <h3>I forgot my password.</h3>
-                        <p>Please contact your System Administrator to reset your staff login credentials.</p>
-                    </div>
-                </div>
-
             </div>
         </>
     );

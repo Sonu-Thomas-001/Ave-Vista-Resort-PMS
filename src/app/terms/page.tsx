@@ -9,32 +9,58 @@ export default function TermsPage() {
             <Header title="Terms of Service" />
             <div className={styles.container}>
                 <div className={styles.contentCard}>
-                    <h1>Terms of Service</h1>
-                    <p className={styles.lastUpdated}>Last Updated: Feb 03, 2026</p>
+                    <h1>Terms & Conditions</h1>
+                    <p className={styles.subtitle}>Booking and stay policies for Ave Vista Resorts & Hotels</p>
 
                     <section>
-                        <h2>1. Acceptance of Terms</h2>
-                        <p>By accessing and using Ave Vista PMS, you agree to comply with and be bound by these Terms of Service. If you do not agree, please strictly do not use our services.</p>
+                        <h2>1. Booking Confirmation</h2>
+                        <ul className={styles.list}>
+                            <li>Reservations are confirmed only after advance payment or official confirmation from the resort.</li>
+                            <li>Guests must provide accurate contact details during booking.</li>
+                        </ul>
                     </section>
 
                     <section>
-                        <h2>2. Use of Service</h2>
-                        <p>You agree to use the PMS solely for legitimate property management operations. Any unauthorized use, including data scraping or malicious attacks, is strictly prohibited.</p>
+                        <h2>2. Check-In & Check-Out</h2>
+                        <ul className={styles.list}>
+                            <li>Standard check-in and check-out timings apply unless approved by management.</li>
+                            <li>Early check-in or late check-out is subject to availability and additional charges.</li>
+                        </ul>
                     </section>
 
                     <section>
-                        <h2>3. User Responsibilities</h2>
-                        <p>Users are responsible for maintaining the confidentiality of their login credentials and for all activities that occur under their account.</p>
+                        <h2>3. Payment Policy</h2>
+                        <ul className={styles.list}>
+                            <li>Full or partial payment may be required prior to arrival.</li>
+                            <li>Tariffs may change during peak seasons or special events.</li>
+                        </ul>
                     </section>
 
                     <section>
-                        <h2>4. Limitation of Liability</h2>
-                        <p>Ave Vista PMS is provided "as is". We are not liable for any indirect, incidental, or consequential damages arising from the use of our service.</p>
+                        <h2>4. Resort Usage Rules</h2>
+                        <ul className={styles.list}>
+                            <li>Guests must respect property guidelines and maintain a peaceful environment.</li>
+                            <li>Damages to property will be charged accordingly.</li>
+                            <li>Outside food policies and pool timings must be followed.</li>
+                        </ul>
                     </section>
 
                     <section>
-                        <h2>5. Termination</h2>
-                        <p>We reserve the right to terminate or suspend access to our service immediately, without prior notice, for any breach of these Terms.</p>
+                        <h2>5. Cancellation Policy</h2>
+                        <ul className={styles.list}>
+                            <li>Cancellation terms depend on the booking type and offer conditions.</li>
+                            <li>Refund eligibility is determined by management policies.</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2>6. Liability</h2>
+                        <p>Ave Vista Resorts & Hotels is not responsible for loss of personal belongings or damages caused by misuse of facilities.</p>
+                    </section>
+
+                    <section>
+                        <h2>7. Policy Updates</h2>
+                        <p>Management reserves the right to update (modify) these terms without prior notice.</p>
                     </section>
                 </div>
             </div>

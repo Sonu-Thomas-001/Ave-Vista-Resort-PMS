@@ -99,6 +99,11 @@ export default function AuthScreen({ initialMode }: AuthScreenProps) {
                         <button className={styles.ghost} onClick={handleSignInClick}>
                             <span>Sign In</span>
                         </button>
+                        <div className={styles.overlayFooter}>
+                            <a href="/help" className={styles.footerLink}>Help</a>
+                            <a href="/privacy" className={styles.footerLink}>Privacy</a>
+                            <a href="/terms" className={styles.footerLink}>Terms</a>
+                        </div>
                     </div>
 
                     {/* Right Overlay Panel (Visible when Right Panel is INACTIVE / Login Mode) */}
@@ -117,6 +122,11 @@ export default function AuthScreen({ initialMode }: AuthScreenProps) {
                         <button className={styles.ghost} onClick={handleSignUpClick}>
                             <span>Sign Up</span>
                         </button>
+                        <div className={styles.overlayFooter}>
+                            <a href="/help" className={styles.footerLink}>Help</a>
+                            <a href="/privacy" className={styles.footerLink}>Privacy</a>
+                            <a href="/terms" className={styles.footerLink}>Terms</a>
+                        </div>
                     </div>
                 </div>
             </div>

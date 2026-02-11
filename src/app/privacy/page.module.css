@@ -42,82 +42,39 @@
     margin-bottom: 16px;
 }
 
-/* Specific to Help Page */
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 24px;
-    margin-bottom: 48px;
-}
 
-.card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 24px;
-    text-align: center;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-md);
-}
-
-.iconWrapper {
-    width: 56px;
-    height: 56px;
-    background: var(--surface-hover);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 16px;
-    color: var(--primary);
-}
-
-.card h3 {
-    margin-bottom: 8px;
-    color: var(--text-main);
-}
-
-.card p {
+/* Privacy Page Specific */
+.subtitle {
+    font-size: 1.25rem;
     color: var(--text-secondary);
-    font-size: 0.9rem;
-    margin-bottom: 16px;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
 }
 
-.link {
-    color: var(--primary);
+.list {
+    list-style-type: disc;
+    padding-left: 24px;
+    margin-bottom: 16px;
+    color: var(--text-secondary);
+}
+
+.list li {
+    margin-bottom: 8px;
+    line-height: 1.6;
+}
+
+.contact {
+    margin-top: 16px;
+    font-size: 1.1rem;
     font-weight: 500;
+}
+
+.contact a {
+    color: var(--primary);
     text-decoration: none;
 }
 
-.link:hover {
+.contact a:hover {
     text-decoration: underline;
-}
-
-.faqSection h2 {
-    font-size: 1.5rem;
-    margin-bottom: 24px;
-    color: var(--text-main);
-}
-
-.faqItem {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 24px;
-    margin-bottom: 16px;
-}
-
-.faqItem h3 {
-    font-size: 1.1rem;
-    margin-bottom: 8px;
-    color: var(--text-main);
-}
-
-.faqItem p {
-    color: var(--text-secondary);
-    line-height: 1.5;
 }
