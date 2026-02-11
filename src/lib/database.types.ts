@@ -121,6 +121,7 @@ export interface Database {
                     children: number
                     source: string | null
                     created_at: string
+                    booking_number: string
                 }
                 Insert: {
                     id?: string
@@ -134,6 +135,7 @@ export interface Database {
                     children?: number
                     source?: string | null
                     created_at?: string
+                    booking_number?: string
                 }
                 Update: {
                     id?: string
@@ -147,6 +149,7 @@ export interface Database {
                     children?: number
                     source?: string | null
                     created_at?: string
+                    booking_number?: string
                 }
             }
 

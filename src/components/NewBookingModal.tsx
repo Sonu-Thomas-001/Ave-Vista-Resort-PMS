@@ -98,6 +98,25 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                 const nights = Math.max(1, Math.ceil((new Date(dates.checkOut).getTime() - new Date(dates.checkIn).getTime()) / (1000 * 60 * 60 * 24)));
                 const totalAmount = (selectedRoom.price_per_night * nights);
 
+                // Fetch last booking ID to increment
+                const { data: lastBooking } = await supabase
+                    .from('bookings')
+                    .select('booking_number')
+                    .ilike('booking_number', 'AVBK%')
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .single();
+
+                let nextNumber = 1000;
+                if (lastBooking?.booking_number) {
+                    const match = lastBooking.booking_number.match(/AVBK(\d+)/i);
+                    if (match && match[1]) {
+                        nextNumber = parseInt(match[1], 10);
+                    }
+                }
+
+                const bookingNumber = `AVBK${nextNumber + 1}`;
+
                 const { data: bookingData, error: bookingError } = await supabase
                     .from('bookings')
                     .insert([{
@@ -107,7 +126,8 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                         check_out_date: dates.checkOut,
                         status: 'Confirmed',
                         total_amount: totalAmount,
-                        source: 'Direct'
+                        source: 'Direct',
+                        booking_number: bookingNumber
                     }])
                     .select()
                     .single();
