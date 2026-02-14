@@ -30,6 +30,7 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [showResults, setShowResults] = useState(false);
     const [selectedGuestId, setSelectedGuestId] = useState<string | null>(null);
+    const [selectedGuestHasPhone, setSelectedGuestHasPhone] = useState(false);
 
     // Search Guest
     const searchGuest = async (term: string) => {
@@ -60,6 +61,7 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
             phone: guest.phone || ''
         });
         setSelectedGuestId(guest.id);
+        setSelectedGuestHasPhone(!!guest.phone);
         setShowResults(false);
         setSearchTerm(`${guest.first_name} ${guest.last_name}`);
     };
@@ -139,6 +141,16 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
 
             // 2. Create Booking
             if (guestId) {
+                // Update existing guest phone if it was missing and added now
+                if (selectedGuestId && !selectedGuestHasPhone && guestDetails.phone) {
+                    const { error: updateError } = await supabase
+                        .from('guests')
+                        .update({ phone: guestDetails.phone })
+                        .eq('id', selectedGuestId);
+
+                    if (updateError) console.error('Error updating guest phone', updateError);
+                }
+
                 const nights = Math.max(1, Math.ceil((new Date(dates.checkOut).getTime() - new Date(dates.checkIn).getTime()) / (1000 * 60 * 60 * 24)));
                 const totalAmount = (selectedRoom.price_per_night * nights);
 
@@ -408,7 +420,7 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                                             className={styles.input}
                                             value={guestDetails.phone}
                                             onChange={e => setGuestDetails({ ...guestDetails, phone: e.target.value })}
-                                            disabled={!!selectedGuestId}
+                                            disabled={!!selectedGuestId && selectedGuestHasPhone}
                                         />
                                     </div>
 
