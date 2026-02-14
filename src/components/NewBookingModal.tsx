@@ -84,6 +84,8 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                 query = query.not('id', 'in', `(${excludeIds.join(',')})`);
             }
 
+            query = query.order('room_number', { ascending: true });
+
             const { data: rooms, error: roomsError } = await query;
             if (roomsError) throw roomsError;
 
