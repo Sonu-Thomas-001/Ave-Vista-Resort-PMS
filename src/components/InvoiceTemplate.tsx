@@ -136,6 +136,18 @@ export const InvoiceTemplate = ({ invoice, booking, guest, printRef }: InvoiceTe
                     <div className={styles.guestItem}>
                         <span className={styles.guestName}>{guest.first_name} {guest.last_name}</span>
                     </div>
+                    {guest.company_name && (
+                        <div className={styles.guestItem}>
+                            <FileText size={14} />
+                            <span>{guest.company_name}</span>
+                        </div>
+                    )}
+                    {guest.gst_number && (
+                        <div className={styles.guestItem}>
+                            <FileText size={14} />
+                            <span>GST: {guest.gst_number}</span>
+                        </div>
+                    )}
                     <div className={styles.guestItem}>
                         <Phone size={14} />
                         <span>{guest.phone || 'N/A'}</span>
@@ -144,6 +156,12 @@ export const InvoiceTemplate = ({ invoice, booking, guest, printRef }: InvoiceTe
                         <Mail size={14} />
                         <span>{guest.email || 'N/A'}</span>
                     </div>
+                    {guest.address && (
+                        <div className={styles.guestItem}>
+                            <Home size={14} />
+                            <span>{guest.address}</span>
+                        </div>
+                    )}
                 </div>
             </div>
 

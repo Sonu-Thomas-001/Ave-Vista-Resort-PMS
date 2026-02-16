@@ -13,6 +13,9 @@ interface Guest {
     last_name: string;
     email: string;
     phone: string;
+    company_name?: string;
+    gst_number?: string;
+    address?: string;
     is_vip: boolean;
     notes?: string;
 }
@@ -29,6 +32,9 @@ export default function GuestModal({ guest, onClose, onSuccess }: GuestModalProp
         last_name: '',
         email: '',
         phone: '',
+        company_name: '',
+        gst_number: '',
+        address: '',
         is_vip: false,
         notes: ''
     });
@@ -42,6 +48,9 @@ export default function GuestModal({ guest, onClose, onSuccess }: GuestModalProp
                 last_name: guest.last_name || '',
                 email: guest.email || '',
                 phone: guest.phone || '',
+                company_name: guest.company_name || '',
+                gst_number: guest.gst_number || '',
+                address: guest.address || '',
                 is_vip: guest.is_vip || false,
                 notes: guest.notes || ''
             });
@@ -69,6 +78,9 @@ export default function GuestModal({ guest, onClose, onSuccess }: GuestModalProp
                         last_name: formData.last_name,
                         email: formData.email,
                         phone: formData.phone,
+                        company_name: formData.company_name,
+                        gst_number: formData.gst_number,
+                        address: formData.address,
                         is_vip: formData.is_vip,
                         notes: formData.notes
                     })
@@ -84,6 +96,9 @@ export default function GuestModal({ guest, onClose, onSuccess }: GuestModalProp
                         last_name: formData.last_name,
                         email: formData.email,
                         phone: formData.phone,
+                        company_name: formData.company_name,
+                        gst_number: formData.gst_number,
+                        address: formData.address,
                         is_vip: formData.is_vip,
                         notes: formData.notes
                     }]);
@@ -176,6 +191,48 @@ export default function GuestModal({ guest, onClose, onSuccess }: GuestModalProp
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                     className={styles.input}
+                                />
+                            </div>
+                        </div>
+
+                        <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
+                            <label>Company Name (Optional)</label>
+                            <div className={styles.inputWrapper}>
+                                <User size={16} className={styles.inputIcon} />
+                                <input
+                                    type="text"
+                                    placeholder="Company Name"
+                                    value={formData.company_name || ''}
+                                    onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
+                                    className={styles.input}
+                                />
+                            </div>
+                        </div>
+
+                        <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
+                            <label>GST Number (Optional)</label>
+                            <div className={styles.inputWrapper}>
+                                <FileText size={16} className={styles.inputIcon} />
+                                <input
+                                    type="text"
+                                    placeholder="GST Number"
+                                    value={formData.gst_number || ''}
+                                    onChange={(e) => setFormData({ ...formData, gst_number: e.target.value })}
+                                    className={styles.input}
+                                />
+                            </div>
+                        </div>
+
+                        <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
+                            <label>Address (Optional)</label>
+                            <div className={styles.inputWrapper}>
+                                <FileText size={16} className={styles.inputIcon} />
+                                <textarea
+                                    placeholder="Guest Address"
+                                    value={formData.address || ''}
+                                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                    className={styles.input}
+                                    style={{ minHeight: 60, resize: 'vertical', paddingTop: 10 }}
                                 />
                             </div>
                         </div>

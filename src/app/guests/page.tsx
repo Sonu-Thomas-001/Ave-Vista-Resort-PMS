@@ -14,6 +14,9 @@ interface Guest {
     last_name: string;
     email: string;
     phone: string;
+    company_name?: string;
+    gst_number?: string;
+    address?: string;
     is_vip: boolean;
     notes?: string;
     bookings: {
@@ -73,6 +76,7 @@ export default function GuestsPage() {
             .from('guests')
             .select(`
                 *,
+                company_name, gst_number, address,
                 bookings (
                     status,
                     check_in_date,
@@ -287,6 +291,7 @@ export default function GuestsPage() {
                                                     <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
                                                         <button
                                                             className={styles.actionBtn}
+                                                            onMouseDown={(e) => e.stopPropagation()}
                                                             onClick={() => setShowActionsId(showActionsId === guest.id ? null : guest.id)}
                                                             aria-label="More Actions"
                                                         >
