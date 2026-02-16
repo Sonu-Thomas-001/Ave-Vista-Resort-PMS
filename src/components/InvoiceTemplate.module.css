@@ -476,6 +476,17 @@
 }
 
 /* Modern Luxury Footer */
+.copyright {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #94A3B8;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #E2E8F0;
+    width: 100%;
+    grid-column: 1 / -1;
+}
+
 .footerDivider {
     margin: 48px 0 0 0;
     height: 3px;
@@ -487,6 +498,7 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    flex-wrap: wrap;
     padding: 40px 20px;
     background: #fafbfc;
     border-radius: 12px;

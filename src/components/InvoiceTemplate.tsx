@@ -232,12 +232,17 @@ export const InvoiceTemplate = ({ invoice, booking, guest, printRef }: InvoiceTe
 
             {/* Policies */}
             <div className={styles.policies}>
-                <h4>Resort Policies</h4>
+                <h4>🏝 Resort Policies (Main)</h4>
                 <ul>
-                    <li>Check-in: 2:00 PM | Check-out: 12:00 PM</li>
-                    <li>Pool Timing: 6:00 AM – 11:00 AM & 4:00 PM – 10:00 PM</li>
-                    <li>Outside food not allowed</li>
-                    <li>Lost key charge applicable</li>
+                    <li><strong>Check-In: 2:00 PM&emsp;|&emsp;Check-Out: 11:00 AM</strong></li>
+                    <li>Valid ID proof required at check-in for all guests</li>
+                    <li>Outside food & alcohol are not permitted</li>
+                    <li>Loud music not allowed after 10:30 PM</li>
+                    <li>Only registered guests allowed in rooms</li>
+                    <li>Guests are responsible for any damages to property</li>
+                    <li>Pool usage only during permitted hours & at own responsibility</li>
+                    <li>Cancellation within 48 hours may incur charges</li>
+                    <li>Management reserves the right to deny service for misconduct</li>
                 </ul>
             </div>
 
@@ -280,6 +285,11 @@ export const InvoiceTemplate = ({ invoice, booking, guest, printRef }: InvoiceTe
                         </div>
                         <span>ave_vista_resorts</span>
                     </div>
+                </div>
+
+                {/* Copyright */}
+                <div className={styles.copyright}>
+                    &copy; 2026 Ave Vista Resorts & Hotels. All rights reserved.
                 </div>
             </footer>
         </div>
