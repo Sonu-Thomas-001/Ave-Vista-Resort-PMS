@@ -191,6 +191,30 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
 
                 if (bookingError) throw new Error(`Booking Error: ${bookingError.message}`);
 
+                // Create Invoice for Advance Payment
+                if (bookingData && advanceAmount > 0) {
+                    const invNum = `AVE-ADV-${String(1000 + Math.floor(Math.random() * 9000))}`;
+                    const { error: invError } = await supabase
+                        .from('invoices')
+                        .insert([{
+                            invoice_number: invNum,
+                            booking_id: bookingData.id,
+                            guest_name: `${guestDetails.firstName} ${guestDetails.lastName}`,
+                            room_number: selectedRoom.room_number,
+                            total_amount: totalAmount,
+                            paid_amount: advanceAmount,
+                            status: advanceAmount >= totalAmount ? 'Paid' : 'Partial',
+                            is_partial: advanceAmount < totalAmount,
+                            payment_mode: 'Cash', // Defaulting to Cash for now
+                            gst_rate: 12
+                        }]);
+
+                    if (invError) {
+                        console.error('Error creating advance invoice:', invError);
+                        // Non-blocking error, just log it
+                    }
+                }
+
                 // Trigger Email
                 try {
                     if (bookingData) {

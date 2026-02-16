@@ -61,6 +61,21 @@ export default function CheckInPage() {
     const handleCompleteCheckIn = async () => {
         if (!foundBooking) return;
 
+        // 0. Update Guest ID Proof
+        if (foundBooking.guests) {
+            const { error: guestError } = await supabase
+                .from('guests')
+                .update({
+                    id_proof_type: guestDetails.id_proof_type || 'Aadhar Card', // Default if not changed
+                    id_proof_number: guestDetails.id_proof_number
+                })
+                .eq('id', foundBooking.guests.id);
+
+            if (guestError) {
+                console.error('Error updating guest ID details', guestError);
+            }
+        }
+
         // 1. Update Booking -> Checked In
         const { error: bookingError } = await supabase
             .from('bookings')
@@ -171,7 +186,11 @@ export default function CheckInPage() {
                                 </div>
                                 <div className={styles.field}>
                                     <label>ID Proof Type</label>
-                                    <select className={styles.input}>
+                                    <select
+                                        className={styles.input}
+                                        value={guestDetails.id_proof_type || 'Aadhar Card'}
+                                        onChange={(e) => setGuestDetails({ ...guestDetails, id_proof_type: e.target.value })}
+                                    >
                                         <option>Aadhar Card</option>
                                         <option>Passport</option>
                                         <option>Driving License</option>
@@ -179,12 +198,16 @@ export default function CheckInPage() {
                                 </div>
                                 <div className={styles.field}>
                                     <label>ID Number</label>
-                                    <input type="text" className={styles.input} placeholder="XXXX-XXXX-XXXX" />
+                                    <input
+                                        type="text"
+                                        className={styles.input}
+                                        placeholder="XXXX-XXXX-XXXX"
+                                        value={guestDetails.id_proof_number || ''}
+                                        onChange={(e) => setGuestDetails({ ...guestDetails, id_proof_number: e.target.value })}
+                                    />
                                 </div>
                             </div>
-                            <div className={styles.uploadArea}>
-                                <span>Click to Upload Identity Document</span>
-                            </div>
+
                             <div className={styles.actions}>
                                 <button onClick={prevStep} className={styles.backBtn}>Back</button>
                                 <button onClick={nextStep} className={styles.primaryBtn}>Next: Assign Room</button>

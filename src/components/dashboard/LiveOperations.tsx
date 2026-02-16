@@ -38,9 +38,18 @@ export default function LiveOperations() {
             )
             .subscribe();
 
+        const roomsSubscription = supabase
+            .channel('rooms-changes')
+            .on('postgres_changes',
+                { event: '*', schema: 'public', table: 'rooms' },
+                () => fetchRecentActivities()
+            )
+            .subscribe();
+
         return () => {
             bookingsSubscription.unsubscribe();
             invoicesSubscription.unsubscribe();
+            roomsSubscription.unsubscribe();
         };
     }, []);
 

@@ -105,7 +105,7 @@ export default function Dashboard() {
     // "Total Revenue" on dashboard usually implies a period. Let's say "This Month" or just "Total Paid". 
     // The previous code did a full sum. Let's stick to that or refine to "Today" if the card says "Today's Revenue".
     // Card says "Total Revenue". Stick to global sum.
-    const paidInvoices = invoices?.filter(i => i.status === 'Paid') || [];
+    const paidInvoices = invoices?.filter(i => i.status === 'Paid' || i.status === 'Partial') || [];
     const totalRevenueAmount = paidInvoices.reduce((sum, inv) => sum + Number(inv.paid_amount), 0);
 
     setMetrics({

@@ -2,27 +2,24 @@
 
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
-import { BarChart3, TrendingUp, DollarSign, Users, Calendar, Download } from 'lucide-react';
+import { BarChart3, TrendingUp, DollarSign, Users, Calendar, Download, PieChart, Activity, CreditCard } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './page.module.css';
 
 export default function ReportsPage() {
-    const [activeTab, setActiveTab] = useState('Overview');
+    const [activeTab, setActiveTab] = useState('Revenue');
     const [dateRange, setDateRange] = useState('This Month');
     const [loading, setLoading] = useState(true);
 
-    // KPI States
-    const [stats, setStats] = useState({
-        revenue: 0,
-        revenueGrowth: 0,
-        occupancy: 0,
-        occupancyGrowth: 0,
-        revPar: 0
+    // Data States
+    const [revenueStats, setRevenueStats] = useState<any>({
+        total: 0,
+        growth: 0,
+        byMethod: {},
+        byType: { Advance: 0, Final: 0 }
     });
-
-    // Chart Data
-    const [revenueTrend, setRevenueTrend] = useState<any[]>([]);
-    const [roomPerformance, setRoomPerformance] = useState<any[]>([]);
+    const [occupancyStats, setOccupancyStats] = useState<any>({ rate: 0, growth: 0, byRoomType: [] });
+    const [guestStats, setGuestStats] = useState<any>({ total: 0, new: 0, repeat: 0, vip: 0 });
     const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
 
     useEffect(() => {
@@ -53,91 +50,102 @@ export default function ReportsPage() {
             const startStr = startDate.toISOString();
             const endStr = now.toISOString();
 
-            // 1. Fetch Revenue (Invoices)
+            // --- 1. Revenue Data ---
             const { data: invoices } = await supabase
                 .from('invoices')
-                .select('amount, created_at, invoice_number')
+                .select('*')
                 .gte('created_at', startStr)
                 .lte('created_at', endStr);
 
-            const totalRevenue = invoices?.reduce((sum, inv) => sum + (Number(inv.amount) || 0), 0) || 0;
+            const totalRevenue = invoices?.reduce((sum, inv) => sum + (Number(inv.paid_amount) || 0), 0) || 0;
+
+            // Revenue Breakdown
+            const byMethod: Record<string, number> = {};
+            const byType: Record<string, number> = { Advance: 0, Final: 0 };
+
+            invoices?.forEach(inv => {
+                const method = inv.payment_mode || 'Cash';
+                byMethod[method] = (byMethod[method] || 0) + (Number(inv.paid_amount) || 0);
+
+                if (inv.is_partial) {
+                    byType.Advance += (Number(inv.paid_amount) || 0);
+                } else {
+                    byType.Final += (Number(inv.paid_amount) || 0);
+                }
+            });
 
             // Previous Month Revenue for Growth
             let revenueGrowth = 0;
             if (dateRange === 'This Month') {
                 const { data: prevInvoices } = await supabase
                     .from('invoices')
-                    .select('amount')
+                    .select('paid_amount')
                     .gte('created_at', prevStartDate.toISOString())
                     .lte('created_at', prevEndDate.toISOString());
-
-                const prevRevenue = prevInvoices?.reduce((sum, inv) => sum + (Number(inv.amount) || 0), 0) || 0;
-                if (prevRevenue > 0) {
-                    revenueGrowth = ((totalRevenue - prevRevenue) / prevRevenue) * 100;
-                }
+                const prevRevenue = prevInvoices?.reduce((sum, inv) => sum + (Number(inv.paid_amount) || 0), 0) || 0;
+                if (prevRevenue > 0) revenueGrowth = ((totalRevenue - prevRevenue) / prevRevenue) * 100;
             }
 
-            // 2. Fetch Occupancy (Bookings)
+            setRevenueStats({ total: totalRevenue, growth: Math.round(revenueGrowth), byMethod, byType });
+
+
+            // --- 2. Occupancy Data ---
             const { data: bookings } = await supabase
                 .from('bookings')
-                .select('id, room_id, check_in_date, check_out_date, status, total_amount, rooms(type, room_number)')
+                .select('*, rooms(type, room_number)')
                 .in('status', ['Checked In', 'Checked Out'])
                 .gte('check_in_date', startStr);
 
-            // Fetch Total Rooms count
             const { count: totalRooms } = await supabase.from('rooms').select('*', { count: 'exact', head: true });
 
-            // Simple Occupancy Calculation: (Booked Rooms / Total Rooms) * 100
-            // Note: For a proper date range, we'd calculate room-nights, but this is a simplified snapshot
+            // Occupancy Rate
             const activeBookingsCount = bookings?.length || 0;
-            // Assuming 30 days for month view or 1 day for today
             const daysInRange = dateRange === 'Today' ? 1 : dateRange === 'This Week' ? 7 : 30;
             const totalAvailableRoomNights = (totalRooms || 10) * daysInRange;
             const occupancyRate = totalAvailableRoomNights > 0 ? (activeBookingsCount / totalAvailableRoomNights) * 100 : 0;
 
-            // 3. RevPAR = Total Revenue / Total Available Rooms
-            const revPar = totalAvailableRoomNights > 0 ? totalRevenue / totalAvailableRoomNights : 0;
-
-            setStats({
-                revenue: totalRevenue,
-                revenueGrowth: Math.round(revenueGrowth),
-                occupancy: Math.min(Math.round(occupancyRate * 100) / 100, 100), // Cap at 100% logic fix needed for real room-night calc, keeping simple
-                occupancyGrowth: 5, // Mock growth for occupancy as historical data might be sparse
-                revPar: Math.round(revPar)
-            });
-
-            // 4. Chart Data Preparation
-            // Revenue Trend (Group by Week/Day) - Simplified to 4 data points for "This Month"
-            const trendData = [
-                { label: 'W1', value: totalRevenue * 0.15 }, // Mock distribution for demo visual 
-                { label: 'W2', value: totalRevenue * 0.25 },
-                { label: 'W3', value: totalRevenue * 0.35 },
-                { label: 'W4', value: totalRevenue * 0.25 },
-            ];
-            setRevenueTrend(trendData);
-
-            // Room Type Performance
-            const roomTypeMap: Record<string, number> = {};
+            // Room Type Breakdown
+            const roomTypeCount: Record<string, number> = {};
             bookings?.forEach((b: any) => {
                 const type = b.rooms?.type || 'Standard';
-                roomTypeMap[type] = (roomTypeMap[type] || 0) + 1;
+                roomTypeCount[type] = (roomTypeCount[type] || 0) + 1;
             });
+            const byRoomType = Object.entries(roomTypeCount).map(([type, count]) => ({ type, count, percentage: Math.round((count / (bookings?.length || 1)) * 100) }));
 
-            const roomPerfData = Object.entries(roomTypeMap).map(([type, count]) => ({
-                type,
-                count,
-                percentage: Math.round((count / (bookings?.length || 1)) * 100)
-            })).sort((a, b) => b.count - a.count);
+            setOccupancyStats({ rate: Math.min(Math.round(occupancyRate), 100), growth: 5, byRoomType });
 
-            setRoomPerformance(roomPerfData);
 
-            // 5. Recent Transactions
+            // --- 3. Guest Data ---
+            // Fetch UNIQUE guests who booked in this period
+            const uniqueGuestIds = new Set(bookings?.map(b => b.guest_id));
+            const totalGuests = uniqueGuestIds.size;
+
+            let newGuests = 0;
+            let repeatGuests = 0;
+            let vipGuests = 0;
+
+            if (totalGuests > 0) {
+                const { data: guestDetails } = await supabase
+                    .from('guests')
+                    .select('id, created_at, is_vip')
+                    .in('id', Array.from(uniqueGuestIds));
+
+                guestDetails?.forEach(g => {
+                    if (g.is_vip) vipGuests++;
+                    // If created in this range, consider NEW, else REPEAT
+                    if (new Date(g.created_at) >= startDate) newGuests++;
+                    else repeatGuests++;
+                });
+            }
+
+            setGuestStats({ total: totalGuests, new: newGuests, repeat: repeatGuests, vip: vipGuests });
+
+            // --- 4. Recent Transactions (Global) ---
             const { data: recentTx } = await supabase
                 .from('invoices')
                 .select('*, bookings(guests(first_name, last_name), rooms(room_number))')
                 .order('created_at', { ascending: false })
                 .limit(5);
-
             setRecentTransactions(recentTx || []);
 
         } catch (error) {
@@ -148,11 +156,12 @@ export default function ReportsPage() {
     };
 
     const handleExport = () => {
+        // ... (Keep existing export logic)
         const headers = ['Invoice Number', 'Date', 'Amount', 'Guest', 'Room'];
         const rows = recentTransactions.map(tx => [
             tx.invoice_number,
             new Date(tx.created_at).toLocaleDateString(),
-            tx.amount,
+            tx.paid_amount,
             `${tx.bookings?.guests?.first_name || ''} ${tx.bookings?.guests?.last_name || ''}`,
             tx.bookings?.rooms?.room_number || 'N/A'
         ]);
@@ -178,7 +187,7 @@ export default function ReportsPage() {
                 {/* Controls */}
                 <div className={styles.controls}>
                     <div className={styles.tabs}>
-                        {['Overview', 'Revenue', 'Occupancy'].map(tab => (
+                        {['Revenue', 'Occupancy', 'Guests'].map(tab => (
                             <button
                                 key={tab}
                                 className={`${styles.tabBtn} ${activeTab === tab ? styles.active : ''}`}
@@ -206,132 +215,153 @@ export default function ReportsPage() {
                     </div>
                 </div>
 
-                {/* Overview Content */}
+                {/* Content Area */}
                 <div className={styles.content}>
-                    <div className={styles.statsGrid}>
-                        <div className={styles.statCard}>
-                            <div className={styles.statIcon} style={{ background: '#E8F5E9', color: '#2E7D32' }}>
-                                <DollarSign size={24} />
-                            </div>
-                            <div className={styles.statInfo}>
-                                <span className={styles.statLabel}>Total Revenue</span>
-                                <span className={styles.statValue}>
-                                    {loading ? '...' : `₹${stats.revenue.toLocaleString()}`}
-                                </span>
-                                <span className={styles.statTrend}>
-                                    <TrendingUp size={12} /> {stats.revenueGrowth > 0 ? '+' : ''}{stats.revenueGrowth}% vs last month
-                                </span>
-                            </div>
-                        </div>
 
-                        <div className={styles.statCard}>
-                            <div className={styles.statIcon} style={{ background: '#E3F2FD', color: '#1565C0' }}>
-                                <Users size={24} />
-                            </div>
-                            <div className={styles.statInfo}>
-                                <span className={styles.statLabel}>Occupancy Rate</span>
-                                <span className={styles.statValue}>
-                                    {loading ? '...' : `${stats.occupancy}%`}
-                                </span>
-                                <span className={styles.statTrend}>
-                                    <TrendingUp size={12} /> +{stats.occupancyGrowth}% vs last month
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className={styles.statCard}>
-                            <div className={styles.statIcon} style={{ background: '#FFF3E0', color: '#EF6C00' }}>
-                                <Calendar size={24} />
-                            </div>
-                            <div className={styles.statInfo}>
-                                <span className={styles.statLabel}>RevPAR</span>
-                                <span className={styles.statValue}>
-                                    {loading ? '...' : `₹${stats.revPar.toLocaleString()}`}
-                                </span>
-                                <span className={styles.statSub}>Rev. per Available Room</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className={styles.chartsGrid}>
-                        <div className={styles.chartCard}>
-                            <h3>Revenue Trend</h3>
-                            <div className={styles.chartPlaceholder}>
-                                {/* Visual Bar Chart */}
-                                <div className={styles.barGroup}>
-                                    {revenueTrend.map((item, idx) => (
-                                        <div
-                                            key={idx}
-                                            className={styles.bar}
-                                            style={{ height: `${(item.value / (stats.revenue || 1)) * 100}%`, minHeight: '5%' }}
-                                            title={`${item.label}: ₹${item.value}`}
-                                        ></div>
-                                    ))}
+                    {/* --- REVENUE TAB --- */}
+                    {activeTab === 'Revenue' && (
+                        <div className={styles.tabContent}>
+                            {/* Summary Cards */}
+                            <div className={styles.statsGrid}>
+                                <div className={styles.statCard}>
+                                    <div className={`${styles.statIcon} ${styles.green}`}>
+                                        <DollarSign size={24} />
+                                    </div>
+                                    <div className={styles.statInfo}>
+                                        <span className={styles.statLabel}>Total Revenue</span>
+                                        <span className={styles.statValue}>₹{revenueStats.total.toLocaleString()}</span>
+                                        <span className={styles.statTrend}>
+                                            <TrendingUp size={12} /> {revenueStats.growth}% vs last period
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className={styles.chartLabels}>
-                                    {revenueTrend.map((item, idx) => (
-                                        <span key={idx}>{item.label}</span>
-                                    ))}
+                                {/* Add more cards if needed, e.g. RevPAR */}
+                            </div>
+
+                            <div className={styles.chartsGrid}>
+                                {/* Payment Methods */}
+                                <div className={styles.chartCard}>
+                                    <h3>Payment Methods</h3>
+                                    <div className={styles.barList}>
+                                        {Object.entries(revenueStats.byMethod).map(([method, amount]: [string, any]) => (
+                                            <div key={method} className={styles.barItem}>
+                                                <div className={styles.barLabel}>
+                                                    <CreditCard size={14} /> {method}
+                                                </div>
+                                                <div className={styles.barValue}>₹{amount.toLocaleString()}</div>
+                                                <div className={styles.progressBar}>
+                                                    <div style={{ width: `${(amount / (revenueStats.total || 1)) * 100}%` }}></div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Payment Types */}
+                                <div className={styles.chartCard}>
+                                    <h3>Payment Breakdown</h3>
+                                    <div className={styles.donutChart}>
+                                        <div className={styles.donutSegment}>
+                                            <span className={styles.donutLabel}>Advance</span>
+                                            <span className={styles.donutValue}>₹{(revenueStats.byType?.Advance || 0).toLocaleString()}</span>
+                                        </div>
+                                        <div className={styles.donutSegment}>
+                                            <span className={styles.donutLabel}>Final Settlement</span>
+                                            <span className={styles.donutValue}>₹{(revenueStats.byType?.Final || 0).toLocaleString()}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className={styles.chartCard}>
-                            <h3>Room Type Performance</h3>
-                            <div className={styles.listChart}>
-                                {loading ? <p>Loading...</p> : roomPerformance.length === 0 ? <p>No data available</p> :
-                                    roomPerformance.map((item, idx) => (
+                            {/* Recent Tx Table */}
+                            <div className={styles.tableCard}>
+                                <h3>Recent Transactions</h3>
+                                <table className={styles.table}>
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Guest</th>
+                                            <th>Amount</th>
+                                            <th>Mode</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {recentTransactions.map((tx) => (
+                                            <tr key={tx.id}>
+                                                <td>{new Date(tx.created_at).toLocaleDateString()}</td>
+                                                <td>{tx.bookings?.guests?.first_name} {tx.bookings?.guests?.last_name}</td>
+                                                <td>₹{Number(tx.paid_amount).toLocaleString()}</td>
+                                                <td>{tx.payment_mode}</td>
+                                                <td><span className={styles.tag}>{tx.status}</span></td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* --- OCCUPANCY TAB --- */}
+                    {activeTab === 'Occupancy' && (
+                        <div className={styles.tabContent}>
+                            <div className={styles.statsGrid}>
+                                <div className={styles.statCard}>
+                                    <div className={`${styles.statIcon} ${styles.blue}`}>
+                                        <Activity size={24} />
+                                    </div>
+                                    <div className={styles.statInfo}>
+                                        <span className={styles.statLabel}>Occupancy Rate</span>
+                                        <span className={styles.statValue}>{occupancyStats.rate}%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className={styles.chartCard}>
+                                <h3>Room Type Performance</h3>
+                                <div className={styles.listChart}>
+                                    {occupancyStats.byRoomType.map((item: any, idx: number) => (
                                         <div key={idx} className={styles.listItem}>
                                             <div className={styles.listLabel}>
                                                 <span>{item.type}</span>
-                                                <span>{item.percentage}% occ.</span>
+                                                <span>{item.percentage}%</span>
                                             </div>
                                             <div className={styles.progressBar}>
                                                 <div style={{ width: `${item.percentage}%` }}></div>
                                             </div>
                                         </div>
-                                    ))
-                                }
+                                    ))}
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
 
-                    <div className={styles.tableCard}>
-                        <h3>Recent Transactions</h3>
-                        <table className={styles.table}>
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Source</th>
-                                    <th>Amount</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {loading ? (
-                                    <tr><td colSpan={4}>Loading transactions...</td></tr>
-                                ) : recentTransactions.length === 0 ? (
-                                    <tr><td colSpan={4}>No recent transactions</td></tr>
-                                ) : (
-                                    recentTransactions.map((tx) => (
-                                        <tr key={tx.id}>
-                                            <td data-label="Date">{new Date(tx.created_at).toLocaleDateString()}</td>
-                                            <td data-label="Source">
-                                                {tx.bookings?.guests?.first_name} {tx.bookings?.guests?.last_name}
-                                                <span style={{ color: '#888', fontSize: '0.8em' }}> (Room {tx.bookings?.rooms?.room_number})</span>
-                                            </td>
-                                            <td data-label="Amount">₹{Number(tx.amount).toLocaleString()}</td>
-                                            <td data-label="Status">
-                                                <span className={styles.tag}>
-                                                    {tx.payment_status || 'Paid'}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                    {/* --- GUESTS TAB --- */}
+                    {activeTab === 'Guests' && (
+                        <div className={styles.tabContent}>
+                            <div className={styles.statsGrid}>
+                                <div className={styles.statCard}>
+                                    <div className={`${styles.statIcon} ${styles.purple}`}>
+                                        <Users size={24} />
+                                    </div>
+                                    <div className={styles.statInfo}>
+                                        <span className={styles.statLabel}>Total Guests</span>
+                                        <span className={styles.statValue}>{guestStats.total}</span>
+                                    </div>
+                                </div>
+                                <div className={styles.statCard}>
+                                    <div className={`${styles.statIcon} ${styles.orange}`}>
+                                        <PieChart size={24} />
+                                    </div>
+                                    <div className={styles.statInfo}>
+                                        <span className={styles.statLabel}>New vs Repeat</span>
+                                        <span className={styles.statSub}>{guestStats.new} New / {guestStats.repeat} Returning</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                 </div>
             </div>
         </>
