@@ -21,13 +21,15 @@ export const InvoiceTemplate = ({ invoice, booking, guest, printRef }: InvoiceTe
         no: invoice.invoice_number,
         date: new Date(invoice.created_at || invoice.generated_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
         bookingRef: booking.booking_number || booking.id.slice(0, 8).toUpperCase(),
-        mode: invoice.payment_mode || invoice.payment_method || 'Direct',
+        type: booking.source || 'Direct',
+        mode: invoice.payment_mode || invoice.payment_method || 'Cash',
     };
 
     return (
         <div className={styles.container} ref={printRef}>
-            {/* Modern Hero Header */}
+            {/* ... Header ... */}
             <header className={styles.header}>
+                {/* ... (Keep existing header content) ... */}
                 <div className={styles.headerLeft}>
                     <h1 className={styles.brandName}>Ave Vista Resorts & Hotels</h1>
                     <p className={styles.address}>Balapuram, Vayattuparamba, Kannur, Kerala – 670582</p>
@@ -82,7 +84,11 @@ export const InvoiceTemplate = ({ invoice, booking, guest, printRef }: InvoiceTe
                             <span className={styles.infoValue}>{invoiceData.bookingRef}</span>
                         </div>
                         <div className={styles.infoRow}>
-                            <span className={styles.infoLabel}>Mode</span>
+                            <span className={styles.infoLabel}>Booking Type</span>
+                            <span className={styles.infoValue}>{invoiceData.type}</span>
+                        </div>
+                        <div className={styles.infoRow}>
+                            <span className={styles.infoLabel}>Payment Mode</span>
                             <span className={styles.infoValue}>{invoiceData.mode}</span>
                         </div>
                     </div>
@@ -97,7 +103,7 @@ export const InvoiceTemplate = ({ invoice, booking, guest, printRef }: InvoiceTe
                     <div className={styles.cardBody}>
                         <div className={styles.infoRow}>
                             <span className={styles.infoLabel}>Room Type</span>
-                            <span className={styles.infoValue}>Deluxe Hill View</span>
+                            <span className={styles.infoValue}>{booking.room?.type || 'Standard'}</span>
                         </div>
                         <div className={styles.infoRow}>
                             <span className={styles.infoLabel}>Room No</span>
@@ -115,10 +121,7 @@ export const InvoiceTemplate = ({ invoice, booking, guest, printRef }: InvoiceTe
                             <span className={styles.infoLabel}>Nights</span>
                             <span className={styles.infoValue}>{nights}</span>
                         </div>
-                        <div className={styles.infoRow}>
-                            <span className={styles.infoLabel}>Pax</span>
-                            <span className={styles.infoValue}>{booking.guests_count} Adults</span>
-                        </div>
+
                     </div>
                 </div>
             </div>

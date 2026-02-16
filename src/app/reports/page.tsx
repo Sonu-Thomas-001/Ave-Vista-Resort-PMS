@@ -141,11 +141,13 @@ export default function ReportsPage() {
             setGuestStats({ total: totalGuests, new: newGuests, repeat: repeatGuests, vip: vipGuests });
 
             // --- 4. Recent Transactions (Global) ---
-            const { data: recentTx } = await supabase
+            const { data: recentTx, error: txError } = await supabase
                 .from('invoices')
-                .select('*, bookings(guests(first_name, last_name), rooms(room_number))')
+                .select('*, bookings(booking_number, source, guests(first_name, last_name), rooms(room_number))')
                 .order('created_at', { ascending: false })
-                .limit(5);
+                .limit(10);
+
+            if (txError) console.error('Error fetching transactions:', txError);
             setRecentTransactions(recentTx || []);
 
         } catch (error) {
@@ -157,13 +159,15 @@ export default function ReportsPage() {
 
     const handleExport = () => {
         // ... (Keep existing export logic)
-        const headers = ['Invoice Number', 'Date', 'Amount', 'Guest', 'Room'];
+        const headers = ['Invoice No', 'Date', 'Booking ID', 'Booking Type', 'Payment Mode', 'Amount', 'Status'];
         const rows = recentTransactions.map(tx => [
             tx.invoice_number,
             new Date(tx.created_at).toLocaleDateString(),
+            tx.bookings?.booking_number || 'N/A',
+            tx.bookings?.source || 'Direct',
+            tx.payment_mode || 'N/A',
             tx.paid_amount,
-            `${tx.bookings?.guests?.first_name || ''} ${tx.bookings?.guests?.last_name || ''}`,
-            tx.bookings?.rooms?.room_number || 'N/A'
+            tx.status
         ]);
 
         const csvContent = "data:text/csv;charset=utf-8,"
@@ -273,26 +277,31 @@ export default function ReportsPage() {
                                 </div>
                             </div>
 
-                            {/* Recent Tx Table */}
                             <div className={styles.tableCard}>
                                 <h3>Recent Transactions</h3>
                                 <table className={styles.table}>
                                     <thead>
                                         <tr>
+                                            <th>Invoice No</th>
                                             <th>Date</th>
-                                            <th>Guest</th>
+                                            <th>Booking ID</th>
+                                            <th>Booking Type</th>
+                                            <th>Payment Mode</th>
                                             <th>Amount</th>
-                                            <th>Mode</th>
                                             <th>Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {recentTransactions.map((tx) => (
                                             <tr key={tx.id}>
+                                                <td className={styles.mono}>{tx.invoice_number}</td>
                                                 <td>{new Date(tx.created_at).toLocaleDateString()}</td>
-                                                <td>{tx.bookings?.guests?.first_name} {tx.bookings?.guests?.last_name}</td>
-                                                <td>₹{Number(tx.paid_amount).toLocaleString()}</td>
-                                                <td>{tx.payment_mode}</td>
+                                                <td className={styles.mono}>{tx.bookings?.booking_number || 'N/A'}</td>
+                                                <td>
+                                                    <span className={styles.badge}>{tx.bookings?.source || 'Direct'}</span>
+                                                </td>
+                                                <td>{tx.payment_mode || 'N/A'}</td>
+                                                <td style={{ fontWeight: 600 }}>₹{Number(tx.paid_amount).toLocaleString()}</td>
                                                 <td><span className={styles.tag}>{tx.status}</span></td>
                                             </tr>
                                         ))}

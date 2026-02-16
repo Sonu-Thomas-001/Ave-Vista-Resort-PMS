@@ -17,7 +17,7 @@ interface InvoiceWithDetails extends Invoice {
 
 export default function BillingPage() {
     const [activeTab, setActiveTab] = useState('Invoices'); // Invoices | DailyReport
-    const [invoices, setInvoices] = useState<Invoice[]>([]);
+    const [invoices, setInvoices] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [viewingInvoice, setViewingInvoice] = useState<InvoiceWithDetails | null>(null);
     const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
@@ -38,7 +38,7 @@ export default function BillingPage() {
     const fetchInvoices = async () => {
         const { data, error } = await supabase
             .from('invoices')
-            .select('*')
+            .select('*, booking:bookings(booking_number, source)')
             .order('invoice_date', { ascending: false });
 
         console.log('Invoices fetch result:', { data, error, count: data?.length });
@@ -190,12 +190,12 @@ export default function BillingPage() {
                         <table className={styles.table}>
                             <thead>
                                 <tr>
-                                    <th>Invoice ID</th>
-                                    <th>Guest</th>
-                                    <th>Room</th>
+                                    <th>Invoice No</th>
                                     <th>Date</th>
+                                    <th>Booking ID</th>
+                                    <th>Booking Type</th>
+                                    <th>Payment Mode</th>
                                     <th>Amount</th>
-                                    <th>Paid</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
@@ -203,23 +203,25 @@ export default function BillingPage() {
                             <tbody>
                                 {invoices.map((inv) => (
                                     <tr key={inv.id}>
-                                        <td className={styles.idCell} data-label="Invoice ID">
+                                        <td className={styles.idCell}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <FileText size={16} />
-                                                {inv.invoice_number}
+                                                <span className={styles.mono}>{inv.invoice_number}</span>
                                             </div>
                                         </td>
-                                        <td data-label="Guest">{inv.guest_name}</td>
-                                        <td data-label="Room"><span className={styles.roomBadge}>{inv.room_number}</span></td>
-                                        <td data-label="Date">{inv.invoice_date}</td>
-                                        <td className={styles.amount} data-label="Amount">₹{inv.total_amount.toLocaleString()}</td>
-                                        <td className={styles.amount} data-label="Paid">₹{inv.paid_amount.toLocaleString()}</td>
-                                        <td data-label="Status">
+                                        <td>{inv.invoice_date}</td>
+                                        <td className={styles.mono}>{inv.booking?.booking_number || 'N/A'}</td>
+                                        <td>
+                                            <span className={styles.badge}>{inv.booking?.source || 'Direct'}</span>
+                                        </td>
+                                        <td>{inv.payment_mode || 'N/A'}</td>
+                                        <td className={styles.amount}>₹{inv.paid_amount.toLocaleString()}</td>
+                                        <td>
                                             <span className={`${styles.status} ${styles[inv.status.toLowerCase()]}`}>
                                                 {inv.status}
                                             </span>
                                         </td>
-                                        <td data-label="Actions">
+                                        <td>
                                             <div className={styles.actions} style={{ justifyContent: 'flex-end', width: '100%' }}>
                                                 <button
                                                     className={styles.actionBtn}

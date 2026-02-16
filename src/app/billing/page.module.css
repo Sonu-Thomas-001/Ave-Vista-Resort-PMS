@@ -531,3 +531,19 @@
         display: none;
     }
 }
+
+.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: #e0f2fe;
+    color: #0369a1;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.mono {
+    font-family: monospace;
+    font-size: 0.9rem;
+    color: #475569;
+}
