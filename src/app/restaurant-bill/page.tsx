@@ -218,30 +218,175 @@ export default function RestaurantBillPage() {
         }
     };
 
-    const handlePrintBill = async (bill: RestaurantBill) => {
-        const printContainer = document.createElement('div');
-        printContainer.style.position = 'fixed';
-        printContainer.style.top = '0';
-        printContainer.style.left = '-9999px';
-        printContainer.style.width = '210mm';
-        printContainer.style.zIndex = '9999';
-        printContainer.style.background = 'white';
-        document.body.appendChild(printContainer);
+    const handlePrintBill = (bill: RestaurantBill) => {
+        const billDate = new Date(bill.created_at).toLocaleDateString('en-IN', {
+            day: '2-digit', month: 'short', year: 'numeric',
+        });
+        const billTime = new Date(bill.created_at).toLocaleTimeString('en-IN', {
+            hour: '2-digit', minute: '2-digit',
+        });
 
-        const { createRoot } = await import('react-dom/client');
-        const root = createRoot(printContainer);
-        const { RestaurantBillTemplate } = await import('@/components/RestaurantBillTemplate');
+        const halfTax = (bill.tax_amount / 2).toFixed(2);
 
-        root.render(<RestaurantBillTemplate bill={bill} />);
+        const itemsHtml = bill.items.map((item, i) => `
+            <div style="display:grid;grid-template-columns:50px 2fr 80px 1fr 1fr;padding:14px 20px;font-size:14px;border-bottom:1px solid #f3f4f6">
+                <div style="color:#9ca3af;font-weight:600">${String(i + 1).padStart(2, '0')}</div>
+                <div style="color:#1f2937;font-weight:500">${item.name}</div>
+                <div style="text-align:center;color:#4b5563;font-weight:600">${item.qty}</div>
+                <div style="text-align:right;color:#4b5563;font-family:'Courier New',monospace">₹${item.price.toLocaleString('en-IN')}</div>
+                <div style="text-align:right;font-weight:600;color:#1f2937;font-family:'Courier New',monospace">₹${(item.qty * item.price).toLocaleString('en-IN')}</div>
+            </div>
+        `).join('');
 
-        setTimeout(() => {
-            window.print();
+        const statusBg = bill.status === 'Paid' ? '#DEF7EC' : bill.status === 'Partial' ? '#FEF3C7' : '#FDE8E8';
+        const statusColor = bill.status === 'Paid' ? '#03543F' : bill.status === 'Partial' ? '#92400E' : '#9B1C1C';
+
+        const printHtml = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Restaurant Bill - ${bill.bill_number}</title>
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body { font-family: 'Segoe UI', -apple-system, sans-serif; color: #1f2937; padding: 48px; max-width: 800px; margin: 0 auto; }
+                    @media print { body { padding: 10mm; zoom: 0.92; } }
+                </style>
+            </head>
+            <body>
+                <!-- Header -->
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:32px;margin-bottom:32px;border-bottom:1px solid #e5e7eb;position:relative">
+                    <div style="flex:1">
+                        <h1 style="font-size:26px;font-weight:700;color:#00a0d2;margin:0 0 6px;letter-spacing:-0.5px">Ave Vista Resorts & Hotels</h1>
+                        <p style="font-size:13px;color:#6b7280;margin:0 0 12px">Balapuram, Vayattuparamba, Kannur, Kerala – 670582</p>
+                        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px;color:#4b5563">
+                            <span>📞 +91 90615 54545</span>
+                            <span style="color:#d1d5db">|</span>
+                            <span>✉ avevistaresort@gmail.com</span>
+                            <span style="color:#d1d5db">|</span>
+                            <span>🌐 www.avevistaresorts.com</span>
+                        </div>
+                    </div>
+                    <div style="text-align:right">
+                        <div style="display:inline-block;padding:8px 22px;background:linear-gradient(135deg,#00a0d2,#0088b8);color:white;border-radius:24px;font-size:13px;font-weight:600;letter-spacing:0.5px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,160,210,0.25)">🍽️ RESTAURANT BILL</div>
+                        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+                            <div>
+                                <div style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px">Bill No.</div>
+                                <div style="font-size:14px;font-weight:600;color:#1f2937">${bill.bill_number}</div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px">Date</div>
+                                <div style="font-size:14px;font-weight:600;color:#1f2937">${billDate}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Cards -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px">
+                    <!-- Bill Details -->
+                    <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:20px">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb">
+                            <span style="color:#00a0d2;font-size:16px">📋</span>
+                            <h3 style="margin:0;font-size:13px;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:0.5px">Bill Details</h3>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:10px">
+                            <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#6b7280">Bill Number</span><span style="font-weight:600">${bill.bill_number}</span></div>
+                            <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#6b7280">Date</span><span style="font-weight:600">${billDate}</span></div>
+                            <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#6b7280">Time</span><span style="font-weight:600">${billTime}</span></div>
+                            <div style="display:flex;justify-content:space-between;font-size:13px;align-items:center"><span style="color:#6b7280">Payment</span><span style="padding:3px 12px;border-radius:20px;font-size:12px;font-weight:600;background:#E6F7FB;color:#0088B8">${bill.payment_mode}</span></div>
+                            <div style="display:flex;justify-content:space-between;font-size:13px;align-items:center"><span style="color:#6b7280">Status</span><span style="padding:3px 12px;border-radius:20px;font-size:12px;font-weight:600;background:${statusBg};color:${statusColor}">${bill.status}</span></div>
+                        </div>
+                    </div>
+                    <!-- Guest Details -->
+                    <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:20px">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb">
+                            <span style="color:#00a0d2;font-size:16px">👤</span>
+                            <h3 style="margin:0;font-size:13px;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:0.5px">Guest Details</h3>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:10px">
+                            <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#6b7280">Guest Name</span><span style="font-weight:600">${bill.guest_name}</span></div>
+                            ${bill.room_number ? `<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#6b7280">Room</span><span style="font-weight:600">${bill.room_number}</span></div>` : ''}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Items Table -->
+                <div style="margin-bottom:32px">
+                    <h3 style="font-size:15px;font-weight:600;color:#1f2937;margin:0 0 16px;padding-bottom:8px;border-bottom:2px solid #00a0d2">🍽️ Order Items</h3>
+                    <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
+                        <div style="display:grid;grid-template-columns:50px 2fr 80px 1fr 1fr;background:#f9fafb;padding:14px 20px;font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #e5e7eb">
+                            <div>#</div>
+                            <div>Description</div>
+                            <div style="text-align:center">Qty</div>
+                            <div style="text-align:right">Rate</div>
+                            <div style="text-align:right">Amount</div>
+                        </div>
+                        <div>${itemsHtml}</div>
+                    </div>
+                </div>
+
+                <!-- Summary Card -->
+                <div style="width:50%;margin-left:auto;margin-bottom:32px;padding:20px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px">
+                    <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:14px;color:#4b5563;border-bottom:1px solid #e5e7eb">
+                        <span>Subtotal</span><span style="font-family:'Courier New',monospace;font-weight:600;color:#1f2937">₹${bill.subtotal.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:14px;color:#4b5563;border-bottom:1px solid #e5e7eb">
+                        <span>CGST (2.5%)</span><span style="font-family:'Courier New',monospace;font-weight:600;color:#1f2937">₹${halfTax}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:14px;color:#4b5563;border-bottom:2px solid #d1d5db">
+                        <span>SGST (2.5%)</span><span style="font-family:'Courier New',monospace;font-weight:600;color:#1f2937">₹${halfTax}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:16px 0 0;font-size:20px;font-weight:700;color:#00a0d2;margin-top:8px">
+                        <span>Grand Total</span><span style="font-family:'Courier New',monospace">₹${bill.total_amount.toLocaleString('en-IN')}</span>
+                    </div>
+                </div>
+
+                ${bill.notes ? `<div style="margin-bottom:24px;padding:16px 20px;background:#e6f7fb;border-left:4px solid #00a0d2;border-radius:0 8px 8px 0;font-size:13px;color:#006b8f"><strong style="color:#005577">Note:</strong> ${bill.notes}</div>` : ''}
+
+                <!-- Footer -->
+                <div style="height:3px;background:linear-gradient(90deg,transparent,#00a0d2,transparent);border-radius:2px;margin:32px 0 0"></div>
+                <div style="padding:32px 20px;text-align:center;background:#fafbfc;border-radius:12px;margin-top:24px">
+                    <h2 style="margin:0 0 8px;font-size:17px;font-weight:600;color:#1f2937;letter-spacing:-0.2px">Thank you for dining with us!</h2>
+                    <p style="margin:0 0 16px;font-size:13px;color:#6b7280;font-style:italic">We hope you enjoyed your meal at Ave Vista</p>
+                    <div style="display:flex;justify-content:center;gap:20px;font-size:12px;color:#9ca3af;margin-bottom:12px">
+                        <span>📞 +91 90615 54545</span>
+                        <span>✉ avevistaresort@gmail.com</span>
+                        <span>🌐 www.avevistaresorts.com</span>
+                    </div>
+                    <p style="font-size:11px;color:#d1d5db;margin:0">This is a computer-generated bill and does not require a signature.</p>
+                </div>
+            </body>
+            </html>
+        `;
+
+        // Create a hidden iframe for printing
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.width = '0px';
+        iframe.style.height = '0px';
+        iframe.style.border = 'none';
+        document.body.appendChild(iframe);
+
+        const iframeDoc = iframe.contentWindow?.document;
+        if (iframeDoc) {
+            iframeDoc.open();
+            iframeDoc.write(printHtml);
+            iframeDoc.close();
+
+            // Wait for content to load then print
             setTimeout(() => {
-                root.unmount();
-                document.body.removeChild(printContainer);
-            }, 100);
-        }, 500);
+                iframe.contentWindow?.focus();
+                iframe.contentWindow?.print();
+
+                // Remove iframe after printing (give it a moment to initialize the print dialog)
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                }, 1000);
+            }, 500);
+        }
     };
+
+
 
     // Filter bills by search
     const filteredBills = bills.filter(bill => {
@@ -291,7 +436,7 @@ export default function RestaurantBillPage() {
                 {/* Controls */}
                 <div className={styles.controls}>
                     <div className={styles.tabs}>
-                        <button className={`${styles.tabBtn} ${styles.active}`}>
+                        <button className={`${styles.tabBtn} ${styles.active} `}>
                             All Bills
                         </button>
                     </div>
@@ -360,7 +505,7 @@ export default function RestaurantBillPage() {
                                         <td className={styles.amount}>₹{bill.total_amount.toLocaleString()}</td>
                                         <td>{bill.payment_mode}</td>
                                         <td>
-                                            <span className={`${styles.status} ${styles[bill.status.toLowerCase()]}`}>
+                                            <span className={`${styles.status} ${styles[bill.status.toLowerCase()]} `}>
                                                 {bill.status}
                                             </span>
                                         </td>
@@ -369,7 +514,7 @@ export default function RestaurantBillPage() {
                                                 <button
                                                     className={styles.actionBtn}
                                                     title="View"
-                                                    aria-label={`View bill ${bill.bill_number}`}
+                                                    aria-label={`View bill ${bill.bill_number} `}
                                                     onClick={() => setViewingBill(bill)}
                                                 >
                                                     <Eye size={16} />
@@ -377,7 +522,7 @@ export default function RestaurantBillPage() {
                                                 <button
                                                     className={styles.actionBtn}
                                                     title="Edit"
-                                                    aria-label={`Edit bill ${bill.bill_number}`}
+                                                    aria-label={`Edit bill ${bill.bill_number} `}
                                                     onClick={() => openEditModal(bill)}
                                                 >
                                                     <Pencil size={16} />
@@ -385,7 +530,7 @@ export default function RestaurantBillPage() {
                                                 <button
                                                     className={styles.actionBtn}
                                                     title="Print"
-                                                    aria-label={`Print bill ${bill.bill_number}`}
+                                                    aria-label={`Print bill ${bill.bill_number} `}
                                                     onClick={() => handlePrintBill(bill)}
                                                 >
                                                     <Printer size={16} />
@@ -393,7 +538,7 @@ export default function RestaurantBillPage() {
                                                 <button
                                                     className={styles.deleteBtn}
                                                     title="Delete"
-                                                    aria-label={`Delete bill ${bill.bill_number}`}
+                                                    aria-label={`Delete bill ${bill.bill_number} `}
                                                     onClick={() => setDeletingBill(bill)}
                                                 >
                                                     <Trash2 size={16} />
@@ -415,7 +560,7 @@ export default function RestaurantBillPage() {
                         <div className={styles.modalHeader}>
                             <h3>
                                 <UtensilsCrossed size={20} style={{ color: '#FF6B35' }} />
-                                {editingBill ? `Edit Bill #${editingBill.bill_number}` : 'Create New Restaurant Bill'}
+                                {editingBill ? `Edit Bill #${editingBill.bill_number} ` : 'Create New Restaurant Bill'}
                             </h3>
                             <button onClick={closeModal} className={styles.closeBtn}>
                                 <X size={20} />
