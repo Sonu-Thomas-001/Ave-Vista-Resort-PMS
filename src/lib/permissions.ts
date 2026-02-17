@@ -8,6 +8,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
         '/rooms',
         '/guests',
         '/guest-lookup',
+        '/restaurant-bill',
         '/reports',
         '/help',
         '/profile'
@@ -20,6 +21,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
         '/guest-lookup',
         '/front-desk',
         '/billing',
+        '/restaurant-bill',
         '/help',
         '/profile'
     ]
