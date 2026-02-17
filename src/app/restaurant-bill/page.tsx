@@ -50,6 +50,7 @@ export default function RestaurantBillPage() {
     const [guestName, setGuestName] = useState('');
     const [roomNumber, setRoomNumber] = useState('');
     const [items, setItems] = useState<BillItem[]>([{ ...emptyItem }]);
+    const [menuItems, setMenuItems] = useState<{ name: string; price: number }[]>([]);
     const [paymentMode, setPaymentMode] = useState('Cash');
     const [status, setStatus] = useState('Paid');
     const [notes, setNotes] = useState('');
@@ -58,6 +59,7 @@ export default function RestaurantBillPage() {
 
     useEffect(() => {
         fetchBills();
+        fetchMenuItems();
         const interval = setInterval(fetchBills, 15000);
         return () => clearInterval(interval);
     }, []);
@@ -73,6 +75,17 @@ export default function RestaurantBillPage() {
         }
         if (data) setBills(data);
         setLoading(false);
+    };
+
+    const fetchMenuItems = async () => {
+        const { data, error } = await supabase
+            .from('restaurant_menu_items')
+            .select('name, price')
+            .eq('is_available', true);
+
+        if (!error && data) {
+            setMenuItems(data);
+        }
     };
 
     const generateBillNumber = () => {
@@ -134,6 +147,11 @@ export default function RestaurantBillPage() {
         const updated = [...items];
         if (field === 'name') {
             updated[index].name = value as string;
+            // Auto-fill price from menu if matches
+            const menuItem = menuItems.find(m => m.name.toLowerCase() === (value as string).toLowerCase());
+            if (menuItem) {
+                updated[index].price = menuItem.price;
+            }
         } else if (field === 'qty') {
             updated[index].qty = Math.max(1, Number(value));
         } else if (field === 'price') {
@@ -610,7 +628,13 @@ export default function RestaurantBillPage() {
                                             placeholder="Item name"
                                             value={item.name}
                                             onChange={(e) => updateItem(index, 'name', e.target.value)}
+                                            list="menu-items"
                                         />
+                                        <datalist id="menu-items">
+                                            {menuItems.map((menuItem, i) => (
+                                                <option key={i} value={menuItem.name} />
+                                            ))}
+                                        </datalist>
                                         <input
                                             type="number"
                                             className={styles.itemInput}
