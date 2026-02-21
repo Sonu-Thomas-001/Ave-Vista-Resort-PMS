@@ -192,14 +192,6 @@ export const InvoiceTemplate = ({ invoice, booking, guest, printRef }: InvoiceTe
                     <span>Sub Total</span>
                     <span>₹{subTotal.toLocaleString()}</span>
                 </div>
-                <div className={styles.summaryRow}>
-                    <span>CGST ({(invoice.gst_rate || 0) / 2}%)</span>
-                    <span>₹{(gstAmount / 2).toFixed(2)}</span>
-                </div>
-                <div className={styles.summaryRow}>
-                    <span>SGST ({(invoice.gst_rate || 0) / 2}%)</span>
-                    <span>₹{(gstAmount / 2).toFixed(2)}</span>
-                </div>
                 <div className={styles.grandTotalRow}>
                     <span>Grand Total</span>
                     <span>₹{grandTotal.toLocaleString()}</span>

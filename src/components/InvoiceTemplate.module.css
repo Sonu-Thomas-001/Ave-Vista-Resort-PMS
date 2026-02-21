@@ -687,8 +687,22 @@
     }
 
     .header {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
         padding-bottom: 16px;
         margin-bottom: 24px;
+        flex-wrap: nowrap !important;
+    }
+
+    .headerLeft {
+        flex: 1 !important;
+    }
+
+    .headerRight {
+        text-align: right !important;
+        width: auto !important;
     }
 
     .brandName {
