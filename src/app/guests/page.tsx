@@ -175,6 +175,18 @@ export default function GuestsPage() {
                     aValue = a.phone || '';
                     bValue = b.phone || '';
                     break;
+                case 'company_name':
+                    aValue = a.company_name?.toLowerCase() || '';
+                    bValue = b.company_name?.toLowerCase() || '';
+                    break;
+                case 'gst_number':
+                    aValue = a.gst_number?.toLowerCase() || '';
+                    bValue = b.gst_number?.toLowerCase() || '';
+                    break;
+                case 'address':
+                    aValue = a.address?.toLowerCase() || '';
+                    bValue = b.address?.toLowerCase() || '';
+                    break;
                 case 'status':
                     aValue = getGuestStatus(a.bookings).status;
                     bValue = getGuestStatus(b.bookings).status;
@@ -200,9 +212,13 @@ export default function GuestsPage() {
 
     const filteredGuests = guests.filter(guest => {
         const fullName = `${guest.first_name} ${guest.last_name}`.toLowerCase();
-        return fullName.includes(searchTerm.toLowerCase()) ||
-            guest.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            guest.phone?.includes(searchTerm);
+        const searchLower = searchTerm.toLowerCase();
+        return fullName.includes(searchLower) ||
+            guest.email?.toLowerCase().includes(searchLower) ||
+            guest.phone?.includes(searchTerm) ||
+            guest.company_name?.toLowerCase().includes(searchLower) ||
+            guest.gst_number?.toLowerCase().includes(searchLower) ||
+            guest.address?.toLowerCase().includes(searchLower);
     });
 
     return (
@@ -247,6 +263,15 @@ export default function GuestsPage() {
                                     <th className={styles.sortable} onClick={() => handleSort('phone')}>
                                         Contact <SortIcon column="phone" />
                                     </th>
+                                    <th className={styles.sortable} onClick={() => handleSort('company_name')}>
+                                        Company <SortIcon column="company_name" />
+                                    </th>
+                                    <th className={styles.sortable} onClick={() => handleSort('gst_number')}>
+                                        GST No <SortIcon column="gst_number" />
+                                    </th>
+                                    <th className={styles.sortable} onClick={() => handleSort('address')}>
+                                        Address <SortIcon column="address" />
+                                    </th>
                                     <th className={styles.sortable} onClick={() => handleSort('status')}>
                                         Status <SortIcon column="status" />
                                     </th>
@@ -259,7 +284,7 @@ export default function GuestsPage() {
                             </thead>
                             <tbody>
                                 {filteredGuests.length === 0 ? (
-                                    <tr><td colSpan={7} style={{ padding: 40, textAlign: 'center' }}>No guests found.</td></tr>
+                                    <tr><td colSpan={10} style={{ padding: 40, textAlign: 'center' }}>No guests found.</td></tr>
                                 ) : (
                                     getSortedGuests().map((guest, index) => {
                                         const { status, room } = getGuestStatus(guest.bookings);
@@ -274,6 +299,9 @@ export default function GuestsPage() {
                                                     </div>
                                                 </td>
                                                 <td data-label="Contact">{guest.phone || '-'}</td>
+                                                <td data-label="Company">{guest.company_name || '-'}</td>
+                                                <td data-label="GST No">{guest.gst_number || '-'}</td>
+                                                <td data-label="Address" style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={guest.address}>{guest.address || '-'}</td>
                                                 <td data-label="Status">
                                                     <span className={`${styles.status} ${styles[status.toLowerCase().replace(' ', '')] || styles.checkedout}`}>
                                                         {status}
