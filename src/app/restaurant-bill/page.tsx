@@ -45,6 +45,7 @@ export default function RestaurantBillPage() {
     const [viewingBill, setViewingBill] = useState<RestaurantBill | null>(null);
     const [deletingBill, setDeletingBill] = useState<RestaurantBill | null>(null);
     const [saving, setSaving] = useState(false);
+    const [activeDropdownIndex, setActiveDropdownIndex] = useState<number | null>(null);
 
     // Form state
     const [guestName, setGuestName] = useState('');
@@ -622,19 +623,46 @@ export default function RestaurantBillPage() {
 
                                 {items.map((item, index) => (
                                     <div key={index} className={styles.itemRow}>
-                                        <input
-                                            type="text"
-                                            className={styles.itemInput}
-                                            placeholder="Item name"
-                                            value={item.name}
-                                            onChange={(e) => updateItem(index, 'name', e.target.value)}
-                                            list="menu-items"
-                                        />
-                                        <datalist id="menu-items">
-                                            {menuItems.map((menuItem, i) => (
-                                                <option key={i} value={menuItem.name} />
-                                            ))}
-                                        </datalist>
+                                        <div style={{ position: 'relative' }}>
+                                            <input
+                                                type="text"
+                                                className={styles.itemInput}
+                                                placeholder="Item name"
+                                                value={item.name}
+                                                onChange={(e) => {
+                                                    updateItem(index, 'name', e.target.value);
+                                                    setActiveDropdownIndex(index);
+                                                }}
+                                                onFocus={() => setActiveDropdownIndex(index)}
+                                                onBlur={() => {
+                                                    // Delay hiding the dropdown to allow click events on items to fire first
+                                                    setTimeout(() => setActiveDropdownIndex(null), 200);
+                                                }}
+                                            />
+
+                                            {/* Custom Dropdown */}
+                                            {activeDropdownIndex === index && menuItems.filter(m => m.name.toLowerCase().includes(item.name.toLowerCase())).length > 0 && (
+                                                <div className={styles.customDropdown}>
+                                                    {menuItems
+                                                        .filter(m => m.name.toLowerCase().includes(item.name.toLowerCase()))
+                                                        .map((menuItem, i) => (
+                                                            <div
+                                                                key={i}
+                                                                className={styles.customDropdownItem}
+                                                                onMouseDown={(e) => {
+                                                                    // using onMouseDown instead of onClick since onBlur on input fires before onClick
+                                                                    e.preventDefault();
+                                                                    updateItem(index, 'name', menuItem.name);
+                                                                    setActiveDropdownIndex(null);
+                                                                }}
+                                                            >
+                                                                {menuItem.name} <span style={{ color: '#94A3B8', fontSize: '0.85rem' }}>₹{menuItem.price}</span>
+                                                            </div>
+                                                        ))}
+                                                </div>
+                                            )}
+                                        </div>
+
                                         <input
                                             type="number"
                                             className={styles.itemInput}
