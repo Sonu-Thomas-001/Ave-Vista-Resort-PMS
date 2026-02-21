@@ -12,8 +12,13 @@ interface InvoiceTemplateProps {
 export const InvoiceTemplate = ({ invoice, booking, guest, printRef }: InvoiceTemplateProps) => {
     if (!invoice || !booking) return null;
 
-    const nights = Math.ceil((new Date(booking.check_out_date).getTime() - new Date(booking.check_in_date).getTime()) / (1000 * 60 * 60 * 24));
-    const subTotal = invoice.total_amount || invoice.amount;
+    // Safely calculate nights, ensuring we get a positive number and at least 1 night (for day-use or same-day checkouts)
+    const checkInTime = new Date(booking.check_in_date).getTime();
+    const checkOutTime = new Date(booking.check_out_date).getTime();
+    // Use Math.abs to handle accidental reverse dates, and Math.max to enforce minimum 1 night
+    const nights = Math.max(1, Math.ceil(Math.abs(checkOutTime - checkInTime) / (1000 * 60 * 60 * 24)));
+    // 1st priority: invoice amount. 2nd: booking total. Fallback: 0
+    const subTotal = invoice.total_amount || invoice.amount || booking.total_price || 0;
     const gstAmount = (subTotal * (invoice.gst_rate || 0)) / 100;
     const grandTotal = subTotal + gstAmount;
 
@@ -179,8 +184,8 @@ export const InvoiceTemplate = ({ invoice, booking, guest, printRef }: InvoiceTe
                         <div className={styles.tableRow}>
                             <div className={styles.colDescription}>Room Tariff</div>
                             <div className={styles.colQty}>{nights}</div>
-                            <div className={styles.colRate}>₹{(invoice.total_amount / nights).toFixed(2)}</div>
-                            <div className={styles.colAmount}>₹{invoice.total_amount.toLocaleString()}</div>
+                            <div className={styles.colRate}>₹{(subTotal / nights).toFixed(2)}</div>
+                            <div className={styles.colAmount}>₹{subTotal.toLocaleString()}</div>
                         </div>
                     </div>
                 </div>
