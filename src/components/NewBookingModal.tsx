@@ -22,6 +22,7 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
     const [availableRooms, setAvailableRooms] = useState<Room[]>([]);
     const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
     const [guestDetails, setGuestDetails] = useState({ firstName: '', lastName: '', email: '', phone: '' });
+    const [bookingType, setBookingType] = useState('Standard');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -182,7 +183,7 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                         check_out_date: dates.checkOut,
                         status: 'Confirmed',
                         total_amount: totalAmount,
-                        source: 'Direct',
+                        source: bookingType, // Saving Booking Type into the 'source' column
                         booking_number: bookingNumber,
                         advance_amount: advanceAmount
                     }])
@@ -457,6 +458,21 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                                             onChange={e => setGuestDetails({ ...guestDetails, email: e.target.value })}
                                             disabled={!!selectedGuestId}
                                         />
+                                    </div>
+
+                                    <div className={styles.formGroup}>
+                                        <label>Booking Type</label>
+                                        <select
+                                            className={styles.input}
+                                            value={bookingType}
+                                            onChange={(e) => setBookingType(e.target.value)}
+                                        >
+                                            <option value="Standard">Standard</option>
+                                            <option value="Complementary">Complementary</option>
+                                            <option value="Corporate">Corporate</option>
+                                            <option value="OTA">OTA (Online Travel Agent)</option>
+                                            <option value="Direct">Direct</option>
+                                        </select>
                                     </div>
 
                                     <div className={styles.formGroup}>
