@@ -298,10 +298,10 @@ export default function GuestsPage() {
                                                         <span className={styles.email}>{guest.email || 'No Email'}</span>
                                                     </div>
                                                 </td>
-                                                <td data-label="Contact">{guest.phone || '-'}</td>
-                                                <td data-label="Company">{guest.company_name || '-'}</td>
-                                                <td data-label="GST No">{guest.gst_number || '-'}</td>
-                                                <td data-label="Address" style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={guest.address}>{guest.address || '-'}</td>
+                                                <td data-label="Contact" style={{ whiteSpace: 'nowrap' }}>{guest.phone || '-'}</td>
+                                                <td data-label="Company" style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={guest.company_name}>{guest.company_name || '-'}</td>
+                                                <td data-label="GST No" style={{ whiteSpace: 'nowrap' }}>{guest.gst_number || '-'}</td>
+                                                <td data-label="Address" style={{ maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={guest.address}>{guest.address || '-'}</td>
                                                 <td data-label="Status">
                                                     <span className={`${styles.status} ${styles[status.toLowerCase().replace(' ', '')] || styles.checkedout}`}>
                                                         {status}

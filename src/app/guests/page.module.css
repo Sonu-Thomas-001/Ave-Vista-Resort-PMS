@@ -58,8 +58,18 @@
 
 .table th,
 .table td {
-    padding: 18px 20px;
+    padding: 14px 12px;
     text-align: left;
+}
+
+.table th:first-child,
+.table td:first-child {
+    padding-left: 24px;
+}
+
+.table th:last-child,
+.table td:last-child {
+    padding-right: 24px;
 }
 
 .table th {
@@ -70,6 +80,7 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border-bottom: 2px solid #E2E8F0;
+    white-space: nowrap;
 }
 
 .table th:first-child {
@@ -90,12 +101,10 @@
 
 .row {
     position: relative;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .row:hover {
     background: linear-gradient(to right, #FAFBFF 0%, #F8FAFC 100%);
-    transform: translateX(4px);
 }
 
 .nameCell {
