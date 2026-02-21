@@ -34,7 +34,7 @@ interface RestaurantBill {
 
 const emptyItem: BillItem = { name: '', qty: 1, price: 0 };
 
-const GST_RATE = 5; // 5% GST for restaurant
+const GST_RATE = 0; // GST removed per request
 
 export default function RestaurantBillPage() {
     const [bills, setBills] = useState<RestaurantBill[]>([]);
@@ -98,8 +98,8 @@ export default function RestaurantBillPage() {
 
     const calculateTotals = (billItems: BillItem[]) => {
         const subtotal = billItems.reduce((sum, item) => sum + (item.qty * item.price), 0);
-        const tax_amount = Math.round((subtotal * GST_RATE) / 100);
-        const total_amount = subtotal + tax_amount;
+        const tax_amount = 0;
+        const total_amount = subtotal;
         return { subtotal, tax_amount, total_amount };
     };
 
@@ -696,10 +696,6 @@ export default function RestaurantBillPage() {
                                 <div className={styles.totalRow}>
                                     <span>Subtotal</span>
                                     <span>₹{formSubtotal.toLocaleString()}</span>
-                                </div>
-                                <div className={styles.totalRow}>
-                                    <span>GST ({GST_RATE}%)</span>
-                                    <span>₹{formTax.toLocaleString()}</span>
                                 </div>
                                 <div className={styles.totalRow}>
                                     <span>Total Amount</span>
