@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import Header from '@/components/Header';
-import { Search, User, Phone, Mail, FileText, CalendarDays, IndianRupee, Clock, History } from 'lucide-react';
+import { Search, User, Phone, Mail, FileText, CalendarDays, IndianRupee, Clock, History, Edit2, Building2, MapPin, Hash, Crown } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './page.module.css';
+import GuestModal from '@/components/GuestModal';
 
 export default function GuestLookupPage() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -13,6 +14,9 @@ export default function GuestLookupPage() {
     const [history, setHistory] = useState<any[]>([]);
     const [stats, setStats] = useState({ totalSpent: 0, totalStays: 0, avgStay: 0 });
     const [hasSearched, setHasSearched] = useState(false);
+
+    // Modal State
+    const [showModal, setShowModal] = useState(false);
 
     const handleSearch = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
@@ -69,6 +73,12 @@ export default function GuestLookupPage() {
         }
     };
 
+    const handleEditSuccess = () => {
+        setShowModal(false);
+        // Re-fetch with the current query to get updated guest data
+        handleSearch();
+    };
+
     return (
         <>
             <Header title="Guest Details Checker" />
@@ -110,33 +120,53 @@ export default function GuestLookupPage() {
                         <>
                             {/* Profile Card */}
                             <div className={styles.profileCard}>
-                                <div className={styles.avatar}>
-                                    {guest.first_name[0]}{guest.last_name[0]}
+                                <div className={styles.avatar} data-letter={guest.first_name[0]?.toUpperCase()}>
+                                    {guest.first_name[0]}{guest.last_name ? guest.last_name[0] : ''}
                                 </div>
                                 <div className={styles.profileInfo}>
                                     <div className={styles.profileHeader}>
                                         <div className={styles.nameSection}>
                                             <h2>{guest.first_name} {guest.last_name}</h2>
-                                            {guest.is_vip && <span className={`${styles.badge} ${styles.vipBadge}`}>VIP Guest</span>}
+                                            {guest.is_vip && <span className={`${styles.badge} ${styles.vipBadge}`}><Crown size={14} /> VIP Guest</span>}
+                                        </div>
+                                        <div className={styles.actionSection}>
+                                            <button
+                                                className={styles.editBtn}
+                                                onClick={() => setShowModal(true)}
+                                            >
+                                                <Edit2 size={16} /> Edit Profile
+                                            </button>
                                         </div>
                                     </div>
 
                                     <div className={styles.detailsGrid}>
                                         <div className={styles.detailItem}>
                                             <span className={styles.label}>Email Address</span>
-                                            <span className={styles.value}><Mail size={14} /> {guest.email || 'N/A'}</span>
+                                            <span className={styles.value}><Mail size={16} /> {guest.email || 'N/A'}</span>
                                         </div>
                                         <div className={styles.detailItem}>
                                             <span className={styles.label}>Phone Number</span>
-                                            <span className={styles.value}><Phone size={14} /> {guest.phone || 'N/A'}</span>
+                                            <span className={styles.value}><Phone size={16} /> {guest.phone || 'N/A'}</span>
+                                        </div>
+                                        <div className={styles.detailItem}>
+                                            <span className={styles.label}>Company</span>
+                                            <span className={styles.value}><Building2 size={16} /> {guest.company_name || 'N/A'}</span>
+                                        </div>
+                                        <div className={styles.detailItem}>
+                                            <span className={styles.label}>GST Number</span>
+                                            <span className={styles.value}><Hash size={16} /> {guest.gst_number || 'N/A'}</span>
+                                        </div>
+                                        <div className={styles.detailItem}>
+                                            <span className={styles.label}>Address</span>
+                                            <span className={styles.value}><MapPin size={16} /> {guest.address || 'N/A'}</span>
                                         </div>
                                         <div className={styles.detailItem}>
                                             <span className={styles.label}>ID Proof Type</span>
-                                            <span className={styles.value}><FileText size={14} /> {guest.id_proof_type || 'N/A'}</span>
+                                            <span className={styles.value}><FileText size={16} /> {guest.id_proof_type || 'N/A'}</span>
                                         </div>
                                         <div className={styles.detailItem}>
                                             <span className={styles.label}>ID Number</span>
-                                            <span className={styles.value}><FileText size={14} /> {guest.id_proof_number || 'N/A'}</span>
+                                            <span className={styles.value}><Hash size={16} /> {guest.id_proof_number || 'N/A'}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -199,7 +229,7 @@ export default function GuestLookupPage() {
                                                     <td>{booking.rooms?.room_number} ({booking.rooms?.type})</td>
                                                     <td>₹{booking.total_amount}</td>
                                                     <td>
-                                                        <span className={`${styles.statusBadge} ${styles['status' + booking.status.replace(/\s/g, '')]}`}>
+                                                        <span className={`${styles.statusIndicator} ${styles['statusindicator' + booking.status.replace(/\s/g, '')]}`}>
                                                             {booking.status}
                                                         </span>
                                                     </td>
@@ -220,6 +250,14 @@ export default function GuestLookupPage() {
                     )}
                 </div>
             </div>
+
+            {showModal && guest && (
+                <GuestModal
+                    guest={guest}
+                    onClose={() => setShowModal(false)}
+                    onSuccess={handleEditSuccess}
+                />
+            )}
         </>
     );
 }
