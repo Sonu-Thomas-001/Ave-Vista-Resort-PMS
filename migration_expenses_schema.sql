@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS public.expense_categories (
     description TEXT,
     is_default BOOLEAN DEFAULT FALSE, -- Built-in categories
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL
+    created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL
 );
 
 -- EXPENSES Table (Main)
@@ -22,12 +22,12 @@ CREATE TABLE IF NOT EXISTS public.expenses (
     payment_mode VARCHAR CHECK (payment_mode IN ('Cash', 'UPI', 'Bank', 'Card')) DEFAULT 'Cash',
     notes TEXT,
     attachment_url TEXT, -- Supabase Storage path
-    created_by UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    created_by UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     is_deleted BOOLEAN DEFAULT FALSE,
     deleted_at TIMESTAMP WITH TIME ZONE,
-    deleted_by UUID REFERENCES auth.users(id) ON DELETE SET NULL
+    deleted_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL
 );
 
 -- Enable Row Level Security

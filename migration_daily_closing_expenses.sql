@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS public.daily_closing (
     occupancy_rate NUMERIC DEFAULT 0,
     bookings_count INT NOT NULL DEFAULT 0,
     notes TEXT,
-    created_by UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    created_by UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     is_locked BOOLEAN DEFAULT FALSE -- Prevent modifications after closing
