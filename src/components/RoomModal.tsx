@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { X, Save, Home } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
+import { ROOM_STATUS, RoomStatusType } from '@/lib/constants';
 import styles from './RoomModal.module.css';
 
 interface Room {
@@ -12,7 +13,7 @@ interface Room {
     type: string;
     price_per_night: number;
     max_occupancy: number;
-    status: string;
+    status: RoomStatusType;
 }
 
 interface RoomModalProps {
@@ -27,7 +28,7 @@ export default function RoomModal({ room, onClose, onSuccess }: RoomModalProps) 
         type: '',
         price_per_night: 0,
         max_occupancy: 1,
-        status: 'Clean'
+        status: ROOM_STATUS.CLEAN
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -39,7 +40,7 @@ export default function RoomModal({ room, onClose, onSuccess }: RoomModalProps) 
                 type: room.type || '',
                 price_per_night: room.price_per_night || 0,
                 max_occupancy: room.max_occupancy || 1,
-                status: room.status || 'Clean'
+                status: (room.status as RoomStatusType) || ROOM_STATUS.CLEAN
             });
         }
     }, [room]);
@@ -58,8 +59,8 @@ export default function RoomModal({ room, onClose, onSuccess }: RoomModalProps) 
         try {
             if (room?.id) {
                 // Update
-                const { error: updateError } = await supabase
-                    .from('rooms')
+                const { error: updateError } = await (supabase
+                    .from('rooms') as any)
                     .update({
                         room_number: formData.room_number,
                         type: formData.type,
@@ -72,8 +73,8 @@ export default function RoomModal({ room, onClose, onSuccess }: RoomModalProps) 
                 if (updateError) throw updateError;
             } else {
                 // Create
-                const { error: insertError } = await supabase
-                    .from('rooms')
+                const { error: insertError } = await (supabase
+                    .from('rooms') as any)
                     .insert([{
                         room_number: formData.room_number,
                         type: formData.type,
@@ -85,8 +86,8 @@ export default function RoomModal({ room, onClose, onSuccess }: RoomModalProps) 
                 if (insertError) throw insertError;
             }
             onSuccess();
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An unknown error occurred');
         } finally {
             setLoading(false);
         }
@@ -179,13 +180,13 @@ export default function RoomModal({ room, onClose, onSuccess }: RoomModalProps) 
                             <label>Status</label>
                             <select
                                 value={formData.status}
-                                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                onChange={(e) => setFormData({ ...formData, status: e.target.value as RoomStatusType })}
                                 className={styles.input}
                             >
-                                <option value="Clean">Clean</option>
-                                <option value="Dirty">Dirty</option>
-                                <option value="Maintenance">Maintenance</option>
-                                <option value="Occupied">Occupied</option>
+                                <option value={ROOM_STATUS.CLEAN}>Clean</option>
+                                <option value={ROOM_STATUS.DIRTY}>Dirty</option>
+                                <option value={ROOM_STATUS.MAINTENANCE}>Maintenance</option>
+                                <option value={ROOM_STATUS.OCCUPIED}>Occupied</option>
                             </select>
                         </div>
                     </form>

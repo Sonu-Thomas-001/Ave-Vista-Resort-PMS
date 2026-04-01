@@ -4,15 +4,10 @@ import { useState, useEffect } from 'react';
 import { CheckCircle2, User, Home, BellRing, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
+import { Activity, BookingWithGuest, Invoice, Room } from '@/types/dashboard';
 import styles from './LiveOperations.module.css';
 
-interface Activity {
-    id: string;
-    text: string;
-    time: string;
-    type: 'guest' | 'task' | 'payment' | 'booking' | 'system';
-    timestamp: Date;
-}
+// Re-using defined Activity type from dashboard types
 
 export default function LiveOperations() {
     const [activities, setActivities] = useState<Activity[]>([]);
@@ -63,24 +58,24 @@ export default function LiveOperations() {
                 .select(`
                     id,
                     status,
-                    updated_at,
+                    created_at,
                     guests (first_name, last_name)
                 `)
                 .eq('status', 'Checked In')
-                .order('updated_at', { ascending: false })
-                .limit(3);
+                .order('created_at', { ascending: false })
+                .limit(3) as { data: BookingWithGuest[] | null };
 
             if (checkIns) {
-                checkIns.forEach((booking: any) => {
+                checkIns.forEach((booking) => {
                     const guestName = booking.guests
                         ? `${booking.guests.first_name} ${booking.guests.last_name}`
                         : 'Guest';
                     allActivities.push({
                         id: `checkin-${booking.id}`,
                         text: `${guestName} checked in`,
-                        time: getRelativeTime(new Date(booking.updated_at)),
+                        time: getRelativeTime(new Date(booking.created_at)),
                         type: 'guest',
-                        timestamp: new Date(booking.updated_at)
+                        timestamp: new Date(booking.created_at)
                     });
                 });
             }
@@ -95,10 +90,10 @@ export default function LiveOperations() {
                     guests (first_name, last_name)
                 `)
                 .order('created_at', { ascending: false })
-                .limit(3);
+                .limit(3) as { data: BookingWithGuest[] | null };
 
             if (newBookings) {
-                newBookings.forEach((booking: any) => {
+                newBookings.forEach((booking) => {
                     const source = booking.source || 'Direct';
                     allActivities.push({
                         id: `booking-${booking.id}`,
@@ -113,19 +108,19 @@ export default function LiveOperations() {
             // Fetch recent payments
             const { data: payments } = await supabase
                 .from('invoices')
-                .select('id, paid_amount, updated_at, guest_name')
+                .select('id, paid_amount, created_at, guest_name')
                 .gt('paid_amount', 0)
-                .order('updated_at', { ascending: false })
-                .limit(3);
+                .order('created_at', { ascending: false })
+                .limit(3) as { data: Invoice[] | null };
 
             if (payments) {
-                payments.forEach((payment: any) => {
+                payments.forEach((payment) => {
                     allActivities.push({
                         id: `payment-${payment.id}`,
                         text: `Payment received ₹${payment.paid_amount.toLocaleString()}`,
-                        time: getRelativeTime(new Date(payment.updated_at)),
+                        time: getRelativeTime(new Date(payment.created_at)),
                         type: 'payment',
-                        timestamp: new Date(payment.updated_at)
+                        timestamp: new Date(payment.created_at)
                     });
                 });
             }
@@ -133,19 +128,19 @@ export default function LiveOperations() {
             // Fetch recent room status changes
             const { data: rooms } = await supabase
                 .from('rooms')
-                .select('id, room_number, status, updated_at')
+                .select('id, room_number, status, created_at')
                 .in('status', ['Clean', 'Cleaning'])
-                .order('updated_at', { ascending: false })
-                .limit(2);
+                .order('created_at', { ascending: false })
+                .limit(2) as { data: Room[] | null };
 
             if (rooms) {
-                rooms.forEach((room: any) => {
+                rooms.forEach((room) => {
                     allActivities.push({
                         id: `room-${room.id}`,
                         text: `Room ${room.room_number} marked ${room.status}`,
-                        time: getRelativeTime(new Date(room.updated_at)),
+                        time: getRelativeTime(new Date(room.created_at)),
                         type: 'task',
-                        timestamp: new Date(room.updated_at)
+                        timestamp: new Date(room.created_at)
                     });
                 });
             }

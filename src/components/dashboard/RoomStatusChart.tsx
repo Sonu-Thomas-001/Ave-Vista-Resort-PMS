@@ -48,7 +48,7 @@ export default function RoomStatusChart({ data }: RoomStatusChartProps) {
                             verticalAlign="middle"
                             align="right"
                             iconType="circle"
-                            formatter={(value, entry: any) => (
+                            formatter={(value: string) => (
                                 <span style={{ color: '#64748B', fontSize: '14px', marginLeft: '5px' }}>{value}</span>
                             )}
                         />

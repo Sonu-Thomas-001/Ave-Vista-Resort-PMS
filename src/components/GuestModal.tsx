@@ -71,8 +71,8 @@ export default function GuestModal({ guest, onClose, onSuccess }: GuestModalProp
         try {
             if (guest?.id) {
                 // Update
-                const { error: updateError } = await supabase
-                    .from('guests')
+                const { error: updateError } = await (supabase
+                    .from('guests') as any)
                     .update({
                         first_name: formData.first_name,
                         last_name: formData.last_name,
@@ -89,8 +89,8 @@ export default function GuestModal({ guest, onClose, onSuccess }: GuestModalProp
                 if (updateError) throw updateError;
             } else {
                 // Create
-                const { error: insertError } = await supabase
-                    .from('guests')
+                const { error: insertError } = await (supabase
+                    .from('guests') as any)
                     .insert([{
                         first_name: formData.first_name,
                         last_name: formData.last_name,
@@ -106,8 +106,8 @@ export default function GuestModal({ guest, onClose, onSuccess }: GuestModalProp
                 if (insertError) throw insertError;
             }
             onSuccess();
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An unknown error occurred');
         } finally {
             setLoading(false);
         }

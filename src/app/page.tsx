@@ -1,6 +1,3 @@
-'use client';
-
-import { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import HeroSection from '@/components/dashboard/HeroSection';
 import OccupancyAnalytics from '@/components/dashboard/OccupancyAnalytics';
@@ -9,8 +6,11 @@ import RevenueChart from '@/components/dashboard/RevenueChart';
 import RoomStatusChart from '@/components/dashboard/RoomStatusChart';
 import CheckInOutChart from '@/components/dashboard/CheckInOutChart';
 import QuickStats from '@/components/dashboard/QuickStats';
+import DashboardClientWrapper from '@/components/dashboard/DashboardClientWrapper';
 import styles from './page.module.css';
 import { supabase } from '@/lib/supabase';
+import { ROOM_STATUS_COLORS, INVOICE_STATUS, ROOM_STATUS } from '@/lib/constants';
+import { DashboardMetrics, Booking, Invoice } from '@/types/dashboard';
 
 // Helper to get last 7 days short names (Mon, Tue, etc.)
 const getLast7Days = () => {
@@ -28,207 +28,180 @@ const getLast7Days = () => {
   return result;
 };
 
-export default function Dashboard() {
-  const [metrics, setMetrics] = useState({
-    checkIns: 0,
-    checkOuts: 0,
-    occupancy: 0,
-    revenue: 0,
-    availableRooms: 0
-  });
+// Next.js Server Component
+export default async function Dashboard() {
+  const today = new Date().toISOString().split('T')[0];
+  const last7Days = getLast7Days();
+  const startDate = last7Days[0].date;
+  const endDate = last7Days[6].date;
 
-  const [occupancyData, setOccupancyData] = useState<{ day: string; value: number }[]>([]);
-  const [revenueData, setRevenueData] = useState<{ date: string; value: number }[]>([]);
-  const [roomStatusData, setRoomStatusData] = useState<{ name: string; value: number; color: string }[]>([]);
-  const [checkInOutData, setCheckInOutData] = useState<{ date: string; checkIns: number; checkOuts: number }[]>([]);
-  const [quickStats, setQuickStats] = useState({
-    totalBookings: 0,
-    totalGuests: 0,
-    avgStayDuration: 0,
-    avgDailyRate: 0
-  });
-
-  useEffect(() => {
-    fetchDashboardData();
-
-    // Set up real-time subscription
-    const channel = supabase
-      .channel('dashboard_updates')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
-        fetchDashboardData();
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms' }, () => {
-        fetchDashboardData();
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'invoices' }, () => {
-        fetchDashboardData();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  const fetchDashboardData = async () => {
-    const today = new Date().toISOString().split('T')[0];
-    const last7Days = getLast7Days();
-
-    // Parallel fetching
-    const [
-      { count: checkInsCount },
-      { count: checkOutsCount },
-      { data: rooms },
-      { data: invoices },
-      { data: weeklyBookings }
-    ] = await Promise.all([
-      supabase.from('bookings').select('*', { count: 'exact', head: true }).eq('check_in_date', today),
-      supabase.from('bookings').select('*', { count: 'exact', head: true }).eq('check_out_date', today),
-      supabase.from('rooms').select('id, status, price_per_night'),
-      supabase.from('invoices').select('paid_amount, created_at, status'),
-      supabase.from('bookings').select('check_in_date, check_out_date, status').in('status', ['Checked In', 'Confirmed'])
-      // Note: For accurate historical occupancy we'd need more complex query, 
-      // but for now we'll estimate based on check-ins in range or just current snapshot if easier.
-      // Actually, let's just do a proper range query for the last 7 days? 
-      // Simpler for now: "Occupancy Trends" usually means future or past. 
-      // Let's Mock specific historical data logic or use a simple heuristic for this MVP.
-      // Heuristic: Count active bookings per day.
-    ]);
-
-    // 1. Metrics Calculation
-    const totalRooms = rooms?.length || 0;
-    const occupiedRooms = rooms?.filter(r => r.status === 'Occupied').length || 0;
-    const available = rooms?.filter(r => r.status === 'Clean').length || 0;
-    const calculatedOccupancy = totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0;
-
-    // Filter paid invoices for today's revenue (or total "current" revenue context)
-    // "Total Revenue" on dashboard usually implies a period. Let's say "This Month" or just "Total Paid". 
-    // The previous code did a full sum. Let's stick to that or refine to "Today" if the card says "Today's Revenue".
-    // Card says "Total Revenue". Stick to global sum.
-    const paidInvoices = invoices?.filter(i => i.status === 'Paid' || i.status === 'Partial') || [];
-    const totalRevenueAmount = paidInvoices.reduce((sum, inv) => sum + Number(inv.paid_amount), 0);
-
-    setMetrics({
-      checkIns: checkInsCount || 0,
-      checkOuts: checkOutsCount || 0,
-      occupancy: calculatedOccupancy,
-      revenue: totalRevenueAmount,
-      availableRooms: available
-    });
-
-    // 2. Room Status Chart Data
-    const statusCounts = rooms?.reduce((acc: any, room: any) => {
-      acc[room.status] = (acc[room.status] || 0) + 1;
-      return acc;
-    }, {}) || {};
-
-    // Define colors for statuses
-    const statusColors: any = {
-      'Occupied': '#3b82f6', // blue
-      'Clean': '#10b981',    // green
-      'Dirty': '#ef4444',    // red
-      'Maintenance': '#f59e0b', // orange
-      'Cleaning': '#6366f1'  // indigo
-    };
-
-    const roomChartData = Object.keys(statusCounts).map(status => ({
-      name: status,
-      value: statusCounts[status],
-      color: statusColors[status] || '#94a3b8'
-    }));
-    setRoomStatusData(roomChartData);
-
-
-    // 3. Revenue Trend (Last 7 Days)
-    // Aggregate paid invoices by day
-    const revenueByDay = last7Days.map(dayObj => {
-      const dayTotal = paidInvoices
-        .filter(inv => inv.created_at.startsWith(dayObj.date))
-        .reduce((sum, inv) => sum + Number(inv.paid_amount), 0);
-      return {
-        date: dayObj.day, // 'Mon', 'Tue'
-        value: dayTotal
-      };
-    });
-    setRevenueData(revenueByDay);
-
-
-    // 4. Occupancy Trend (Last 7 Days) - Simplified Logic
-    // Accessing `rooms` and `weeklyBookings`? No, simpler to just "Start with current and mock history" 
-    // OR try to rebuild history. 
-    // REAL APPROACH: Query bookings that overlap each day.
-    // For MVP transparency: I will calculate "Active Bookings" per day for the last 7 days.
-
-    // Ensure we have bookings data to work with.
-    // Actually, let's fetch all bookings that overlap the last 7 days range to be accurate.
-    const startDate = last7Days[0].date;
-    const endDate = last7Days[6].date;
-    const { data: rangeBookings } = await supabase
+  // Parallel server fetching
+  const [
+    { data: rpcMetrics, error: rpcError },
+    { data: rangeBookings },
+    { data: recentInvoices },
+    { data: allRooms },
+    { data: allBookings },
+    { data: paidInvoices }
+  ] = await Promise.all([
+    // 1. Fetch aggregated scalars via RPC
+    (supabase.rpc('get_dashboard_metrics', { target_date: today }) as unknown as Promise<{ data: DashboardMetrics | null, error: any }>),
+    
+    // 2. Fetch specific bookings for chart trends (last 7 days)
+    (supabase
       .from('bookings')
       .select('check_in_date, check_out_date')
-      .or(`check_in_date.lte.${endDate},check_out_date.gte.${startDate}`);
+      .or(`check_in_date.lte.${endDate},check_out_date.gte.${startDate}`) as unknown as Promise<{ data: Pick<Booking, 'check_in_date' | 'check_out_date'>[] | null }>),
+      
+    // 3. Fetch recent paid invoices for revenue trend chart
+    (supabase
+      .from('invoices')
+      .select('paid_amount, created_at, status')
+      .in('status', [INVOICE_STATUS.PAID, INVOICE_STATUS.PARTIAL])
+      .gte('created_at', startDate) as unknown as Promise<{ data: Pick<Invoice, 'paid_amount' | 'created_at' | 'status'>[] | null }>),
 
-    const occupancyTrend = last7Days.map(dayObj => {
-      // Count bookings where (check_in <= day) AND (check_out > day)
-      const activeCount = rangeBookings?.filter(b =>
-        b.check_in_date <= dayObj.date && b.check_out_date > dayObj.date
-      ).length || 0;
+    // 4. Fetch all room statuses for occupancy and room distribution fallback
+    (supabase
+      .from('rooms')
+      .select('status') as unknown as Promise<{ data: { status: string | null }[] | null }>),
 
-      // Calculate percentage (assuming total rooms constant)
-      const percentage = totalRooms > 0 ? Math.round((activeCount / totalRooms) * 100) : 0;
-
-      return {
-        day: dayObj.day,
-        value: percentage
-      };
-    });
-    setOccupancyData(occupancyTrend);
-
-    // 5. Check-ins vs Check-outs (Last 7 Days)
-    const checkInOutTrend = last7Days.map(dayObj => {
-      const checkInsCount = rangeBookings?.filter(b => b.check_in_date === dayObj.date).length || 0;
-      const checkOutsCount = rangeBookings?.filter(b => b.check_out_date === dayObj.date).length || 0;
-
-      return {
-        date: dayObj.day,
-        checkIns: checkInsCount,
-        checkOuts: checkOutsCount
-      };
-    });
-    setCheckInOutData(checkInOutTrend);
-
-    // 6. Quick Stats
-    const { data: allBookings } = await supabase
+    // 5. Fetch bookings for quick stats fallback
+    (supabase
       .from('bookings')
-      .select('check_in_date, check_out_date, total_amount, guests_count');
+      .select('check_in_date, check_out_date, guests_count, total_amount') as unknown as Promise<{
+        data: Pick<Booking, 'check_in_date' | 'check_out_date' | 'guests_count' | 'total_amount'>[] | null
+      }>),
 
-    const totalBookings = allBookings?.length || 0;
-    const totalGuests = allBookings?.reduce((sum, b) => sum + (b.guests_count || 1), 0) || 0;
+    // 6. Fetch paid/partial invoices for total revenue fallback
+    (supabase
+      .from('invoices')
+      .select('paid_amount, status')
+      .in('status', [INVOICE_STATUS.PAID, INVOICE_STATUS.PARTIAL]) as unknown as Promise<{
+        data: Pick<Invoice, 'paid_amount' | 'status'>[] | null
+      }>)
+  ]);
 
-    // Calculate average stay duration
-    const avgStay = allBookings?.reduce((sum, b) => {
-      const checkIn = new Date(b.check_in_date);
-      const checkOut = new Date(b.check_out_date);
-      const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
-      return sum + nights;
-    }, 0) || 0;
-    const avgStayDuration = totalBookings > 0 ? Math.round(avgStay / totalBookings) : 0;
-
-    // Calculate average daily rate
-    const totalRevenue = allBookings?.reduce((sum, b) => sum + (b.total_amount || 0), 0) || 0;
-    const totalNights = avgStay;
-    const avgDailyRate = totalNights > 0 ? Math.round(totalRevenue / totalNights) : 0;
-
-    setQuickStats({
-      totalBookings,
-      totalGuests,
-      avgStayDuration,
-      avgDailyRate
+  if (rpcError && rpcError.code !== 'PGRST202') {
+    console.error('Error fetching dashboard metrics RPC:', {
+      message: rpcError.message,
+      details: rpcError.details,
+      hint: rpcError.hint,
+      code: rpcError.code
     });
+  }
+
+  const fallbackRoomStatusCounts = (allRooms || []).reduce<Record<string, number>>((acc, room) => {
+    const status = room.status || 'Unknown';
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {});
+
+  const fallbackTotalRooms = (allRooms || []).length;
+  const fallbackOccupiedRooms = fallbackRoomStatusCounts[ROOM_STATUS.OCCUPIED] || 0;
+  const fallbackAvailableRooms = fallbackRoomStatusCounts[ROOM_STATUS.CLEAN] || 0;
+  const fallbackOccupancy = fallbackTotalRooms > 0
+    ? Math.round((fallbackOccupiedRooms / fallbackTotalRooms) * 100)
+    : 0;
+
+  const fallbackCheckIns = (allBookings || []).filter((b) => b.check_in_date === today).length;
+  const fallbackCheckOuts = (allBookings || []).filter((b) => b.check_out_date === today).length;
+  const fallbackTotalBookings = (allBookings || []).length;
+  const fallbackTotalGuests = (allBookings || []).reduce((sum, b) => sum + Number(b.guests_count || 0), 0);
+
+  const validStayBookings = (allBookings || []).filter(
+    (b) => b.check_out_date > b.check_in_date
+  );
+
+  const stayDurations = validStayBookings.map((b) => {
+    const checkIn = new Date(`${b.check_in_date}T00:00:00Z`);
+    const checkOut = new Date(`${b.check_out_date}T00:00:00Z`);
+    return Math.max(0, Math.round((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)));
+  });
+
+  const fallbackAvgStayDuration = stayDurations.length > 0
+    ? Math.round(stayDurations.reduce((sum, days) => sum + days, 0) / stayDurations.length)
+    : 0;
+
+  const adrValues = validStayBookings
+    .map((b) => {
+      const checkIn = new Date(`${b.check_in_date}T00:00:00Z`);
+      const checkOut = new Date(`${b.check_out_date}T00:00:00Z`);
+      const nights = Math.max(0, Math.round((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)));
+      return nights > 0 ? Number(b.total_amount || 0) / nights : 0;
+    })
+    .filter((v) => v > 0);
+
+  const fallbackAvgDailyRate = adrValues.length > 0
+    ? Math.round(adrValues.reduce((sum, value) => sum + value, 0) / adrValues.length)
+    : 0;
+
+  const fallbackRevenue = (paidInvoices || []).reduce((sum, inv) => sum + Number(inv.paid_amount || 0), 0);
+
+  const metrics: DashboardMetrics = rpcMetrics || {
+    checkIns: fallbackCheckIns,
+    checkOuts: fallbackCheckOuts,
+    occupancy: fallbackOccupancy,
+    revenue: fallbackRevenue,
+    availableRooms: fallbackAvailableRooms,
+    roomStatusCounts: fallbackRoomStatusCounts,
+    totalBookings: fallbackTotalBookings,
+    totalGuests: fallbackTotalGuests,
+    avgStayDuration: fallbackAvgStayDuration,
+    avgDailyRate: fallbackAvgDailyRate
+  };
+
+  const totalRooms = fallbackTotalRooms;
+
+  // --- Calculate Chart Arrays on the Server ---
+  
+  // Room Status Chart Data mapping
+  const roomChartData = Object.keys(metrics.roomStatusCounts || {}).map((status) => ({
+    name: status,
+    value: (metrics.roomStatusCounts as Record<string, number>)[status],
+    color: ROOM_STATUS_COLORS[status as keyof typeof ROOM_STATUS_COLORS] || '#94a3b8'
+  }));
+
+  // Revenue Trend (Last 7 Days)
+  const revenueData = last7Days.map(dayObj => {
+    const dayTotal = (recentInvoices || [])
+      .filter(inv => inv.created_at && inv.created_at.startsWith(dayObj.date))
+      .reduce((sum, inv) => sum + Number(inv.paid_amount || 0), 0);
+    return {
+      date: dayObj.day,
+      value: dayTotal
+    };
+  });
+
+  // Occupancy Trend (Last 7 Days)
+  const occupancyData = last7Days.map(dayObj => {
+    const activeCount = (rangeBookings || []).filter(b =>
+      b.check_in_date <= dayObj.date && b.check_out_date > dayObj.date
+    ).length || 0;
+
+    const percentage = totalRooms > 0 ? Math.round((activeCount / totalRooms) * 100) : 0;
+    return { day: dayObj.day, value: percentage };
+  });
+
+  // Check-ins vs Check-outs (Last 7 Days)
+  const checkInOutData = last7Days.map(dayObj => {
+    const checkInsCount = (rangeBookings || []).filter(b => b.check_in_date === dayObj.date).length || 0;
+    const checkOutsCount = (rangeBookings || []).filter(b => b.check_out_date === dayObj.date).length || 0;
+    return { date: dayObj.day, checkIns: checkInsCount, checkOuts: checkOutsCount };
+  });
+
+  // Quick Stats object
+  const quickStats = {
+    totalBookings: metrics.totalBookings || 0,
+    totalGuests: metrics.totalGuests || 0,
+    avgStayDuration: metrics.avgStayDuration || 0,
+    avgDailyRate: metrics.avgDailyRate || 0
   };
 
   return (
     <>
+      {/* Client component wrapper handling realtime subscriptions without blocking SSR */}
+      <DashboardClientWrapper />
+      
       <Header title="Resort Overview" />
 
       <div className={styles.container}>
@@ -243,16 +216,16 @@ export default function Dashboard() {
 
         {/* 2. Main Analytics Grid */}
         <div className={styles.chartsGrid}>
-          <div className={styles.chartCard}>
+          <div className={styles.chartCard} style={{ display: 'flex', flexDirection: 'column' }}>
             <RevenueChart data={revenueData} />
           </div>
-          <div className={styles.chartCard}>
-            <RoomStatusChart data={roomStatusData} />
+          <div className={styles.chartCard} style={{ display: 'flex', flexDirection: 'column' }}>
+            <RoomStatusChart data={roomChartData} />
           </div>
-          <div className={styles.chartCard}>
+          <div className={styles.chartCard} style={{ display: 'flex', flexDirection: 'column' }}>
             <CheckInOutChart data={checkInOutData} />
           </div>
-          <div className={styles.chartCard}>
+          <div className={styles.chartCard} style={{ display: 'flex', flexDirection: 'column' }}>
             <QuickStats stats={quickStats} />
           </div>
         </div>
