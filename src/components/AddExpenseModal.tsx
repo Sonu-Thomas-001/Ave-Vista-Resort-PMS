@@ -178,7 +178,6 @@ export default function AddExpenseModal({
                             value={formData.title}
                             onChange={handleChange}
                             disabled={loading}
-                            autoFocus
                         />
                     </div>
 
@@ -224,6 +223,7 @@ export default function AddExpenseModal({
                             disabled={loading}
                             step="0.01"
                             min="0"
+                            autoFocus
                         />
                     </div>
 
