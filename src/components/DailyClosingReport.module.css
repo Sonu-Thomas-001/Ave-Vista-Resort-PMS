@@ -1,0 +1,310 @@
+.container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 24px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f3f4f6;
+}
+
+.titleSection {
+    flex: 1;
+}
+
+.title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.date {
+    margin: 6px 0 0 0;
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.lockedBadge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+    border-radius: 8px;
+    color: #92400e;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.error {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    border-radius: 8px;
+    color: #dc2626;
+    font-size: 14px;
+}
+
+.loading {
+    padding: 40px 20px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.metricsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.metricCard {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+    border: 1px solid #bbf7d0;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+}
+
+.metricCard.highlighted {
+    background: linear-gradient(135deg, #f0fdf4 0%, #f3f4f6 100%);
+    border: 2px solid #10b981;
+    box-shadow: 0 4px 12px -1px rgba(16, 185, 129, 0.2);
+}
+
+.metricLabel {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metricValue {
+    font-size: 28px;
+    font-weight: 700;
+    color: #10b981;
+    line-height: 1;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.sectionTitle {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.operationsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.opCard {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.opLabel {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.opValue {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.notesInput {
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 100px;
+    transition: all 0.2s ease;
+}
+
+.notesInput:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.notesInput:disabled {
+    background: #f9fafb;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.saveBtn {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+}
+
+.saveBtn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px -1px rgba(16, 185, 129, 0.4);
+}
+
+.saveBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.summary {
+    display: flex;
+    justify-content: center;
+    padding: 16px 0;
+    border-top: 2px solid #f3f4f6;
+}
+
+.summaryCard {
+    text-align: center;
+    padding: 16px 24px;
+}
+
+.summaryLabel {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+}
+
+.summaryAmount {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 16px;
+        gap: 16px;
+    }
+
+    .header {
+        flex-direction: column;
+        gap: 12px;
+        padding-bottom: 12px;
+    }
+
+    .title {
+        font-size: 20px;
+    }
+
+    .metricsGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .metricCard {
+        padding: 14px;
+    }
+
+    .metricValue {
+        font-size: 20px;
+    }
+
+    .operationsGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .opCard {
+        padding: 10px;
+    }
+
+    .opValue {
+        font-size: 16px;
+    }
+
+    .summaryAmount {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 12px;
+    }
+
+    .metricsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .title {
+        font-size: 18px;
+    }
+
+    .metricCard {
+        padding: 12px;
+    }
+
+    .metricValue {
+        font-size: 18px;
+    }
+
+    .operationsGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+    }
+
+    .opCard {
+        padding: 8px;
+        gap: 4px;
+    }
+
+    .opLabel {
+        font-size: 10px;
+    }
+
+    .opValue {
+        font-size: 14px;
+    }
+}

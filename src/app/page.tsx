@@ -6,6 +6,7 @@ import RevenueChart from '@/components/dashboard/RevenueChart';
 import RoomStatusChart from '@/components/dashboard/RoomStatusChart';
 import CheckInOutChart from '@/components/dashboard/CheckInOutChart';
 import QuickStats from '@/components/dashboard/QuickStats';
+import ExpenseDashboardWidget from '@/components/dashboard/ExpenseDashboardWidget';
 import DashboardClientWrapper from '@/components/dashboard/DashboardClientWrapper';
 import styles from './page.module.css';
 import { supabase } from '@/lib/supabase';
@@ -227,6 +228,9 @@ export default async function Dashboard() {
           </div>
           <div className={styles.chartCard} style={{ display: 'flex', flexDirection: 'column' }}>
             <QuickStats stats={quickStats} />
+          </div>
+          <div className={styles.chartCard} style={{ display: 'flex', flexDirection: 'column' }}>
+            <ExpenseDashboardWidget />
           </div>
         </div>
 

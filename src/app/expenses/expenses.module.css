@@ -1,0 +1,210 @@
+.page {
+    min-height: 100vh;
+    background: #f9fafb;
+    padding: 24px;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+}
+
+.titleSection {
+    flex: 1;
+    min-width: 200px;
+}
+
+.title {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 800;
+    color: #1f2937;
+    letter-spacing: -0.5px;
+}
+
+.subtitle {
+    margin: 8px 0 0 0;
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.addBtn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+}
+
+.addBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px -1px rgba(16, 185, 129, 0.4);
+}
+
+.addBtn:active {
+    transform: translateY(0);
+}
+
+.message {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.message[data-type='error'] {
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    color: #dc2626;
+}
+
+.message[data-type='success'] {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #15803d;
+}
+
+.accessNotice {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+    border-radius: 8px;
+    color: #92400e;
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+.section {
+    margin-bottom: 32px;
+}
+
+.sectionTitle {
+    margin: 0 0 20px 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .page {
+        padding: 16px;
+    }
+
+    .header {
+        margin-bottom: 24px;
+        gap: 16px;
+    }
+
+    .title {
+        font-size: 28px;
+    }
+
+    .section {
+        margin-bottom: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .page {
+        padding: 12px;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .addBtn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .title {
+        font-size: 24px;
+    }
+
+    .subtitle {
+        font-size: 13px;
+    }
+
+    .message {
+        font-size: 13px;
+        padding: 10px 12px;
+    }
+
+    .accessNotice {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .sectionTitle {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .page {
+        padding: 8px;
+    }
+
+    .header {
+        margin-bottom: 16px;
+    }
+
+    .title {
+        font-size: 20px;
+    }
+
+    .subtitle {
+        font-size: 12px;
+    }
+
+    .section {
+        margin-bottom: 16px;
+    }
+
+    .sectionTitle {
+        font-size: 16px;
+        margin-bottom: 12px;
+    }
+}
