@@ -20,7 +20,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Menu,
-  X
+  X,
+  FileText,
+  IndianRupee
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
 import { hasAccess } from '@/lib/permissions';
@@ -32,6 +34,7 @@ const menuItems = [
   { icon: Users, label: 'Guests', href: '/guests' },
   { icon: Search, label: 'Guest Lookup', href: '/guest-lookup' },
   { icon: CreditCard, label: 'Billing', href: '/billing' },
+  { icon: IndianRupee, label: 'Expenses', href: '/expenses' },
   { icon: UtensilsCrossed, label: 'Restaurant Bill', href: '/restaurant-bill' },
   { icon: BookOpen, label: 'Restaurant Menu', href: '/restaurant-menu' },
   { icon: MonitorCheck, label: 'Front Desk', href: '/front-desk' },

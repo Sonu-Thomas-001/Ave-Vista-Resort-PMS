@@ -228,8 +228,9 @@ export default function ExpensesPage() {
         setEditingExpense(null);
     };
 
-    // Check if user can add expenses
-    const canAddExpenses = userRole && ['Admin', 'Manager'].includes(userRole);
+    // Check if user can add expenses (if not loaded yet, assume view-only or handled appropriately. We'll only show notice if loaded and not allowed)
+    const canAddExpenses = userRole === 'Admin' || userRole === 'Manager';
+    const hasRoleLoaded = userRole !== null;
 
     return (
         <div className={styles.page}>
@@ -272,7 +273,7 @@ export default function ExpensesPage() {
             )}
 
             {/* Role-Based Access Notice */}
-            {!canAddExpenses && (
+            {hasRoleLoaded && !canAddExpenses && (
                 <div className={styles.accessNotice}>
                     <AlertCircle size={16} />
                     <span>You have view-only access to expenses</span>
