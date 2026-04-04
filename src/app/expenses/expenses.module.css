@@ -40,21 +40,21 @@
     align-items: center;
     gap: 8px;
     padding: 12px 20px;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: var(--text-inverse);
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
-    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 4px 6px -1px rgba(3, 155, 229, 0.3);
 }
 
 .addBtn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 12px -1px rgba(16, 185, 129, 0.4);
+    box-shadow: 0 8px 12px -1px rgba(3, 155, 229, 0.4);
 }
 
 .addBtn:active {

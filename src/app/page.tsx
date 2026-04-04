@@ -8,6 +8,7 @@ import CheckInOutChart from '@/components/dashboard/CheckInOutChart';
 import QuickStats from '@/components/dashboard/QuickStats';
 import ExpenseDashboardWidget from '@/components/dashboard/ExpenseDashboardWidget';
 import DashboardClientWrapper from '@/components/dashboard/DashboardClientWrapper';
+import DashboardQuickActions from '@/components/dashboard/DashboardQuickActions';
 import styles from './page.module.css';
 import { supabase } from '@/lib/supabase';
 import { ROOM_STATUS_COLORS, INVOICE_STATUS, ROOM_STATUS } from '@/lib/constants';
@@ -206,6 +207,8 @@ export default async function Dashboard() {
       <Header title="Resort Overview" />
 
       <div className={styles.container}>
+        <DashboardQuickActions />
+        
         {/* 1. Hero KPI Section */}
         <HeroSection
           checkIns={metrics.checkIns}

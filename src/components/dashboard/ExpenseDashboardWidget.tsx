@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import styles from './ExpenseDashboardWidget.module.css';
+import { supabase } from '@/lib/supabase';
 
 interface Expense {
     date: string;
@@ -20,16 +21,7 @@ export default function ExpenseDashboardWidget() {
         const fetchExpenses = async () => {
             try {
                 setIsLoading(true);
-                const today = new Date().toISOString().split('T')[0];
-                const response = await fetch(
-                    `/api/expenses?startDate=${today}&endDate=${today}`,
-                    { cache: 'no-store' }
-                );
-
-                if (!response.ok) throw new Error('Failed to fetch expenses');
-
-                const data = await response.json();
-                const expenses = data.expenses || [];
+                // (We don't need the today-only fetch anymore since we process everything below anyway)
 
                 // Calculate totals
                 let todayTotal = 0;
@@ -43,32 +35,32 @@ export default function ExpenseDashboardWidget() {
                 const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
                 // Fetch all expenses for week and month calculation
-                const allExpensesResponse = await fetch('/api/expenses', {
-                    cache: 'no-store',
+                const { data, error } = await supabase
+                    .from('expenses')
+                    .select('*')
+                    .eq('is_deleted', false);
+
+                if (error) throw error;
+                const allExpenses = data || [];
+
+                allExpenses.forEach((expense: Expense) => {
+                    const expenseDate = new Date(expense.date);
+
+                    // Today
+                    if (expenseDate.toDateString() === now.toDateString()) {
+                        todayTotal += expense.amount;
+                    }
+
+                    // Week
+                    if (expenseDate >= startOfWeek && expenseDate <= now) {
+                        weekTotal += expense.amount;
+                    }
+
+                    // Month
+                    if (expenseDate >= startOfMonth && expenseDate <= now) {
+                        monthTotal += expense.amount;
+                    }
                 });
-                if (allExpensesResponse.ok) {
-                    const allData = await allExpensesResponse.json();
-                    const allExpenses = allData.expenses || [];
-
-                    allExpenses.forEach((expense: Expense) => {
-                        const expenseDate = new Date(expense.date);
-
-                        // Today
-                        if (expenseDate.toDateString() === now.toDateString()) {
-                            todayTotal += expense.amount;
-                        }
-
-                        // Week
-                        if (expenseDate >= startOfWeek && expenseDate <= now) {
-                            weekTotal += expense.amount;
-                        }
-
-                        // Month
-                        if (expenseDate >= startOfMonth && expenseDate <= now) {
-                            monthTotal += expense.amount;
-                        }
-                    });
-                }
 
                 setTodayExpenses(todayTotal);
                 setWeekExpenses(weekTotal);

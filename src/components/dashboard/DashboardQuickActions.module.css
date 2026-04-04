@@ -1,0 +1,56 @@
+.container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 24px;
+    align-items: center;
+    gap: 16px;
+}
+
+.quickActionBtn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background-color: var(--primary);
+    color: var(--text-inverse);
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(3, 155, 229, 0.2);
+    transition: all 0.2s ease;
+}
+
+.quickActionBtn:hover {
+    background-color: var(--primary-hover);
+    box-shadow: 0 6px 8px -1px rgba(3, 155, 229, 0.3);
+    transform: translateY(-1px);
+}
+
+.toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--secondary);
+    color: var(--text-inverse);
+    padding: 12px 20px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    z-index: 2000;
+    animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}

@@ -7,6 +7,8 @@ import ExpenseList from '@/components/ExpenseList';
 import ExpenseSummary from '@/components/ExpenseSummary';
 import ExpenseAnalytics from '@/components/ExpenseAnalytics';
 import styles from './expenses.module.css';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
 
 interface Expense {
     id: string;
@@ -46,35 +48,21 @@ export default function ExpensesPage() {
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
-    const [userRole, setUserRole] = useState<string | null>(null);
-
-    // Fetch user role
-    useEffect(() => {
-        const checkRole = async () => {
-            try {
-                const response = await fetch('/api/auth/user-role', {
-                    cache: 'no-store',
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    setUserRole(data.role);
-                }
-            } catch (err) {
-                console.error('Failed to fetch user role:', err);
-            }
-        };
-
-        checkRole();
-    }, []);
+    const { user } = useAuth();
+    const userRole = user?.role;
 
     // Fetch categories
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await fetch('/api/expenses/categories');
-                if (!response.ok) throw new Error('Failed to fetch categories');
-                const data = await response.json();
-                setCategories(data.categories || []);
+                const { data, error } = await supabase
+                    .from('expense_categories')
+                    .select('*')
+                    .order('is_default', { ascending: false })
+                    .order('name', { ascending: true });
+                    
+                if (error) throw error;
+                setCategories(data || []);
             } catch (err) {
                 console.error('Error fetching categories:', err);
                 setError('Failed to load expense categories');
@@ -89,24 +77,24 @@ export default function ExpensesPage() {
         async (filters?: Record<string, any>) => {
             try {
                 setIsLoading(true);
-                const params = new URLSearchParams();
+                
+                let query = supabase
+                    .from('expenses')
+                    .select('*, expense_categories:category_id(id, name, color), profiles:created_by(full_name)')
+                    .eq('is_deleted', false)
+                    .order('date', { ascending: false });
 
-                if (filters?.startDate) params.append('startDate', filters.startDate);
-                if (filters?.endDate) params.append('endDate', filters.endDate);
-                if (filters?.categoryId) params.append('categoryId', filters.categoryId);
-                if (filters?.paymentMode)
-                    params.append('paymentMode', filters.paymentMode);
-                if (filters?.search) params.append('search', filters.search);
+                if (filters?.startDate) query = query.gte('date', filters.startDate);
+                if (filters?.endDate) query = query.lte('date', filters.endDate);
+                if (filters?.categoryId) query = query.eq('category_id', filters.categoryId);
+                if (filters?.paymentMode) query = query.eq('payment_mode', filters.paymentMode);
+                if (filters?.search) query = query.ilike('title', `%${filters.search}%`);
 
-                const response = await fetch(
-                    `/api/expenses?${params.toString()}`,
-                    { cache: 'no-store' }
-                );
-                if (!response.ok) throw new Error('Failed to fetch expenses');
+                const { data, error } = await query;
+                if (error) throw error;
 
-                const data = await response.json();
-                setExpenses(data.expenses || []);
-                setFilteredExpenses(data.expenses || []);
+                setExpenses(data || []);
+                setFilteredExpenses(data || []);
                 setError('');
             } catch (err: any) {
                 console.error('Error fetching expenses:', err);
