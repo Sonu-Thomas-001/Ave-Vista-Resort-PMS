@@ -8,4 +8,4 @@ if (!supabaseUrl || !supabaseKey) {
     console.warn('Supabase credentials missing. Check .env.local');
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseKey);
+export const supabase = createClient<any>(supabaseUrl, supabaseKey);

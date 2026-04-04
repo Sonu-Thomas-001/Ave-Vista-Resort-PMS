@@ -10,7 +10,7 @@ export interface Database {
     public: {
         Tables: {
             profiles: {
-                Row: {
+                Row: { [key: string]: any;
                     id: string
                     full_name: string | null
                     role: 'Admin' | 'Manager' | 'Reception'
@@ -19,7 +19,7 @@ export interface Database {
                     created_at: string
                     email: string | null
                 }
-                Insert: {
+                Insert: { [key: string]: any;
                     id: string
                     full_name?: string | null
                     role?: 'Admin' | 'Manager' | 'Reception'
@@ -28,7 +28,7 @@ export interface Database {
                     created_at?: string
                     email?: string | null
                 }
-                Update: {
+                Update: { [key: string]: any;
                     id?: string
                     full_name?: string | null
                     role?: 'Admin' | 'Manager' | 'Reception'
@@ -39,7 +39,7 @@ export interface Database {
                 }
             }
             rooms: {
-                Row: {
+                Row: { [key: string]: any;
                     created_at: string
                     id: string
                     image_url: string | null
@@ -50,7 +50,7 @@ export interface Database {
                     type: string
                     amenities: string[] | null
                 }
-                Insert: {
+                Insert: { [key: string]: any;
                     created_at?: string
                     id?: string
                     image_url?: string | null
@@ -61,7 +61,7 @@ export interface Database {
                     type: string
                     amenities?: string[] | null
                 }
-                Update: {
+                Update: { [key: string]: any;
                     created_at?: string
                     id?: string
                     image_url?: string | null
@@ -74,7 +74,7 @@ export interface Database {
                 }
             }
             guests: {
-                Row: {
+                Row: { [key: string]: any;
                     id: string
                     first_name: string
                     last_name: string
@@ -85,7 +85,7 @@ export interface Database {
                     notes: string | null
                     created_at: string
                 }
-                Insert: {
+                Insert: { [key: string]: any;
                     id?: string
                     first_name: string
                     last_name: string
@@ -96,7 +96,7 @@ export interface Database {
                     notes?: string | null
                     created_at?: string
                 }
-                Update: {
+                Update: { [key: string]: any;
                     id?: string
                     first_name?: string
                     last_name?: string
@@ -109,7 +109,7 @@ export interface Database {
                 }
             }
             bookings: {
-                Row: {
+                Row: { [key: string]: any;
                     id: string
                     guest_id: string
                     room_id: string
@@ -124,7 +124,7 @@ export interface Database {
                     booking_number: string
                     advance_amount: number | null
                 }
-                Insert: {
+                Insert: { [key: string]: any;
                     id?: string
                     guest_id: string
                     room_id: string
@@ -139,7 +139,7 @@ export interface Database {
                     booking_number?: string
                     advance_amount?: number | null
                 }
-                Update: {
+                Update: { [key: string]: any;
                     id?: string
                     guest_id?: string
                     room_id?: string
@@ -157,7 +157,7 @@ export interface Database {
             }
 
             app_settings: {
-                Row: {
+                Row: { [key: string]: any;
                     id: number
                     resort_name: string | null
                     contact_email: string | null
@@ -166,7 +166,7 @@ export interface Database {
                     tax_rate: number | null
                     updated_at: string
                 }
-                Update: {
+                Update: { [key: string]: any;
                     resort_name?: string | null
                     contact_email?: string | null
                     address?: string | null
@@ -175,7 +175,7 @@ export interface Database {
                 }
             }
             invoices: {
-                Row: {
+                Row: { [key: string]: any;
                     id: string
                     created_at: string
                     invoice_number: string
@@ -190,7 +190,7 @@ export interface Database {
                     gst_rate: number | null
                     is_partial: boolean | null
                 }
-                Insert: {
+                Insert: { [key: string]: any;
                     id?: string
                     created_at?: string
                     invoice_number: string
@@ -205,7 +205,7 @@ export interface Database {
                     gst_rate?: number | null
                     is_partial?: boolean | null
                 }
-                Update: {
+                Update: { [key: string]: any;
                     id?: string
                     created_at?: string
                     invoice_number?: string
@@ -218,9 +218,14 @@ export interface Database {
                     invoice_date?: string
                     payment_mode?: 'Cash' | 'Card' | 'UPI' | null
                     gst_rate?: number | null
-                    is_partial?: boolean | null
-                }
-            }
+                    is_partial?: boolean | null; } }
+            daily_closing: { Row: { [key: string]: any }; Insert: { [key: string]: any }; Update: { [key: string]: any } }
+            expenses: { Row: { [key: string]: any }; Insert: { [key: string]: any }; Update: { [key: string]: any } }
+            email_logs: { Row: { [key: string]: any }; Insert: { [key: string]: any }; Update: { [key: string]: any } }
+            expense_categories: { Row: { [key: string]: any }; Insert: { [key: string]: any }; Update: { [key: string]: any } }
+            restaurant_bills: { Row: { [key: string]: any }; Insert: { [key: string]: any }; Update: { [key: string]: any } }
+            restaurant_menu_items: { Row: { [key: string]: any }; Insert: { [key: string]: any }; Update: { [key: string]: any } }
+
         }
     }
 }

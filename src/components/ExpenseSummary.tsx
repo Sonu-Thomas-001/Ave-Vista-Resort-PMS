@@ -148,7 +148,7 @@ export default function ExpenseSummary({
         if (previous === 0) return null;
         const percentChange = ((current - previous) / previous) * 100;
         return {
-            trend: current > previous ? 'up' : 'down',
+            trend: (current > previous ? 'up' : 'down') as 'up' | 'down',
             change: Math.abs(percentChange).toFixed(1),
         };
     };

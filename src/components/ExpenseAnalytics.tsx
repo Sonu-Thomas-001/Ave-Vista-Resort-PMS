@@ -91,7 +91,8 @@ export default function ExpenseAnalytics({
         });
 
         const categoryData: CategoryData[] = Array.from(categoryMap.values())
-            .sort((a, b) => b.amount - a.amount);
+            .map(c => ({ name: c.name, value: c.amount, color: c.color }))
+            .sort((a, b) => b.value - a.value);
 
         // Daily trend data for bar chart
         const dailyMap = new Map<string, number>();
@@ -199,7 +200,7 @@ export default function ExpenseAnalytics({
                                     </Pie>
                                     <Tooltip
                                         formatter={(value) =>
-                                            `₹${value.toLocaleString('en-IN', {
+                                            `₹${Number(value || 0).toLocaleString('en-IN', {
                                                 minimumFractionDigits: 2,
                                             })}`
                                         }
@@ -263,7 +264,7 @@ export default function ExpenseAnalytics({
                                             borderRadius: '8px',
                                         }}
                                         formatter={(value) =>
-                                            `₹${value.toLocaleString('en-IN', {
+                                            `₹${Number(value || 0).toLocaleString('en-IN', {
                                                 minimumFractionDigits: 2,
                                             })}`
                                         }
