@@ -1,20 +1,27 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Filter, ChevronUp, ChevronDown, Mail, Eye } from 'lucide-react';
+import { Search, Filter, ChevronUp, ChevronDown, Mail, Eye, Pencil } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './BookingList.module.css';
 import CustomSelect from './ui/CustomSelect';
 import BookingDetailsModal from './BookingDetailsModal';
+import EditBookingModal from './EditBookingModal';
 
 interface Booking {
     id: string;
+    guest_id: string;
+    room_id: string;
     booking_number: string;
     check_in_date: string;
     check_out_date: string;
     status: string;
     source: string;
     total_amount: number;
+    advance_amount?: number | null;
+    room_rate?: number | null;
+    extra_pax?: number | null;
+    extra_pax_rate?: number | null;
     guests: { first_name: string; last_name: string; email: string; phone?: string } | null;
     rooms: { room_number: string; type: string } | null;
 }
@@ -28,6 +35,7 @@ export default function BookingList() {
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+    const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
 
     const statusOptions = [
         { label: 'All Status', value: 'All Status' },
@@ -59,12 +67,18 @@ export default function BookingList() {
                 .from('bookings')
                 .select(`
                     id,
+                    guest_id,
+                    room_id,
                     booking_number,
                     check_in_date,
                     check_out_date,
                     status,
                     source,
                     total_amount,
+                    advance_amount,
+                    room_rate,
+                    extra_pax,
+                    extra_pax_rate,
                     guests (first_name, last_name, email, phone),
                     rooms (room_number, type)
                 `)
@@ -289,6 +303,13 @@ export default function BookingList() {
                                             </button>
                                             <button
                                                 className={styles.actionBtn}
+                                                title="Edit Booking"
+                                                onClick={() => setEditingBooking(booking)}
+                                            >
+                                                <Pencil size={18} />
+                                            </button>
+                                            <button
+                                                className={styles.actionBtn}
                                                 title="Resend Confirmation Email"
                                                 onClick={() => handleSendEmail(booking)}
                                                 disabled={sendingEmailId === booking.id}
@@ -312,6 +333,17 @@ export default function BookingList() {
                 <BookingDetailsModal
                     booking={selectedBooking}
                     onClose={() => setSelectedBooking(null)}
+                />
+            )}
+
+            {editingBooking && (
+                <EditBookingModal
+                    booking={editingBooking}
+                    onClose={() => setEditingBooking(null)}
+                    onSuccess={() => {
+                        setEditingBooking(null);
+                        fetchBookings();
+                    }}
                 />
             )}
         </div>
