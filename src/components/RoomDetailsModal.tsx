@@ -5,7 +5,7 @@ import { X, CheckCircle, AlertCircle, User, Wifi, Tv, Coffee, Wind, Pencil } fro
 import styles from './RoomDetailsModal.module.css';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
-import { getPricingUnit } from '@/lib/constants';
+import { FULL_RESORT_DEFAULT_RATE, getPricingUnit, isFullResortType } from '@/lib/constants';
 
 type Room = Database['public']['Tables']['rooms']['Row'];
 
@@ -40,6 +40,11 @@ export default function RoomDetailsModal({ room, imageUrl, onClose, onUpdate }: 
             fetchCurrentBooking();
         }
     }, [room]);
+
+    useEffect(() => {
+        if (!isFullResortType(formData.type) || formData.price_per_night > 0) return;
+        setFormData((current) => ({ ...current, price_per_night: FULL_RESORT_DEFAULT_RATE }));
+    }, [formData.type, formData.price_per_night]);
 
     const fetchCurrentBooking = async () => {
         setLoading(true);
@@ -99,6 +104,7 @@ export default function RoomDetailsModal({ room, imageUrl, onClose, onUpdate }: 
 
         if (typeLower.includes('single')) return [...common, { icon: <Tv size={14} />, label: 'Smart TV' }];
         if (typeLower.includes('family')) return [...common, { icon: <Tv size={14} />, label: 'Smart TV' }, { icon: <Wind size={14} />, label: 'AC' }];
+        if (typeLower.includes('full resort')) return [...common, { icon: <Tv size={14} />, label: 'Private Resort Access' }, { icon: <Wind size={14} />, label: 'All Facilities Included' }];
         return common;
     };
 

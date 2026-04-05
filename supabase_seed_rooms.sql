@@ -25,4 +25,7 @@ VALUES
   ('MA1', 'Mini Auditorium', 15000, 50, 'Clean', null),
   
   -- Swimming Pool (1 Unit)
-  ('SP1', 'Swimming Pool', 500, 20, 'Clean', null);
+  ('SP1', 'Swimming Pool', 500, 20, 'Clean', null),
+
+  -- Full Resort (1 Unit)
+  ('FR1', 'Full Resort', 20000, 24, 'Clean', null);

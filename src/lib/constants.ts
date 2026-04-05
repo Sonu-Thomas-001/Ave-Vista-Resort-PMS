@@ -39,6 +39,10 @@ export const SPECIAL_ROOM_TYPES = {
   SWIMMING_POOL: 'Swimming Pool',
 } as const;
 
+export const FULL_RESORT_TYPE = 'Full Resort';
+export const FULL_RESORT_DEFAULT_RATE = 20000;
+export const FULL_RESORT_DEFAULT_ROOM_NUMBER = 'FR1';
+
 /**
  * Returns the pricing unit label for a room type.
  * Mini Auditorium = /hour, Swimming Pool = /person, others = /night
@@ -67,4 +71,8 @@ export function getQuantityLabel(roomType: string): string {
 export function isSpecialRoomType(roomType: string): boolean {
   const typeLower = roomType.toLowerCase();
   return typeLower.includes('auditorium') || typeLower.includes('pool') || typeLower.includes('swimming');
+}
+
+export function isFullResortType(roomType: string): boolean {
+  return roomType.toLowerCase().includes('full resort');
 }

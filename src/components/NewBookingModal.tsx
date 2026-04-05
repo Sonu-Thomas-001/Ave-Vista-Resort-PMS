@@ -8,7 +8,7 @@ import { Database } from '@/lib/database.types';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './NewBookingModal.module.css';
 import { EmailService } from '@/lib/email-service';
-import { getPricingUnit, getQuantityLabel, isSpecialRoomType } from '@/lib/constants';
+import { getPricingUnit, getQuantityLabel, isFullResortType, isSpecialRoomType } from '@/lib/constants';
 
 interface NewBookingModalProps {
     onClose: () => void;
@@ -78,12 +78,16 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
     };
 
     const toggleRoomSelection = (room: Room) => {
+        const roomIsFullResort = isFullResortType(room.type);
         setSelectedRooms((current) => {
             const exists = current.some((selectedRoom) => selectedRoom.id === room.id);
             if (exists) {
                 return current.filter((selectedRoom) => selectedRoom.id !== room.id);
             }
-            return [...current, room];
+            if (roomIsFullResort) {
+                return [room];
+            }
+            return [...current.filter((selectedRoom) => !isFullResortType(selectedRoom.type)), room];
         });
 
         setRoomRates((current) => (
@@ -120,12 +124,14 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
 
         try {
             // Check overlapping bookings
-            const { data: bookedRoomIds } = await supabase
+            const { data: overlappingBookings } = await supabase
                 .from('bookings')
-                .select('room_id')
+                .select('room_id, rooms(type)')
                 .or(`and(check_in_date.lte.${dates.checkOut},check_out_date.gte.${dates.checkIn})`);
 
-            const excludeIds = bookedRoomIds?.map(b => b.room_id) || [];
+            const excludeIds = overlappingBookings?.map((booking: any) => booking.room_id) || [];
+            const hasAnyBooking = (overlappingBookings?.length || 0) > 0;
+            const hasFullResortBooking = overlappingBookings?.some((booking: any) => isFullResortType(booking.rooms?.type || '')) || false;
 
             let query = supabase.from('rooms').select('*').eq('status', 'Clean');
             if (excludeIds.length > 0) {
@@ -138,7 +144,12 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
             if (roomsError) throw roomsError;
 
             if (rooms) {
-                setAvailableRooms(rooms);
+                const filteredRooms = rooms.filter((room) => {
+                    if (hasFullResortBooking) return false;
+                    if (isFullResortType(room.type)) return !hasAnyBooking;
+                    return true;
+                });
+                setAvailableRooms(filteredRooms);
                 setSelectedRooms([]);
                 setRoomRates({});
                 setSpecialQuantities({});

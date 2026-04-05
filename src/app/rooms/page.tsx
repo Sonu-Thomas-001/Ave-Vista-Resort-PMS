@@ -7,7 +7,7 @@ import RoomDetailsModal from '@/components/RoomDetailsModal';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
 import styles from './page.module.css';
-import { getPricingUnit } from '@/lib/constants';
+import { getPricingUnit, isFullResortType } from '@/lib/constants';
 
 type Room = Database['public']['Tables']['rooms']['Row'];
 
@@ -33,6 +33,7 @@ export default function RoomsPage() {
         if (typeLower.includes('auditorium')) return 'https://cdn.jsdelivr.net/gh/Sonu-Thomas-001/image-host@master/AVR%20PMS/Mini%20Auditorium.jpg';
         if (typeLower.includes('pool')) return 'https://cdn.jsdelivr.net/gh/Sonu-Thomas-001/image-host@master/AVR%20PMS/Swimming%20Pool.jpg';
         if (typeLower.includes('tree')) return 'https://cdn.jsdelivr.net/gh/Sonu-Thomas-001/image-host@master/AVR%20PMS/Tree%20House.jpg';
+        if (typeLower.includes('full resort')) return 'https://cdn.jsdelivr.net/gh/Sonu-Thomas-001/image-host@master/AVR%20PMS/A1.JPG';
 
         // Fallback
         return 'https://cdn.jsdelivr.net/gh/Sonu-Thomas-001/image-host@master/AVR%20PMS/A1.JPG';
@@ -63,7 +64,7 @@ export default function RoomsPage() {
         try {
             const { data, error } = await supabase
                 .from('bookings')
-                .select('room_id, status, check_in_date, check_out_date')
+                .select('room_id, status, check_in_date, check_out_date, rooms(type)')
                 .lte('check_in_date', selectedDate)
                 .gt('check_out_date', selectedDate)
                 .in('status', ['Confirmed', 'Checked In']);
@@ -123,9 +124,15 @@ export default function RoomsPage() {
     };
 
     const getRoomStatus = (room: Room) => {
-        // If booking exists for this room on selected date -> Occupied
-        const isActive = bookings.some(b => b.room_id === room.id);
-        if (isActive) return 'Occupied';
+        const isAnyActive = bookings.length > 0;
+        const isFullResortActive = bookings.some((booking: any) => isFullResortType(booking.rooms?.type || ''));
+        const isActive = bookings.some((booking: any) => booking.room_id === room.id);
+
+        if (isFullResortType(room.type)) {
+            if (isAnyActive) return 'Occupied';
+        } else if (isFullResortActive || isActive) {
+            return 'Occupied';
+        }
 
         // Map 'Clean' to 'Free' for display
         if (room.status === 'Clean') return 'Free';

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import styles from './AvailabilityCalendar.module.css';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
+import { isFullResortType } from '@/lib/constants';
 
 type Room = Database['public']['Tables']['rooms']['Row'];
 interface Booking {
@@ -15,6 +16,7 @@ interface Booking {
     total_amount: number;
     source: string;
     guests: { first_name: string; last_name: string; email: string; phone: string } | null;
+    rooms?: { type: string } | null;
 }
 
 import BookingDetailsModal from './BookingDetailsModal';
@@ -56,7 +58,7 @@ export default function AvailabilityCalendar() {
 
         const { data: bookingData } = await supabase
             .from('bookings')
-            .select('*, guests(first_name, last_name, email, phone)')
+            .select('*, guests(first_name, last_name, email, phone), rooms(type)')
             .or(`and(check_in_date.lt.${endStr},check_out_date.gt.${startStr})`);
 
         if (bookingData) setBookings(bookingData as any);
@@ -106,7 +108,18 @@ export default function AvailabilityCalendar() {
                                     const bookingToCheck = bookings.find(b => {
                                         const checkIn = b.check_in_date;
                                         const checkOut = b.check_out_date;
-                                        return b.room_id === room.id && dayDate >= checkIn && dayDate < checkOut;
+                                        const overlapsDay = dayDate >= checkIn && dayDate < checkOut;
+                                        if (!overlapsDay) return false;
+
+                                        if (isFullResortType(room.type)) {
+                                            return true;
+                                        }
+
+                                        if (isFullResortType(b.rooms?.type || '')) {
+                                            return true;
+                                        }
+
+                                        return b.room_id === room.id;
                                     });
 
                                     if (bookingToCheck) {

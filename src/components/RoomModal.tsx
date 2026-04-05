@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { X, Save, Home } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
-import { ROOM_STATUS, RoomStatusType, getPricingUnit } from '@/lib/constants';
+import { FULL_RESORT_DEFAULT_RATE, FULL_RESORT_TYPE, ROOM_STATUS, RoomStatusType, getPricingUnit, isFullResortType } from '@/lib/constants';
 import styles from './RoomModal.module.css';
 
 interface Room {
@@ -44,6 +44,17 @@ export default function RoomModal({ room, onClose, onSuccess }: RoomModalProps) 
             });
         }
     }, [room]);
+
+    useEffect(() => {
+        if (!isFullResortType(formData.type)) return;
+        if ((formData.room_number || 'FR1') === formData.room_number && formData.price_per_night > 0) return;
+
+        setFormData((current) => ({
+            ...current,
+            room_number: current.room_number || 'FR1',
+            price_per_night: current.price_per_night > 0 ? current.price_per_night : FULL_RESORT_DEFAULT_RATE
+        }));
+    }, [formData.type]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -137,7 +148,7 @@ export default function RoomModal({ room, onClose, onSuccess }: RoomModalProps) 
                                 <Home size={16} className={styles.inputIcon} />
                                 <input
                                     type="text"
-                                    placeholder="Single Cottage"
+                                    placeholder={FULL_RESORT_TYPE}
                                     value={formData.type}
                                     onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                                     className={styles.input}
