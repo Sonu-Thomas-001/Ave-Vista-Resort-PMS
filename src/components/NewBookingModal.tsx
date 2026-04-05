@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Calendar, Search, User, CreditCard, ChevronRight, CheckCircle2, AlertCircle, ArrowLeft, ArrowRight } from 'lucide-react';
+import { X, Calendar, Search, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
 import CalendarSelector from './CalendarSelector';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
@@ -21,15 +21,15 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
     const [step, setStep] = useState(1);
     const [dates, setDates] = useState({ checkIn: '', checkOut: '' });
     const [availableRooms, setAvailableRooms] = useState<Room[]>([]);
-    const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+    const [selectedRooms, setSelectedRooms] = useState<Room[]>([]);
     const [guestDetails, setGuestDetails] = useState({ firstName: '', lastName: '', email: '', phone: '' });
     const [bookingType, setBookingType] = useState('Standard');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const [advanceAmount, setAdvanceAmount] = useState<number>(0);
-    const [specialQuantity, setSpecialQuantity] = useState<number>(1); // hours for auditorium, persons for pool
-    const [customRate, setCustomRate] = useState<number>(0); // editable rate, initialized from room price
+    const [specialQuantities, setSpecialQuantities] = useState<Record<string, number>>({});
+    const [roomRates, setRoomRates] = useState<Record<string, number>>({});
     const [extraPax, setExtraPax] = useState<number>(0); // number of extra members
     const [extraPaxRate, setExtraPaxRate] = useState<number>(600); // rate per extra person, default ₹600
     const [searchTerm, setSearchTerm] = useState('');
@@ -72,6 +72,46 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
         setSearchTerm(`${guest.first_name} ${guest.last_name}`);
     };
 
+    const getNights = () => {
+        if (!dates.checkIn || !dates.checkOut) return 1;
+        return Math.max(1, Math.ceil((new Date(dates.checkOut).getTime() - new Date(dates.checkIn).getTime()) / (1000 * 60 * 60 * 24)));
+    };
+
+    const toggleRoomSelection = (room: Room) => {
+        setSelectedRooms((current) => {
+            const exists = current.some((selectedRoom) => selectedRoom.id === room.id);
+            if (exists) {
+                return current.filter((selectedRoom) => selectedRoom.id !== room.id);
+            }
+            return [...current, room];
+        });
+
+        setRoomRates((current) => (
+            current[room.id] !== undefined
+                ? current
+                : { ...current, [room.id]: room.price_per_night }
+        ));
+
+        if (isSpecialRoomType(room.type)) {
+            setSpecialQuantities((current) => (
+                current[room.id] !== undefined
+                    ? current
+                    : { ...current, [room.id]: 1 }
+            ));
+        }
+    };
+
+    const getRoomRate = (room: Room) => roomRates[room.id] ?? room.price_per_night;
+    const getRoomQuantity = (room: Room) => (
+        isSpecialRoomType(room.type)
+            ? (specialQuantities[room.id] ?? 1)
+            : getNights()
+    );
+    const getRoomSubtotal = (room: Room) => getRoomRate(room) * getRoomQuantity(room);
+    const roomSubtotal = selectedRooms.reduce((sum, room) => sum + getRoomSubtotal(room), 0);
+    const extraPaxTotal = extraPax * extraPaxRate * getNights();
+    const grandTotal = roomSubtotal + extraPaxTotal;
+
     // Step 1: Check Availability
     const checkAvailability = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -97,7 +137,12 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
             const { data: rooms, error: roomsError } = await query;
             if (roomsError) throw roomsError;
 
-            if (rooms) setAvailableRooms(rooms);
+            if (rooms) {
+                setAvailableRooms(rooms);
+                setSelectedRooms([]);
+                setRoomRates({});
+                setSpecialQuantities({});
+            }
             setStep(2);
         } catch (err: any) {
             console.error(err);
@@ -109,7 +154,7 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
 
     // Step 3: Create Booking
     const createBooking = async () => {
-        if (!selectedRoom) return;
+        if (selectedRooms.length === 0) return;
         setLoading(true);
         setError(null);
 
@@ -157,11 +202,6 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                     if (updateError) console.error('Error updating guest phone', updateError);
                 }
 
-                const isSpecial = isSpecialRoomType(selectedRoom.type);
-                const nights = isSpecial ? specialQuantity : Math.max(1, Math.ceil((new Date(dates.checkOut).getTime() - new Date(dates.checkIn).getTime()) / (1000 * 60 * 60 * 24)));
-                const extraPaxTotal = extraPax * extraPaxRate * (isSpecial ? 1 : nights);
-                const totalAmount = (customRate * nights) + extraPaxTotal;
-
                 // Fetch last booking ID to increment
                 const { data: lastBooking } = await supabase
                     .from('bookings')
@@ -181,41 +221,45 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
 
                 const bookingNumber = `AVBK${nextNumber + 1}`;
 
+                const bookingPayload = selectedRooms.map((room, index) => ({
+                    guest_id: guestId,
+                    room_id: room.id,
+                    check_in_date: dates.checkIn,
+                    check_out_date: dates.checkOut,
+                    status: 'Confirmed' as const,
+                    total_amount: getRoomSubtotal(room) + (index === 0 ? extraPaxTotal : 0),
+                    source: bookingType,
+                    booking_number: bookingNumber,
+                    advance_amount: index === 0 ? advanceAmount : 0,
+                    room_rate: getRoomRate(room),
+                    extra_pax: index === 0 ? extraPax : 0,
+                    extra_pax_rate: index === 0 ? extraPaxRate : 0
+                }));
+
                 const { data: bookingData, error: bookingError } = await supabase
                     .from('bookings')
-                    .insert([{
-                        guest_id: guestId,
-                        room_id: selectedRoom.id,
-                        check_in_date: dates.checkIn,
-                        check_out_date: dates.checkOut,
-                        status: 'Confirmed',
-                        total_amount: totalAmount,
-                        source: bookingType, // Saving Booking Type into the 'source' column
-                        booking_number: bookingNumber,
-                        advance_amount: advanceAmount,
-                        room_rate: customRate,
-                        extra_pax: extraPax,
-                        extra_pax_rate: extraPaxRate
-                    }])
-                    .select()
-                    .single();
+                    .insert(bookingPayload)
+                    .select();
 
                 if (bookingError) throw new Error(`Booking Error: ${bookingError.message}`);
+                const primaryBooking = bookingData?.[0];
+                const roomNumbers = selectedRooms.map((room) => room.room_number).join(', ');
+                const roomTypes = Array.from(new Set(selectedRooms.map((room) => room.type))).join(', ');
 
                 // Create Invoice for Advance Payment
-                if (bookingData && advanceAmount > 0) {
+                if (primaryBooking && advanceAmount > 0) {
                     const invNum = `AVE-ADV-${String(1000 + Math.floor(Math.random() * 9000))}`;
                     const { error: invError } = await supabase
                         .from('invoices')
                         .insert([{
                             invoice_number: invNum,
-                            booking_id: bookingData.id,
+                            booking_id: primaryBooking.id,
                             guest_name: `${guestDetails.firstName} ${guestDetails.lastName}`,
-                            room_number: selectedRoom.room_number,
-                            total_amount: totalAmount,
+                            room_number: roomNumbers,
+                            total_amount: grandTotal,
                             paid_amount: advanceAmount,
-                            status: advanceAmount >= totalAmount ? 'Paid' : 'Partial',
-                            is_partial: advanceAmount < totalAmount,
+                            status: advanceAmount >= grandTotal ? 'Paid' : 'Partial',
+                            is_partial: advanceAmount < grandTotal,
                             payment_mode: 'Cash', // Defaulting to Cash for now
                             gst_rate: 12
                         }]);
@@ -228,17 +272,17 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
 
                 // Trigger Email
                 try {
-                    if (bookingData) {
+                    if (primaryBooking) {
                         await EmailService.triggerEmail('booking-confirmation', {
-                            booking_id: bookingData.id,
+                            booking_id: primaryBooking.id,
                             guest_name: `${guestDetails.firstName} ${guestDetails.lastName}`,
                             email: guestDetails.email,
                             check_in_date: dates.checkIn,
                             check_out_date: dates.checkOut,
-                            room_number: selectedRoom.room_number,
-                            room_type: selectedRoom.type,
-                            total_amount: totalAmount,
-                            guests: '1',
+                            room_number: roomNumbers,
+                            room_type: roomTypes,
+                            total_amount: grandTotal,
+                            guests: selectedRooms.length.toString(),
                             advance_amount: advanceAmount.toString()
                         });
                     }
@@ -345,7 +389,7 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                                 {dates.checkIn && dates.checkOut && (
                                     <div className={styles.nightsDisplay}>
                                         <span style={{ fontSize: '1.2rem' }}>🌙</span>
-                                        {Math.max(1, Math.ceil((new Date(dates.checkOut).getTime() - new Date(dates.checkIn).getTime()) / (1000 * 60 * 60 * 24)))} Nights Stay
+                                        {getNights()} Nights Stay
                                     </div>
                                 )}
                             </motion.div>
@@ -358,6 +402,9 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -20 }}
                             >
+                                <div style={{ marginBottom: '16px', color: '#64748B', fontWeight: 600 }}>
+                                    Select one or more rooms. Selected: {selectedRooms.length}
+                                </div>
                                 <div className={styles.roomList}>
                                     {availableRooms.length === 0 ? (
                                         <div className={styles.emptyState}>No rooms available for these dates.</div>
@@ -365,15 +412,15 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                                         availableRooms.map(room => (
                                             <div
                                                 key={room.id}
-                                                className={`${styles.roomCard} ${selectedRoom?.id === room.id ? styles.selected : ''}`}
-                                                onClick={() => setSelectedRoom(room)}
+                                                className={`${styles.roomCard} ${selectedRooms.some((selectedRoom) => selectedRoom.id === room.id) ? styles.selected : ''}`}
+                                                onClick={() => toggleRoomSelection(room)}
                                             >
                                                 <div className={styles.roomHeader}>
                                                     <span className={styles.roomNumber}>{room.room_number}</span>
                                                     <span className={styles.roomTypeBadge}>{room.type}</span>
                                                 </div>
                                                 <div className={styles.roomPrice}>
-                                                    ₹{room.price_per_night}<span>{getPricingUnit(room.type)}</span>
+                                                    Rs.{room.price_per_night}<span>{getPricingUnit(room.type)}</span>
                                                 </div>
                                             </div>
                                         ))
@@ -495,16 +542,34 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                                         </div>
                                     </div>
 
-                                    <div className={styles.formGroup}>
-                                        <label>Rate (₹{selectedRoom ? getPricingUnit(selectedRoom.type) : '/night'})</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            className={styles.input}
-                                            value={customRate}
-                                            onChange={e => setCustomRate(Math.max(0, Number(e.target.value)))}
-                                        />
-                                    </div>
+                                    {selectedRooms.map((room) => (
+                                        <div key={room.id} style={{ display: 'grid', gridTemplateColumns: isSpecialRoomType(room.type) ? '1fr 1fr' : '1fr', gap: '16px' }}>
+                                            <div className={styles.formGroup}>
+                                                <label>{room.room_number} Rate (Rs.{getPricingUnit(room.type)})</label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    className={styles.input}
+                                                    value={getRoomRate(room)}
+                                                    onChange={e => setRoomRates({ ...roomRates, [room.id]: Math.max(0, Number(e.target.value)) })}
+                                                />
+                                            </div>
+
+                                            {isSpecialRoomType(room.type) && (
+                                                <div className={styles.formGroup}>
+                                                    <label>{room.room_number} {getQuantityLabel(room.type)}</label>
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        className={styles.input}
+                                                        value={specialQuantities[room.id] ?? 1}
+                                                        onChange={e => setSpecialQuantities({ ...specialQuantities, [room.id]: Math.max(1, Number(e.target.value)) })}
+                                                        placeholder="1"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
 
                                     <div className={styles.formGroup}>
                                         <label>Booking Type</label>
@@ -521,22 +586,8 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                                         </select>
                                     </div>
 
-                                    {selectedRoom && isSpecialRoomType(selectedRoom.type) && (
-                                        <div className={styles.formGroup}>
-                                            <label>{getQuantityLabel(selectedRoom.type)} (Number of {getQuantityLabel(selectedRoom.type).toLowerCase()})</label>
-                                            <input
-                                                type="number"
-                                                min="1"
-                                                className={styles.input}
-                                                value={specialQuantity}
-                                                onChange={e => setSpecialQuantity(Math.max(1, Number(e.target.value)))}
-                                                placeholder="1"
-                                            />
-                                        </div>
-                                    )}
-
                                     <div className={styles.formGroup}>
-                                        <label>Advance Payment (₹)</label>
+                                        <label>Advance Payment (Rs.)</label>
                                         <input
                                             type="number"
                                             className={styles.input}
@@ -552,12 +603,15 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                                     <div className={styles.bookingSummaryTitle}>Booking Summary</div>
 
                                     <div className={styles.summaryRow}>
-                                        <span>Room</span>
-                                        <strong>{selectedRoom?.room_number}</strong>
+                                        <span>Rooms</span>
+                                        <strong>{selectedRooms.length}</strong>
                                     </div>
-                                    <div className={styles.summaryRow}>
-                                        <span>Type</span>
-                                        <span>{selectedRoom?.type}</span>
+                                    <div className={styles.selectedRoomsList}>
+                                        {selectedRooms.map((room) => (
+                                            <span key={room.id} className={styles.selectedRoomChip}>
+                                                {room.room_number}
+                                            </span>
+                                        ))}
                                     </div>
                                     <div className={styles.summaryRow}>
                                         <span>Dates</span>
@@ -567,58 +621,46 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                                             <div>{dates.checkOut}</div>
                                         </div>
                                     </div>
+                                    <div className={styles.summaryRow} style={{ marginTop: '12px' }}>
+                                        <span>Nights</span>
+                                        <span>{getNights()}</span>
+                                    </div>
 
-                                    {selectedRoom && isSpecialRoomType(selectedRoom.type) ? (
-                                        <div className={styles.summaryRow} style={{ marginTop: '12px' }}>
-                                            <span>{getQuantityLabel(selectedRoom.type)}</span>
-                                            <span>{specialQuantity}</span>
+                                    {selectedRooms.map((room) => (
+                                        <div key={room.id} className={styles.summaryLineItem}>
+                                            <div className={styles.summaryLineMeta}>
+                                                <strong>{room.room_number}</strong>
+                                                <span>
+                                                    Rs.{getRoomRate(room)}{getPricingUnit(room.type)}{isSpecialRoomType(room.type) ? ` x ${getRoomQuantity(room)} ${getQuantityLabel(room.type).toLowerCase()}` : ` x ${getNights()}N`}
+                                                </span>
+                                            </div>
+                                            <span className={styles.summaryLineAmount}>Rs.{getRoomSubtotal(room)}</span>
                                         </div>
-                                    ) : (
-                                        <div className={styles.summaryRow} style={{ marginTop: '12px' }}>
-                                            <span>Nights</span>
-                                            <span>{Math.max(1, Math.ceil((new Date(dates.checkOut).getTime() - new Date(dates.checkIn).getTime()) / (1000 * 60 * 60 * 24)))}</span>
+                                    ))}
+
+                                    {extraPax > 0 && (
+                                        <div className={styles.summaryRow} style={{ fontSize: '0.9rem' }}>
+                                            <span>Extra Pax ({extraPax} x Rs.{extraPaxRate} x {getNights()}N)</span>
+                                            <span>Rs.{extraPaxTotal}</span>
                                         </div>
                                     )}
 
-                                    <div className={styles.summaryRow}>
-                                        <span>Rate</span>
-                                        <span>₹{customRate}{selectedRoom ? getPricingUnit(selectedRoom.type) : '/night'}</span>
+                                    <div className={styles.summaryRow + ' ' + styles.total}>
+                                        <span>Total Amount</span>
+                                        <span className={styles.summaryHighlight}>Rs.{grandTotal}</span>
                                     </div>
 
-                                    {(() => {
-                                        const qty = selectedRoom && isSpecialRoomType(selectedRoom.type) ? specialQuantity : Math.max(1, Math.ceil((new Date(dates.checkOut).getTime() - new Date(dates.checkIn).getTime()) / (1000 * 60 * 60 * 24)));
-                                        const roomTotal = customRate * qty;
-                                        const isSpecial = selectedRoom ? isSpecialRoomType(selectedRoom.type) : false;
-                                        const extraPaxTotal = extraPax * extraPaxRate * (isSpecial ? 1 : qty);
-                                        const grandTotal = roomTotal + extraPaxTotal;
-                                        return (
-                                            <>
-                                                {extraPax > 0 && (
-                                                    <div className={styles.summaryRow} style={{ fontSize: '0.9rem' }}>
-                                                        <span>Extra Pax ({extraPax} × ₹{extraPaxRate}{isSpecial ? '' : ` × ${qty}N`})</span>
-                                                        <span>₹{extraPaxTotal}</span>
-                                                    </div>
-                                                )}
+                                    {advanceAmount > 0 && (
+                                        <div className={styles.summaryRow} style={{ color: '#4CAF50', fontWeight: 600 }}>
+                                            <span>Advance Paid</span>
+                                            <span>- Rs.{advanceAmount}</span>
+                                        </div>
+                                    )}
 
-                                                <div className={styles.summaryRow + ' ' + styles.total}>
-                                                    <span>Total Amount</span>
-                                                    <span className={styles.summaryHighlight}>₹{grandTotal}</span>
-                                                </div>
-
-                                                {advanceAmount > 0 && (
-                                                    <div className={styles.summaryRow} style={{ color: '#4CAF50', fontWeight: 600 }}>
-                                                        <span>Advance Paid</span>
-                                                        <span>- ₹{advanceAmount}</span>
-                                                    </div>
-                                                )}
-
-                                                <div className={styles.summaryRow} style={{ marginTop: '8px', fontSize: '0.9rem' }}>
-                                                    <span>Balance Due</span>
-                                                    <span>₹{grandTotal - advanceAmount}</span>
-                                                </div>
-                                            </>
-                                        );
-                                    })()}
+                                    <div className={styles.summaryRow} style={{ marginTop: '8px', fontSize: '0.9rem' }}>
+                                        <span>Balance Due</span>
+                                        <span>Rs.{grandTotal - advanceAmount}</span>
+                                    </div>
                                 </div>
                             </motion.div>
                         )}
@@ -647,14 +689,11 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
 
                     {step === 2 && (
                         <button
-                            onClick={() => {
-                                if (selectedRoom) setCustomRate(selectedRoom.price_per_night);
-                                setStep(3);
-                            }}
-                            disabled={!selectedRoom}
+                            onClick={() => setStep(3)}
+                            disabled={selectedRooms.length === 0}
                             className={styles.primaryBtn}
                         >
-                            Continue to Guests <ArrowRight size={18} />
+                            Continue to Guests ({selectedRooms.length}) <ArrowRight size={18} />
                         </button>
                     )}
 

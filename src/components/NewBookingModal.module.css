@@ -388,9 +388,74 @@
 .summaryRow {
     display: flex;
     justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
     margin-bottom: 12px;
     font-size: 0.95rem;
     color: #64748B;
+}
+
+.summaryRow span:first-child {
+    flex: 0 0 auto;
+}
+
+.summaryRow strong,
+.summaryRow>div:last-child,
+.summaryRow>span:last-child {
+    text-align: right;
+}
+
+.selectedRoomsList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: -2px 0 16px;
+}
+
+.selectedRoomChip {
+    background: #F0F9FF;
+    color: #0369A1;
+    border: 1px solid #BAE6FD;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.summaryLineItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid #F1F5F9;
+}
+
+.summaryLineMeta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.summaryLineMeta strong {
+    color: #1E293B;
+    font-size: 0.95rem;
+}
+
+.summaryLineMeta span {
+    color: #64748B;
+    font-size: 0.85rem;
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+.summaryLineAmount {
+    color: #1E293B;
+    font-size: 0.95rem;
+    font-weight: 700;
+    white-space: nowrap;
 }
 
 .summaryRow.total {
