@@ -30,6 +30,9 @@ const getLast7Days = () => {
   return result;
 };
 
+// Force dynamic rendering so dashboard always shows live data
+export const dynamic = 'force-dynamic';
+
 // Next.js Server Component
 export default async function Dashboard() {
   const today = new Date().toISOString().split('T')[0];
