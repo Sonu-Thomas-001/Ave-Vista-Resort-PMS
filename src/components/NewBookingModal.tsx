@@ -555,7 +555,11 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                     )}
 
                     {step === 1 && (
-                        <button onClick={checkAvailability} className={styles.primaryBtn}>
+                        <button
+                            onClick={checkAvailability}
+                            disabled={!dates.checkIn || !dates.checkOut}
+                            className={styles.primaryBtn}
+                        >
                             Check Availability <ArrowRight size={18} />
                         </button>
                     )}
