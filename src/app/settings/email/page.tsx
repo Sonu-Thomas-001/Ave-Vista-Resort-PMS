@@ -78,28 +78,50 @@ export default function EmailSettingsPage() {
             guest_name: 'John Doe',
             first_name: 'John',
             last_name: 'Doe',
+            email: 'john.doe@example.com',
+            phone: '+91 98765 43210',
             room_number: '101',
             check_in_date: '2026-03-10',
             check_out_date: '2026-03-15',
-            booking_id: 'BK-2026-001',
+            invoice_date: '2026-03-10',
+            booking_id: 'AVBK1001',
+            booking_type: 'Standard',
             guests: '2 Adults',
             advance_amount: '2000',
             room_type: 'Deluxe Suite',
-            total_amount: '5000'
+            total_amount: '5000',
+            payment_mode: 'Cash',
+            gst_rate: '12',
+            gst_amount: '600',
+            paid_amount: '2000',
+            balance_due: '3600',
+            company_name: 'Tech Solutions Pvt Ltd',
+            gst_number: '29ABCDE1234F1Z5',
+            address: '456, Cyber City, Bangalore, Karnataka - 560001',
+            room_rate: '4000',
+            extra_pax: '2',
+            extra_pax_rate: '300',
+            nights: '5',
         };
 
         if (slug === 'invoice-email') {
             return {
                 ...base,
                 invoice_number: 'INV-001',
-                total_amount: '$500.00',
-                payment_status: 'Paid'
+                total_amount: '5000',
+                payment_status: 'Paid',
+                status: 'Partial'
             };
         }
         if (slug === 'admin-alert') {
             return {
                 event_type: 'New Booking',
-                description: 'John Doe booked Room 101',
+                booking_id: 'AVBK1001',
+                guest_name: 'John Doe',
+                room_number: '101',
+                booking_type: 'Standard',
+                total_amount: '5000',
+                description: 'John Doe booked Room 101 for 5 nights',
                 timestamp: new Date().toLocaleString(),
                 dashboard_link: '#'
             };

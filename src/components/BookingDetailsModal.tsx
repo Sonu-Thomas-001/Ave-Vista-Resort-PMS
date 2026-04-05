@@ -30,19 +30,28 @@ export default function BookingDetailsModal({ booking, onClose }: BookingDetails
             setSendingEmail(true);
             await EmailService.triggerEmail('invoice-email', {
                 invoice_number: booking.booking_number || booking.id.split('-')[0].toUpperCase(),
+                invoice_date: new Date().toISOString().split('T')[0],
                 guest_name: guestName,
                 email: email,
+                booking_type: booking.source || 'Direct',
                 room_number: booking.rooms?.room_number || 'N/A',
+                room_type: booking.rooms?.type || 'Standard',
                 total_amount: booking.total_amount,
                 amount: booking.total_amount,
                 payment_status: booking.status === 'Checked Out' ? 'Paid' : 'Pending',
                 payment_method: 'Direct',
+                payment_mode: 'Direct',
                 check_in_date: booking.check_in_date,
                 check_out_date: booking.check_out_date,
                 nights: Math.ceil((new Date(booking.check_out_date).getTime() - new Date(booking.check_in_date).getTime()) / (1000 * 60 * 60 * 24)),
                 guests_count: (booking.adults || 1) + (booking.children || 0),
+                room_rate: booking.room_rate || booking.total_amount,
+                extra_pax: booking.extra_pax || 0,
+                extra_pax_rate: booking.extra_pax_rate || 600,
                 gst_rate: 12,
                 paid_amount: booking.total_amount,
+                balance_due: 0,
+                status: booking.status === 'Checked Out' ? 'Paid' : 'Pending',
                 booking_id: booking.id
             });
             alert('Invoice sent successfully!');

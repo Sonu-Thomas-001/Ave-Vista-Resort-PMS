@@ -1,38 +1,7 @@
--- Enable UUID extension if not enabled
-create extension if not exists "uuid-ossp";
-
--- 1. APP SETTINGS (Extend existing table)
--- We assume app_settings exists from supabase_schema_settings.sql with id=1
-do $$
-begin
-  if not exists (select 1 from information_schema.columns where table_name = 'app_settings' and column_name = 'email_enabled') then
-    alter table public.app_settings add column email_enabled boolean default true;
-  end if;
-
-  if not exists (select 1 from information_schema.columns where table_name = 'app_settings' and column_name = 'admin_email') then
-    alter table public.app_settings add column admin_email text default 'avevistaresort@gmail.com';
-  end if;
-end $$;
-
--- 2. EMAIL TEMPLATES
-create table if not exists public.email_templates (
-  id uuid default uuid_generate_v4() primary key,
-  slug text unique not null, -- e.g., 'booking-confirmation'
-  name text not null,
-  subject_template text not null,
-  body_html text not null, -- The HTML content with placeholders like {{guest_name}}
-  created_at timestamp with time zone default timezone('utc'::text, now()),
-  updated_at timestamp with time zone default timezone('utc'::text, now())
-);
-
--- Insert Default Templates
-insert into public.email_templates (slug, name, subject_template, body_html)
-values
-(
-  'guest-welcome',
-  'Welcome to Ave Vista Resort',
-  'Welcome to Ave Vista Resort, {{first_name}} {{last_name}}!',
-  '<html>
+update public.email_templates
+set
+  subject_template = 'Welcome to Ave Vista Resort, {{first_name}} {{last_name}}!',
+  body_html = '<html>
     <body style="margin: 0; padding: 0; background: #eef4f8; font-family: Arial, sans-serif; color: #163047;">
       <div style="padding: 32px 16px;">
         <div style="max-width: 680px; margin: 0 auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);">
@@ -66,24 +35,21 @@ values
               <p style="margin: 0; font-size: 15px; line-height: 1.8; color: #48627a;">You can now book stays faster, receive smoother billing communication, and keep all your guest details ready for your next visit.</p>
             </div>
 
-            <div style="margin-top: 24px; text-align: center;">
-              <a href="mailto:avevistaresort@gmail.com" style="display: inline-block; background: #0f766e; color: #ffffff; text-decoration: none; padding: 14px 22px; border-radius: 999px; font-size: 14px; font-weight: 700;">Contact Ave Vista</a>
-            </div>
+            <div style="margin-top: 24px; text-align: center;"><a href="mailto:avevistaresort@gmail.com" style="display: inline-block; background: #0f766e; color: #ffffff; text-decoration: none; padding: 14px 22px; border-radius: 999px; font-size: 14px; font-weight: 700;">Contact Ave Vista</a></div>
           </div>
 
-          <div style="padding: 20px 32px 30px; background: #f8fbfd; border-top: 1px solid #e2edf3; text-align: center;">
-            <p style="margin: 0; font-size: 12px; line-height: 1.7; color: #6b7f91;">Ave Vista Resort • +91 90615 54545 • avevistaresort@gmail.com</p>
-          </div>
+          <div style="padding: 20px 32px 30px; background: #f8fbfd; border-top: 1px solid #e2edf3; text-align: center;"><p style="margin: 0; font-size: 12px; line-height: 1.7; color: #6b7f91;">Ave Vista Resort • +91 90615 54545 • avevistaresort@gmail.com</p></div>
         </div>
       </div>
     </body>
-  </html>'
-),
-(
-  'booking-confirmation',
-  'Booking Confirmation',
-  'Booking Confirmed: {{booking_id}} - {{booking_type}} - Ave Vista Resort',
-  '<html>
+  </html>',
+  updated_at = timezone('utc'::text, now())
+where slug = 'guest-welcome';
+
+update public.email_templates
+set
+  subject_template = 'Booking Confirmed: {{booking_id}} - {{booking_type}} - Ave Vista Resort',
+  body_html = '<html>
     <body style="margin: 0; padding: 0; background: #eef4f8; font-family: Arial, sans-serif; color: #163047;">
       <div style="padding: 32px 16px;">
         <div style="max-width: 680px; margin: 0 auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);">
@@ -126,13 +92,14 @@ values
         </div>
       </div>
     </body>
-  </html>'
-),
-(
-  'checkin-confirmation',
-  'Welcome to Ave Vista Resort',
-  'Welcome! Your Stay is Ready - Ave Vista Resort',
-  '<html>
+  </html>',
+  updated_at = timezone('utc'::text, now())
+where slug = 'booking-confirmation';
+
+update public.email_templates
+set
+  subject_template = 'Welcome! Your Stay is Ready - Ave Vista Resort',
+  body_html = '<html>
     <body style="margin: 0; padding: 0; background: #eef4f8; font-family: Arial, sans-serif; color: #163047;">
       <div style="padding: 32px 16px;">
         <div style="max-width: 680px; margin: 0 auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);">
@@ -171,13 +138,14 @@ values
         </div>
       </div>
     </body>
-  </html>'
-),
-(
-  'invoice-email',
-  'Your Invoice from Ave Vista Resort',
-  'Invoice #{{invoice_number}} - {{guest_name}} - Ave Vista Resort',
-  '<html>
+  </html>',
+  updated_at = timezone('utc'::text, now())
+where slug = 'checkin-confirmation';
+
+update public.email_templates
+set
+  subject_template = 'Invoice #{{invoice_number}} - {{guest_name}} - Ave Vista Resort',
+  body_html = '<html>
     <body style="margin: 0; padding: 0; background: #eef4f8; font-family: Arial, sans-serif; color: #163047;">
       <div style="padding: 32px 16px;">
         <div style="max-width: 720px; margin: 0 auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);">
@@ -233,13 +201,14 @@ values
         </div>
       </div>
     </body>
-  </html>'
-),
-(
-  'admin-alert',
-  'New System Alert',
-  '[Admin] {{event_type}} - {{booking_id}} - Ave Vista PMS',
-  '<html>
+  </html>',
+  updated_at = timezone('utc'::text, now())
+where slug = 'invoice-email';
+
+update public.email_templates
+set
+  subject_template = '[Admin] {{event_type}} - {{booking_id}} - Ave Vista PMS',
+  body_html = '<html>
     <body style="margin: 0; padding: 0; background: #eef4f8; font-family: Arial, sans-serif; color: #163047;">
       <div style="padding: 32px 16px;">
         <div style="max-width: 680px; margin: 0 auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);">
@@ -275,32 +244,6 @@ values
         </div>
       </div>
     </body>
-  </html>'
-)
-on conflict (slug) do nothing;
-
--- 3. EMAIL LOGS
-create table if not exists public.email_logs (
-  id uuid default uuid_generate_v4() primary key,
-  recipient text not null,
-  template_slug text not null,
-  status text check (status in ('Sent', 'Failed', 'Pending')) default 'Pending',
-  error_message text,
-  metadata jsonb, -- Stores extra info like booking_id, etc.
-  created_at timestamp with time zone default timezone('utc'::text, now())
-);
-
--- RLS
-alter table public.email_templates enable row level security;
-alter table public.email_logs enable row level security;
-
--- Policies
--- Templates: Read for everyone (true), Write for Authenticated
-drop policy if exists "Allow all access to email_templates" on public.email_templates;
-create policy "Allow read access to email_templates" on public.email_templates for select using (true);
-create policy "Allow write access to email_templates" on public.email_templates for insert with check (auth.role() = 'authenticated');
-create policy "Allow update access to email_templates" on public.email_templates for update using (auth.role() = 'authenticated');
-
--- Logs: Read/Write for Authenticated
-drop policy if exists "Allow all access to email_logs" on public.email_logs;
-create policy "Allow all access to email_logs" on public.email_logs for all using (auth.role() = 'authenticated');
+  </html>',
+  updated_at = timezone('utc'::text, now())
+where slug = 'admin-alert';

@@ -111,13 +111,14 @@ export default function BookingList() {
                     booking_id: formattedId,
                     email: booking.guests.email,
                     guest_name: `${booking.guests.first_name} ${booking.guests.last_name}`,
+                    booking_type: booking.source || 'Direct',
                     room_type: booking.rooms?.type || 'Standard Room',
                     check_in_date: booking.check_in_date,
                     check_out_date: booking.check_out_date,
                     room_number: booking.rooms?.room_number || 'N/A',
                     guests: '1',
                     total_amount: booking.total_amount,
-                    advance_amount: 0
+                    advance_amount: booking.advance_amount || 0
                 }
             };
 

@@ -233,9 +233,10 @@ async function generateInvoicePDF(data: any) {
 
     const invoiceInfo = [
         ['Invoice No:', data.invoice_number || 'N/A'],
-        ['Date:', new Date().toLocaleDateString('en-IN')],
-        ['Booking ID:', data.booking_id?.slice(0, 8).toUpperCase() || 'N/A'],
-        ['Mode:', data.payment_method || 'Direct'],
+        ['Date:', data.invoice_date || new Date().toLocaleDateString('en-IN')],
+        ['Booking ID:', data.booking_ref || data.booking_id?.slice(0, 8).toUpperCase() || 'N/A'],
+        ['Booking Type:', data.booking_type || 'Direct'],
+        ['Mode:', data.payment_mode || data.payment_method || 'Direct'],
     ];
 
     invoiceInfo.forEach(([label, value]) => {
@@ -272,6 +273,7 @@ async function generateInvoicePDF(data: any) {
     yPos -= 20;
 
     const stayInfo = [
+        ['Room Type:', data.room_type || 'Standard'],
         ['Room No:', data.room_number || 'N/A'],
         ['Check-in:', data.check_in_date || 'N/A'],
         ['Check-out:', data.check_out_date || 'N/A'],
@@ -321,6 +323,28 @@ async function generateInvoicePDF(data: any) {
 
     yPos -= 15;
 
+    if (data.company_name) {
+        page.drawText(`Company: ${data.company_name}`, {
+            x: 50,
+            y: yPos,
+            size: 9,
+            font: fontRegular,
+            color: grayColor,
+        });
+        yPos -= 15;
+    }
+
+    if (data.gst_number) {
+        page.drawText(`GST: ${data.gst_number}`, {
+            x: 50,
+            y: yPos,
+            size: 9,
+            font: fontRegular,
+            color: grayColor,
+        });
+        yPos -= 15;
+    }
+
     page.drawText(`Email: ${data.email || 'N/A'}`, {
         x: 50,
         y: yPos,
@@ -330,6 +354,18 @@ async function generateInvoicePDF(data: any) {
     });
 
     yPos -= 30;
+
+    if (data.address) {
+        page.drawText(`Address: ${data.address}`, {
+            x: 50,
+            y: yPos,
+            size: 8,
+            font: fontRegular,
+            color: grayColor,
+            maxWidth: width - 100,
+        });
+        yPos -= 25;
+    }
 
     // ===== TARIFF TABLE =====
     page.drawText('Tariff & Charges', {
@@ -361,14 +397,25 @@ async function generateInvoicePDF(data: any) {
     // Table Row
     const amount = data.total_amount || data.amount || 0;
     const nights = data.nights || 1;
-    const rate = amount / nights;
+    const rate = data.room_rate || (nights > 0 ? amount / nights : amount);
+    const extraPax = data.extra_pax || 0;
+    const extraPaxRate = data.extra_pax_rate || 0;
+    const extraPaxAmount = extraPax > 0 ? (extraPax * extraPaxRate * Math.max(1, nights)) : 0;
 
-    page.drawText('Room Tariff', { x: 60, y: yPos, size: 9, font: fontRegular, color: darkColor });
+    page.drawText(`Room Tariff${data.room_type ? ` (${data.room_type})` : ''}`, { x: 60, y: yPos, size: 9, font: fontRegular, color: darkColor });
     page.drawText(String(nights), { x: 300, y: yPos, size: 9, font: fontRegular, color: darkColor });
     page.drawText(`Rs.${rate.toFixed(2)}`, { x: 380, y: yPos, size: 9, font: fontRegular, color: darkColor });
-    page.drawText(`Rs.${amount.toLocaleString()}`, { x: 470, y: yPos, size: 9, font: fontBold, color: darkColor });
+    page.drawText(`Rs.${Number(amount).toLocaleString()}`, { x: 470, y: yPos, size: 9, font: fontBold, color: darkColor });
 
     yPos -= 30;
+
+    if (extraPax > 0) {
+        page.drawText(`Extra Pax Charges (${extraPax})`, { x: 60, y: yPos, size: 9, font: fontRegular, color: darkColor });
+        page.drawText(String(nights), { x: 300, y: yPos, size: 9, font: fontRegular, color: darkColor });
+        page.drawText(`Rs.${Number(extraPaxRate).toFixed(2)}`, { x: 380, y: yPos, size: 9, font: fontRegular, color: darkColor });
+        page.drawText(`Rs.${Number(extraPaxAmount).toLocaleString()}`, { x: 470, y: yPos, size: 9, font: fontBold, color: darkColor });
+        yPos -= 30;
+    }
 
     // ===== PAYMENT SUMMARY =====
     const summaryX = width - 220;
@@ -446,7 +493,17 @@ async function generateInvoicePDF(data: any) {
 
     yPos -= 15;
 
-    page.drawText(`Payment Status: ${data.payment_status || 'Paid'}`, {
+    page.drawText(`Balance Due: Rs.${Number(data.balance_due ?? Math.max(0, grandTotal - (data.paid_amount || 0))).toFixed(2)}`, {
+        x: 50,
+        y: yPos,
+        size: 9,
+        font: fontRegular,
+        color: grayColor,
+    });
+
+    yPos -= 15;
+
+    page.drawText(`Payment Status: ${data.payment_status || data.status || 'Paid'}`, {
         x: 50,
         y: yPos,
         size: 9,

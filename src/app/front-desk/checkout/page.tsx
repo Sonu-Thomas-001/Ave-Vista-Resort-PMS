@@ -49,7 +49,7 @@ export default function CheckOutPage() {
             .select(`
                 *,
                 rooms (room_number),
-                guests (first_name, last_name, email)
+                guests (first_name, last_name, email, phone, company_name, gst_number, address)
             `)
             .eq('status', 'Checked In');
 
@@ -144,19 +144,31 @@ export default function CheckOutPage() {
             try {
                 await EmailService.triggerEmail('invoice-email', {
                     invoice_number: formattedInvoice.invoice_number,
+                    invoice_date: new Date().toISOString().split('T')[0],
                     guest_name: selectedBooking.guests ? `${selectedBooking.guests.first_name} ${selectedBooking.guests.last_name}` : 'Guest',
                     email: selectedBooking.guests.email,
+                    booking_type: selectedBooking.source || 'Direct',
                     room_number: selectedBooking.rooms?.room_number || 'N/A',
+                    room_type: selectedBooking.rooms?.type || 'Standard',
                     amount: formattedInvoice.amount,
                     total_amount: formattedInvoice.amount,
                     payment_status: 'Paid',
                     payment_method: paymentMode,
+                    payment_mode: paymentMode,
                     check_in_date: selectedBooking.check_in_date,
                     check_out_date: selectedBooking.check_out_date,
                     nights: Math.ceil((new Date(selectedBooking.check_out_date).getTime() - new Date(selectedBooking.check_in_date).getTime()) / (1000 * 60 * 60 * 24)),
                     guests_count: (selectedBooking.adults || 1) + (selectedBooking.children || 0),
+                    room_rate: selectedBooking.room_rate || selectedBooking.total_amount,
+                    extra_pax: selectedBooking.extra_pax || 0,
+                    extra_pax_rate: selectedBooking.extra_pax_rate || 600,
+                    company_name: selectedBooking.guests?.company_name || '',
+                    gst_number: selectedBooking.guests?.gst_number || '',
+                    address: selectedBooking.guests?.address || '',
                     gst_rate: 12,
                     paid_amount: formattedInvoice.amount,
+                    balance_due: 0,
+                    status: 'Paid',
                     booking_id: selectedBooking.id
                 });
             } catch (e) {
@@ -358,19 +370,31 @@ export default function CheckOutPage() {
                                         try {
                                             await EmailService.triggerEmail('invoice-email', {
                                                 invoice_number: generatedInvoice?.invoice_number,
+                                                invoice_date: new Date().toISOString().split('T')[0],
                                                 guest_name: selectedBooking.guests ? `${selectedBooking.guests.first_name} ${selectedBooking.guests.last_name}` : 'Guest',
                                                 email: targetEmail,
+                                                booking_type: selectedBooking.source || 'Direct',
                                                 room_number: selectedBooking.rooms?.room_number || 'N/A',
+                                                room_type: selectedBooking.rooms?.type || 'Standard',
                                                 amount: generatedInvoice?.amount,
                                                 total_amount: generatedInvoice?.amount,
                                                 payment_status: 'Paid',
                                                 payment_method: paymentMode || 'Direct',
+                                                payment_mode: paymentMode || 'Direct',
                                                 check_in_date: selectedBooking.check_in_date,
                                                 check_out_date: selectedBooking.check_out_date,
                                                 nights: Math.ceil((new Date(selectedBooking.check_out_date).getTime() - new Date(selectedBooking.check_in_date).getTime()) / (1000 * 60 * 60 * 24)),
                                                 guests_count: (selectedBooking.adults || 1) + (selectedBooking.children || 0),
+                                                room_rate: selectedBooking.room_rate || selectedBooking.total_amount,
+                                                extra_pax: selectedBooking.extra_pax || 0,
+                                                extra_pax_rate: selectedBooking.extra_pax_rate || 600,
+                                                company_name: selectedBooking.guests?.company_name || '',
+                                                gst_number: selectedBooking.guests?.gst_number || '',
+                                                address: selectedBooking.guests?.address || '',
                                                 gst_rate: 12,
                                                 paid_amount: generatedInvoice?.amount,
+                                                balance_due: 0,
+                                                status: 'Paid',
                                                 booking_id: selectedBooking.id
                                             });
                                             alert(`Invoice sent to ${targetEmail}!`);

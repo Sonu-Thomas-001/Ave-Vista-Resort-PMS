@@ -285,9 +285,10 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                 try {
                     if (primaryBooking) {
                         await EmailService.triggerEmail('booking-confirmation', {
-                            booking_id: primaryBooking.id,
+                            booking_id: bookingNumber,
                             guest_name: `${guestDetails.firstName} ${guestDetails.lastName}`,
                             email: guestDetails.email,
+                            booking_type: bookingType,
                             check_in_date: dates.checkIn,
                             check_out_date: dates.checkOut,
                             room_number: roomNumbers,
