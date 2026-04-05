@@ -302,15 +302,20 @@
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    padding: 24px;
 }
 
 .modal {
     background: white;
     width: 100%;
-    max-width: 500px;
+    max-width: 1040px;
+    max-height: calc(100vh - 48px);
     border-radius: 16px;
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2);
     animation: slideUp 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 @keyframes slideUp {
@@ -331,6 +336,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
+    background: white;
+    position: sticky;
+    top: 0;
+    z-index: 2;
 }
 
 .closeBtn {
@@ -351,6 +361,8 @@
 
 .modalBody {
     padding: 24px;
+    overflow-y: auto;
+    flex: 1;
 }
 
 .formGroup {
@@ -459,6 +471,10 @@
     display: flex;
     justify-content: flex-end;
     gap: 12px;
+    flex-shrink: 0;
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
 }
 
 .cancelBtn {
@@ -546,4 +562,32 @@
     font-family: monospace;
     font-size: 0.9rem;
     color: #475569;
+}
+
+@media (max-width: 900px) {
+    .modalOverlay {
+        padding: 12px;
+        align-items: flex-start;
+    }
+
+    .modal {
+        max-width: 100%;
+        max-height: calc(100vh - 24px);
+        margin-top: 12px;
+    }
+
+    .row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.fetchErrorBanner {
+    margin: 16px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid #FECACA;
+    background: #FEF2F2;
+    color: #991B1B;
+    font-size: 0.95rem;
+    font-weight: 600;
 }
