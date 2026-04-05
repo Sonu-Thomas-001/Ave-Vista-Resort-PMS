@@ -1,4 +1,4 @@
--- Enable UUID extension if not enabled
+ï»¿-- Enable UUID extension if not enabled
 create extension if not exists "uuid-ossp";
 
 -- 1. APP SETTINGS (Extend existing table)
@@ -36,7 +36,8 @@ values
     <body style="margin: 0; padding: 0; background: #eef4f8; font-family: Arial, sans-serif; color: #163047;">
       <div style="padding: 32px 16px;">
         <div style="max-width: 680px; margin: 0 auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);">
-          <div style="background: linear-gradient(135deg, #0f766e 0%, #0284c7 100%); padding: 36px 40px 72px; color: #ffffff;">
+          <div style="background: linear-gradient(135deg, #0f766e 0%, #0284c7 100%); padding: 28px 40px 72px; color: #ffffff;">
+            <div style="margin-bottom: 20px;"><img src="https://www.avevistaresorts.com/wp-content/uploads/2025/09/AveVistaLogoBlack-e1758994800877.png" alt="Ave Vista Resorts" style="height: 54px; width: auto; display: block; background: #ffffff; border-radius: 16px; padding: 10px 14px;" /></div>
             <div style="display: inline-block; padding: 8px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.16); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">Guest Profile</div>
             <h1 style="margin: 18px 0 10px; font-size: 34px; line-height: 1.15;">Welcome to Ave Vista Resort</h1>
             <p style="margin: 0; font-size: 16px; line-height: 1.7; max-width: 460px; color: rgba(255, 255, 255, 0.88);">Your profile is ready and your future stays just became faster, smoother, and easier to manage.</p>
@@ -72,7 +73,7 @@ values
           </div>
 
           <div style="padding: 20px 32px 30px; background: #f8fbfd; border-top: 1px solid #e2edf3; text-align: center;">
-            <p style="margin: 0; font-size: 12px; line-height: 1.7; color: #6b7f91;">Ave Vista Resort • +91 90615 54545 • avevistaresort@gmail.com</p>
+            <p style="margin: 0; font-size: 12px; line-height: 1.7; color: #6b7f91;">Ave Vista Resort â€¢ +91 90615 54545 â€¢ avevistaresort@gmail.com</p>
           </div>
         </div>
       </div>
@@ -87,7 +88,8 @@ values
     <body style="margin: 0; padding: 0; background: #eef4f8; font-family: Arial, sans-serif; color: #163047;">
       <div style="padding: 32px 16px;">
         <div style="max-width: 680px; margin: 0 auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);">
-          <div style="background: linear-gradient(135deg, #0f766e 0%, #0284c7 100%); padding: 36px 40px 72px; color: #ffffff;">
+          <div style="background: linear-gradient(135deg, #0f766e 0%, #0284c7 100%); padding: 28px 40px 72px; color: #ffffff;">
+            <div style="margin-bottom: 20px;"><img src="https://www.avevistaresorts.com/wp-content/uploads/2025/09/AveVistaLogoBlack-e1758994800877.png" alt="Ave Vista Resorts" style="height: 54px; width: auto; display: block; background: #ffffff; border-radius: 16px; padding: 10px 14px;" /></div>
             <div style="display: inline-block; padding: 8px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.16); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">Booking Confirmed</div>
             <h1 style="margin: 18px 0 10px; font-size: 34px; line-height: 1.15;">Your stay is locked in</h1>
             <p style="margin: 0; font-size: 16px; line-height: 1.7; max-width: 470px; color: rgba(255, 255, 255, 0.88);">We have reserved your stay at Ave Vista Resort. Here is a clean summary of your confirmed booking.</p>
@@ -122,7 +124,7 @@ values
             <div style="margin-top: 22px; background: #102a43; color: #ffffff; border-radius: 22px; padding: 22px;"><p style="margin: 0 0 6px; font-size: 15px; font-weight: 700;">Need help before arrival?</p><p style="margin: 0; font-size: 14px; line-height: 1.8; color: rgba(255, 255, 255, 0.84);">Contact Ave Vista Resort at +91 90615 54545 or reply to this email for assistance with your stay.</p></div>
           </div>
 
-          <div style="padding: 20px 32px 30px; background: #f8fbfd; border-top: 1px solid #e2edf3; text-align: center;"><p style="margin: 0; font-size: 12px; line-height: 1.7; color: #6b7f91;">Ave Vista Resort • Booking Ref {{booking_id}}</p></div>
+          <div style="padding: 20px 32px 30px; background: #f8fbfd; border-top: 1px solid #e2edf3; text-align: center;"><p style="margin: 0; font-size: 12px; line-height: 1.7; color: #6b7f91;">&#x1F4CD; Balapuram, Vayattuparamba (Near Alakode)<br/>&#x1F4DE; 90615 54545 | 9446595722<br/>&#x1F310; www.avevistaresorts.com</p></div>
         </div>
       </div>
     </body>
@@ -136,7 +138,8 @@ values
     <body style="margin: 0; padding: 0; background: #eef4f8; font-family: Arial, sans-serif; color: #163047;">
       <div style="padding: 32px 16px;">
         <div style="max-width: 680px; margin: 0 auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);">
-          <div style="background: linear-gradient(135deg, #0f766e 0%, #0284c7 100%); padding: 36px 40px 72px; color: #ffffff;">
+          <div style="background: linear-gradient(135deg, #0f766e 0%, #0284c7 100%); padding: 28px 40px 72px; color: #ffffff;">
+            <div style="margin-bottom: 20px;"><img src="https://www.avevistaresorts.com/wp-content/uploads/2025/09/AveVistaLogoBlack-e1758994800877.png" alt="Ave Vista Resorts" style="height: 54px; width: auto; display: block; background: #ffffff; border-radius: 16px; padding: 10px 14px;" /></div>
             <div style="display: inline-block; padding: 8px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.16); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">Check-in Successful</div>
             <h1 style="margin: 18px 0 10px; font-size: 34px; line-height: 1.15;">Welcome to your stay</h1>
             <p style="margin: 0; font-size: 16px; line-height: 1.7; max-width: 470px; color: rgba(255, 255, 255, 0.88);">You are checked in and your room is ready. Here is everything you need for a smooth arrival.</p>
@@ -161,13 +164,12 @@ values
 
             <div style="margin-top: 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
               <div style="background: linear-gradient(180deg, #f0f9ff 0%, #f8fffe 100%); border: 1px solid #cde9e7; border-radius: 22px; padding: 20px;"><p style="margin: 0 0 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6b7f91;">WiFi Access</p><p style="margin: 0; font-size: 20px; font-weight: 700; color: #102a43;">avevista_guest</p></div>
-              <div style="background: #f8fbfd; border: 1px solid #dbe7ef; border-radius: 22px; padding: 20px;"><p style="margin: 0 0 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6b7f91;">Reception</p><p style="margin: 0; font-size: 14px; line-height: 1.8; color: #48627a;">Dial 9 from your room for assistance.</p></div>
             </div>
 
             <div style="margin-top: 22px; background: #102a43; color: #ffffff; border-radius: 22px; padding: 22px;"><p style="margin: 0 0 6px; font-size: 15px; font-weight: 700;">Breakfast Timing</p><p style="margin: 0; font-size: 14px; line-height: 1.8; color: rgba(255, 255, 255, 0.84);">7:30 AM to 10:30 AM at The Palm Restaurant.</p></div>
           </div>
 
-          <div style="padding: 20px 32px 30px; background: #f8fbfd; border-top: 1px solid #e2edf3; text-align: center;"><p style="margin: 0; font-size: 12px; line-height: 1.7; color: #6b7f91;">Enjoy your stay at Ave Vista Resort</p></div>
+          <div style="padding: 20px 32px 30px; background: #f8fbfd; border-top: 1px solid #e2edf3; text-align: center;"><p style="margin: 0; font-size: 12px; line-height: 1.7; color: #6b7f91;">&#x1F4CD; Balapuram, Vayattuparamba (Near Alakode)<br/>&#x1F4DE; 90615 54545 | 9446595722<br/>&#x1F310; www.avevistaresorts.com</p></div>
         </div>
       </div>
     </body>
@@ -181,7 +183,8 @@ values
     <body style="margin: 0; padding: 0; background: #eef4f8; font-family: Arial, sans-serif; color: #163047;">
       <div style="padding: 32px 16px;">
         <div style="max-width: 720px; margin: 0 auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);">
-          <div style="background: linear-gradient(135deg, #0f766e 0%, #0284c7 100%); padding: 36px 40px 76px; color: #ffffff;">
+          <div style="background: linear-gradient(135deg, #0f766e 0%, #0284c7 100%); padding: 28px 40px 76px; color: #ffffff;">
+            <div style="margin-bottom: 20px;"><img src="https://www.avevistaresorts.com/wp-content/uploads/2025/09/AveVistaLogoBlack-e1758994800877.png" alt="Ave Vista Resorts" style="height: 54px; width: auto; display: block; background: #ffffff; border-radius: 16px; padding: 10px 14px;" /></div>
             <div style="display: inline-block; padding: 8px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.16); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">Tax Invoice</div>
             <h1 style="margin: 18px 0 10px; font-size: 34px; line-height: 1.15;">Your billing summary</h1>
             <p style="margin: 0; font-size: 16px; line-height: 1.7; max-width: 500px; color: rgba(255, 255, 255, 0.88);">A polished copy of your invoice is attached. Here is a quick breakdown of the stay and payment details.</p>
@@ -229,7 +232,7 @@ values
             <div style="margin-top: 22px; background: #102a43; color: #ffffff; border-radius: 22px; padding: 22px;"><p style="margin: 0 0 6px; font-size: 15px; font-weight: 700;">Invoice Attached</p><p style="margin: 0; font-size: 14px; line-height: 1.8; color: rgba(255, 255, 255, 0.84);">This email reflects the latest edited guest, stay, and payment information. Please keep this invoice for your records.</p></div>
           </div>
 
-          <div style="padding: 20px 32px 30px; background: #f8fbfd; border-top: 1px solid #e2edf3; text-align: center;"><p style="margin: 0; font-size: 12px; line-height: 1.7; color: #6b7f91;">Ave Vista Resort • Invoice {{invoice_number}}</p></div>
+          <div style="padding: 20px 32px 30px; background: #f8fbfd; border-top: 1px solid #e2edf3; text-align: center;"><p style="margin: 0; font-size: 12px; line-height: 1.7; color: #6b7f91;">&#x1F4CD; Balapuram, Vayattuparamba (Near Alakode)<br/>&#x1F4DE; 90615 54545 | 9446595722<br/>&#x1F310; www.avevistaresorts.com</p></div>
         </div>
       </div>
     </body>
@@ -243,7 +246,8 @@ values
     <body style="margin: 0; padding: 0; background: #eef4f8; font-family: Arial, sans-serif; color: #163047;">
       <div style="padding: 32px 16px;">
         <div style="max-width: 680px; margin: 0 auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);">
-          <div style="background: linear-gradient(135deg, #102a43 0%, #1d4ed8 100%); padding: 36px 40px 72px; color: #ffffff;">
+          <div style="background: linear-gradient(135deg, #102a43 0%, #1d4ed8 100%); padding: 28px 40px 72px; color: #ffffff;">
+            <div style="margin-bottom: 20px;"><img src="https://www.avevistaresorts.com/wp-content/uploads/2025/09/AveVistaLogoBlack-e1758994800877.png" alt="Ave Vista Resorts" style="height: 54px; width: auto; display: block; background: #ffffff; border-radius: 16px; padding: 10px 14px;" /></div>
             <div style="display: inline-block; padding: 8px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.16); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">Admin Alert</div>
             <h1 style="margin: 18px 0 10px; font-size: 32px; line-height: 1.15;">System activity update</h1>
             <p style="margin: 0; font-size: 16px; line-height: 1.7; max-width: 500px; color: rgba(255, 255, 255, 0.88);">A recent event in Ave Vista PMS needs your attention. Review the details below and open the dashboard if action is required.</p>
@@ -271,7 +275,7 @@ values
             <div style="margin-top: 24px; text-align: center;"><a href="{{dashboard_link}}" style="display: inline-block; background: #1d4ed8; color: #ffffff; text-decoration: none; padding: 14px 22px; border-radius: 999px; font-size: 14px; font-weight: 700;">Open Dashboard</a></div>
           </div>
 
-          <div style="padding: 20px 32px 30px; background: #f8fbfd; border-top: 1px solid #e2edf3; text-align: center;"><p style="margin: 0; font-size: 12px; line-height: 1.7; color: #6b7f91;">Ave Vista PMS admin notification</p></div>
+          <div style="padding: 20px 32px 30px; background: #f8fbfd; border-top: 1px solid #e2edf3; text-align: center;"><p style="margin: 0; font-size: 12px; line-height: 1.7; color: #6b7f91;">&#x1F4CD; Balapuram, Vayattuparamba (Near Alakode)<br/>&#x1F4DE; 90615 54545 | 9446595722<br/>&#x1F310; www.avevistaresorts.com</p></div>
         </div>
       </div>
     </body>
@@ -304,3 +308,5 @@ create policy "Allow update access to email_templates" on public.email_templates
 -- Logs: Read/Write for Authenticated
 drop policy if exists "Allow all access to email_logs" on public.email_logs;
 create policy "Allow all access to email_logs" on public.email_logs for all using (auth.role() = 'authenticated');
+
+
