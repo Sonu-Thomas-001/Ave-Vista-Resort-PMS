@@ -123,6 +123,9 @@ export interface Database {
                     created_at: string
                     booking_number: string
                     advance_amount: number | null
+                    room_rate: number | null
+                    extra_pax: number | null
+                    extra_pax_rate: number | null
                 }
                 Insert: { [key: string]: any;
                     id?: string
@@ -138,6 +141,9 @@ export interface Database {
                     created_at?: string
                     booking_number?: string
                     advance_amount?: number | null
+                    room_rate?: number | null
+                    extra_pax?: number | null
+                    extra_pax_rate?: number | null
                 }
                 Update: { [key: string]: any;
                     id?: string
@@ -153,6 +159,9 @@ export interface Database {
                     created_at?: string
                     booking_number?: string
                     advance_amount?: number | null
+                    room_rate?: number | null
+                    extra_pax?: number | null
+                    extra_pax_rate?: number | null
                 }
             }
 

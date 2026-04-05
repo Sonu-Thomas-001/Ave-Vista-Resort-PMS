@@ -203,6 +203,16 @@ export default function RoomDetailsModal({ room, imageUrl, onClose, onUpdate }: 
                                             <span className={styles.infoLabel}>Check-out</span>
                                             <span className={styles.infoValue}>{booking.check_out_date}</span>
                                         </div>
+                                        <div className={styles.infoItem}>
+                                            <span className={styles.infoLabel}>Actual Rate</span>
+                                            <span className={styles.infoValue}>₹{(booking.room_rate || room.price_per_night).toLocaleString()}{getPricingUnit(room.type)}</span>
+                                        </div>
+                                        {booking.extra_pax > 0 && (
+                                            <div className={styles.infoItem}>
+                                                <span className={styles.infoLabel}>Extra Pax</span>
+                                                <span className={styles.infoValue}>{booking.extra_pax} (₹{booking.extra_pax_rate || 600}/pax)</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}

@@ -29,6 +29,9 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
 
     const [advanceAmount, setAdvanceAmount] = useState<number>(0);
     const [specialQuantity, setSpecialQuantity] = useState<number>(1); // hours for auditorium, persons for pool
+    const [customRate, setCustomRate] = useState<number>(0); // editable rate, initialized from room price
+    const [extraPax, setExtraPax] = useState<number>(0); // number of extra members
+    const [extraPaxRate, setExtraPaxRate] = useState<number>(600); // rate per extra person, default ₹600
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [showResults, setShowResults] = useState(false);
@@ -156,7 +159,8 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
 
                 const isSpecial = isSpecialRoomType(selectedRoom.type);
                 const nights = isSpecial ? specialQuantity : Math.max(1, Math.ceil((new Date(dates.checkOut).getTime() - new Date(dates.checkIn).getTime()) / (1000 * 60 * 60 * 24)));
-                const totalAmount = (selectedRoom.price_per_night * nights);
+                const extraPaxTotal = extraPax * extraPaxRate * (isSpecial ? 1 : nights);
+                const totalAmount = (customRate * nights) + extraPaxTotal;
 
                 // Fetch last booking ID to increment
                 const { data: lastBooking } = await supabase
@@ -188,7 +192,10 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                         total_amount: totalAmount,
                         source: bookingType, // Saving Booking Type into the 'source' column
                         booking_number: bookingNumber,
-                        advance_amount: advanceAmount
+                        advance_amount: advanceAmount,
+                        room_rate: customRate,
+                        extra_pax: extraPax,
+                        extra_pax_rate: extraPaxRate
                     }])
                     .select()
                     .single();
@@ -463,6 +470,42 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                                         />
                                     </div>
 
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                        <div className={styles.formGroup}>
+                                            <label>Extra Pax (Members)</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                className={styles.input}
+                                                value={extraPax}
+                                                onChange={e => setExtraPax(Math.max(0, Number(e.target.value)))}
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                        <div className={styles.formGroup}>
+                                            <label>Extra Pax Rate (₹/person)</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                className={styles.input}
+                                                value={extraPaxRate}
+                                                onChange={e => setExtraPaxRate(Math.max(0, Number(e.target.value)))}
+                                                placeholder="600"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.formGroup}>
+                                        <label>Rate (₹{selectedRoom ? getPricingUnit(selectedRoom.type) : '/night'})</label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            className={styles.input}
+                                            value={customRate}
+                                            onChange={e => setCustomRate(Math.max(0, Number(e.target.value)))}
+                                        />
+                                    </div>
+
                                     <div className={styles.formGroup}>
                                         <label>Booking Type</label>
                                         <select
@@ -539,29 +582,43 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
 
                                     <div className={styles.summaryRow}>
                                         <span>Rate</span>
-                                        <span>₹{selectedRoom?.price_per_night}{selectedRoom ? getPricingUnit(selectedRoom.type) : '/night'}</span>
+                                        <span>₹{customRate}{selectedRoom ? getPricingUnit(selectedRoom.type) : '/night'}</span>
                                     </div>
 
-                                    <div className={styles.summaryRow + ' ' + styles.total}>
-                                        <span>Total Amount</span>
-                                        <span className={styles.summaryHighlight}>
-                                            ₹{selectedRoom ? (selectedRoom.price_per_night * (isSpecialRoomType(selectedRoom.type) ? specialQuantity : Math.max(1, Math.ceil((new Date(dates.checkOut).getTime() - new Date(dates.checkIn).getTime()) / (1000 * 60 * 60 * 24))))) : 0}
-                                        </span>
-                                    </div>
+                                    {(() => {
+                                        const qty = selectedRoom && isSpecialRoomType(selectedRoom.type) ? specialQuantity : Math.max(1, Math.ceil((new Date(dates.checkOut).getTime() - new Date(dates.checkIn).getTime()) / (1000 * 60 * 60 * 24)));
+                                        const roomTotal = customRate * qty;
+                                        const isSpecial = selectedRoom ? isSpecialRoomType(selectedRoom.type) : false;
+                                        const extraPaxTotal = extraPax * extraPaxRate * (isSpecial ? 1 : qty);
+                                        const grandTotal = roomTotal + extraPaxTotal;
+                                        return (
+                                            <>
+                                                {extraPax > 0 && (
+                                                    <div className={styles.summaryRow} style={{ fontSize: '0.9rem' }}>
+                                                        <span>Extra Pax ({extraPax} × ₹{extraPaxRate}{isSpecial ? '' : ` × ${qty}N`})</span>
+                                                        <span>₹{extraPaxTotal}</span>
+                                                    </div>
+                                                )}
 
-                                    {advanceAmount > 0 && (
-                                        <div className={styles.summaryRow} style={{ color: '#4CAF50', fontWeight: 600 }}>
-                                            <span>Advance Paid</span>
-                                            <span>- ₹{advanceAmount}</span>
-                                        </div>
-                                    )}
+                                                <div className={styles.summaryRow + ' ' + styles.total}>
+                                                    <span>Total Amount</span>
+                                                    <span className={styles.summaryHighlight}>₹{grandTotal}</span>
+                                                </div>
 
-                                    <div className={styles.summaryRow} style={{ marginTop: '8px', fontSize: '0.9rem' }}>
-                                        <span>Balance Due</span>
-                                        <span>
-                                            ₹{(selectedRoom ? (selectedRoom.price_per_night * (isSpecialRoomType(selectedRoom.type) ? specialQuantity : Math.max(1, Math.ceil((new Date(dates.checkOut).getTime() - new Date(dates.checkIn).getTime()) / (1000 * 60 * 60 * 24))))) : 0) - advanceAmount}
-                                        </span>
-                                    </div>
+                                                {advanceAmount > 0 && (
+                                                    <div className={styles.summaryRow} style={{ color: '#4CAF50', fontWeight: 600 }}>
+                                                        <span>Advance Paid</span>
+                                                        <span>- ₹{advanceAmount}</span>
+                                                    </div>
+                                                )}
+
+                                                <div className={styles.summaryRow} style={{ marginTop: '8px', fontSize: '0.9rem' }}>
+                                                    <span>Balance Due</span>
+                                                    <span>₹{grandTotal - advanceAmount}</span>
+                                                </div>
+                                            </>
+                                        );
+                                    })()}
                                 </div>
                             </motion.div>
                         )}
@@ -590,7 +647,10 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
 
                     {step === 2 && (
                         <button
-                            onClick={() => setStep(3)}
+                            onClick={() => {
+                                if (selectedRoom) setCustomRate(selectedRoom.price_per_night);
+                                setStep(3);
+                            }}
                             disabled={!selectedRoom}
                             className={styles.primaryBtn}
                         >

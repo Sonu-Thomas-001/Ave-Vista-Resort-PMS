@@ -1,6 +1,6 @@
-import React from 'react';
 import { Phone, Mail, Globe, Facebook, Instagram, FileText, Calendar, User, Home, CreditCard } from 'lucide-react';
 import styles from './InvoiceTemplate.module.css';
+import { isSpecialRoomType, getQuantityLabel } from '@/lib/constants';
 
 interface InvoiceTemplateProps {
     invoice: any;
@@ -25,10 +25,21 @@ export const InvoiceTemplate = ({ invoice, booking, guest, printRef }: InvoiceTe
     const invoiceData = {
         no: invoice.invoice_number,
         date: new Date(invoice.created_at || invoice.generated_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
-        bookingRef: booking.booking_number || booking.id.slice(0, 8).toUpperCase(),
+        bookingRef: booking.booking_number || booking.id?.slice(0, 8).toUpperCase(),
         type: booking.source || 'Direct',
         mode: invoice.payment_mode || invoice.payment_method || 'Cash',
     };
+
+    const roomType = booking.room_type || booking.room?.type || 'Standard';
+    const isSpecial = isSpecialRoomType(roomType);
+    const qtyLabel = getQuantityLabel(roomType);
+    
+    // In case the booking has the new fields
+    const roomRate = booking.room_rate || (subTotal / (isSpecial ? 1 : nights));
+    const extraPax = booking.extra_pax || 0;
+    const extraPaxRate = booking.extra_pax_rate || 600;
+    const extraPaxTotal = extraPax * extraPaxRate * (isSpecial ? 1 : nights);
+    const roomTotal = roomRate * (isSpecial ? (booking.special_quantity || 1) : nights);
 
     return (
         <div className={styles.container} ref={printRef}>
@@ -182,11 +193,19 @@ export const InvoiceTemplate = ({ invoice, booking, guest, printRef }: InvoiceTe
                     </div>
                     <div className={styles.tableBody}>
                         <div className={styles.tableRow}>
-                            <div className={styles.colDescription}>Room Tariff</div>
-                            <div className={styles.colQty}>{nights}</div>
-                            <div className={styles.colRate}>₹{(subTotal / nights).toFixed(2)}</div>
-                            <div className={styles.colAmount}>₹{subTotal.toLocaleString()}</div>
+                            <div className={styles.colDescription}>Room Tariff ({roomType})</div>
+                            <div className={styles.colQty}>{isSpecial ? (booking.special_quantity || 1) : nights} {isSpecial ? qtyLabel : 'Nights'}</div>
+                            <div className={styles.colRate}>₹{roomRate.toLocaleString()}</div>
+                            <div className={styles.colAmount}>₹{roomTotal.toLocaleString()}</div>
                         </div>
+                        {extraPax > 0 && (
+                            <div className={styles.tableRow}>
+                                <div className={styles.colDescription}>Extra Pax Charges ({extraPax} persons)</div>
+                                <div className={styles.colQty}>{isSpecial ? 1 : nights} {isSpecial ? 'Usage' : 'Nights'}</div>
+                                <div className={styles.colRate}>₹{extraPaxRate.toLocaleString()}</div>
+                                <div className={styles.colAmount}>₹{extraPaxTotal.toLocaleString()}</div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
