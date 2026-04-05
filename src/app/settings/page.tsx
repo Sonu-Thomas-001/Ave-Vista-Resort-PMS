@@ -8,6 +8,7 @@ import { Database } from '@/lib/database.types';
 import styles from './page.module.css';
 import EmailSettingsPage from './email/page';
 import RoomModal from '@/components/RoomModal';
+import { getPricingUnit } from '@/lib/constants';
 
 type SettingsData = Database['public']['Tables']['app_settings']['Row'];
 type RoomData = Database['public']['Tables']['rooms']['Row'];
@@ -220,7 +221,7 @@ export default function SettingsPage() {
                                                 <tr key={room.id}>
                                                     <td data-label="Room No">{room.room_number}</td>
                                                     <td data-label="Type">{room.type}</td>
-                                                    <td data-label="Price">₹{room.price_per_night}</td>
+                                                    <td data-label="Price">₹{room.price_per_night}{getPricingUnit(room.type)}</td>
                                                     <td data-label="Occupancy">{room.max_occupancy}</td>
                                                     <td data-label="Status">
                                                         <span className={`${styles.badge} ${styles[room.status?.toLowerCase() || 'clean']}`}>

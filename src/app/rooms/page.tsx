@@ -7,6 +7,7 @@ import RoomDetailsModal from '@/components/RoomDetailsModal';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
 import styles from './page.module.css';
+import { getPricingUnit } from '@/lib/constants';
 
 type Room = Database['public']['Tables']['rooms']['Row'];
 
@@ -184,7 +185,7 @@ export default function RoomsPage() {
                                         number={room.room_number}
                                         type={room.type}
                                         status={(room.displayStatus || 'Free') as "Clean" | "Dirty" | "Maintenance" | "Occupied" | "Free"}
-                                        price={`₹${room.price_per_night.toLocaleString()}`}
+                                        price={`₹${room.price_per_night.toLocaleString()}${getPricingUnit(room.type)}`}
                                         occupancy={room.max_occupancy}
                                         imageUrl={room.image_url || getRoomImage(room.room_number, room.type)}
                                         onBlock={() => handleBlockRoom(room)}

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { X, Save, Home } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
-import { ROOM_STATUS, RoomStatusType } from '@/lib/constants';
+import { ROOM_STATUS, RoomStatusType, getPricingUnit } from '@/lib/constants';
 import styles from './RoomModal.module.css';
 
 interface Room {
@@ -147,7 +147,7 @@ export default function RoomModal({ room, onClose, onSuccess }: RoomModalProps) 
                         </div>
 
                         <div className={styles.formGroup}>
-                            <label>Price per Night (₹)</label>
+                            <label>Price {getPricingUnit(formData.type || '')} (₹)</label>
                             <div className={styles.inputWrapper}>
                                 <span className={styles.inputIcon}>₹</span>
                                 <input

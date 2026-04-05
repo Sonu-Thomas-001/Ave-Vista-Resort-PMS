@@ -5,6 +5,7 @@ import { X, CheckCircle, AlertCircle, User, Wifi, Tv, Coffee, Wind, Pencil } fro
 import styles from './RoomDetailsModal.module.css';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
+import { getPricingUnit } from '@/lib/constants';
 
 type Room = Database['public']['Tables']['rooms']['Row'];
 
@@ -142,7 +143,7 @@ export default function RoomDetailsModal({ room, imageUrl, onClose, onUpdate }: 
                     <div className={styles.section}>
                         <div className={styles.infoGrid}>
                             <div className={styles.infoItem}>
-                                <span className={styles.infoLabel}>Price per Night</span>
+                                <span className={styles.infoLabel}>Price {getPricingUnit(room.type)}</span>
                                 {isEditing ? (
                                     <input
                                         type="number"
@@ -151,7 +152,7 @@ export default function RoomDetailsModal({ room, imageUrl, onClose, onUpdate }: 
                                         onChange={e => setFormData({ ...formData, price_per_night: Number(e.target.value) })}
                                     />
                                 ) : (
-                                    <span className={styles.infoValue}>₹{room.price_per_night.toLocaleString()}</span>
+                                    <span className={styles.infoValue}>₹{room.price_per_night.toLocaleString()}{getPricingUnit(room.type)}</span>
                                 )}
                             </div>
                             <div className={styles.infoItem}>

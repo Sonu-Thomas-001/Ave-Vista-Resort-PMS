@@ -8,6 +8,7 @@ import { Database } from '@/lib/database.types';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './NewBookingModal.module.css';
 import { EmailService } from '@/lib/email-service';
+import { getPricingUnit, getQuantityLabel, isSpecialRoomType } from '@/lib/constants';
 
 interface NewBookingModalProps {
     onClose: () => void;
@@ -27,6 +28,7 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
     const [error, setError] = useState<string | null>(null);
 
     const [advanceAmount, setAdvanceAmount] = useState<number>(0);
+    const [specialQuantity, setSpecialQuantity] = useState<number>(1); // hours for auditorium, persons for pool
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [showResults, setShowResults] = useState(false);
@@ -152,7 +154,8 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                     if (updateError) console.error('Error updating guest phone', updateError);
                 }
 
-                const nights = Math.max(1, Math.ceil((new Date(dates.checkOut).getTime() - new Date(dates.checkIn).getTime()) / (1000 * 60 * 60 * 24)));
+                const isSpecial = isSpecialRoomType(selectedRoom.type);
+                const nights = isSpecial ? specialQuantity : Math.max(1, Math.ceil((new Date(dates.checkOut).getTime() - new Date(dates.checkIn).getTime()) / (1000 * 60 * 60 * 24)));
                 const totalAmount = (selectedRoom.price_per_night * nights);
 
                 // Fetch last booking ID to increment
@@ -363,7 +366,7 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                                                     <span className={styles.roomTypeBadge}>{room.type}</span>
                                                 </div>
                                                 <div className={styles.roomPrice}>
-                                                    ₹{room.price_per_night}<span>/night</span>
+                                                    ₹{room.price_per_night}<span>{getPricingUnit(room.type)}</span>
                                                 </div>
                                             </div>
                                         ))
@@ -475,6 +478,20 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                                         </select>
                                     </div>
 
+                                    {selectedRoom && isSpecialRoomType(selectedRoom.type) && (
+                                        <div className={styles.formGroup}>
+                                            <label>{getQuantityLabel(selectedRoom.type)} (Number of {getQuantityLabel(selectedRoom.type).toLowerCase()})</label>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                className={styles.input}
+                                                value={specialQuantity}
+                                                onChange={e => setSpecialQuantity(Math.max(1, Number(e.target.value)))}
+                                                placeholder="1"
+                                            />
+                                        </div>
+                                    )}
+
                                     <div className={styles.formGroup}>
                                         <label>Advance Payment (₹)</label>
                                         <input
@@ -508,20 +525,27 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                                         </div>
                                     </div>
 
-                                    <div className={styles.summaryRow} style={{ marginTop: '12px' }}>
-                                        <span>Nights</span>
-                                        <span>{Math.max(1, Math.ceil((new Date(dates.checkOut).getTime() - new Date(dates.checkIn).getTime()) / (1000 * 60 * 60 * 24)))}</span>
-                                    </div>
+                                    {selectedRoom && isSpecialRoomType(selectedRoom.type) ? (
+                                        <div className={styles.summaryRow} style={{ marginTop: '12px' }}>
+                                            <span>{getQuantityLabel(selectedRoom.type)}</span>
+                                            <span>{specialQuantity}</span>
+                                        </div>
+                                    ) : (
+                                        <div className={styles.summaryRow} style={{ marginTop: '12px' }}>
+                                            <span>Nights</span>
+                                            <span>{Math.max(1, Math.ceil((new Date(dates.checkOut).getTime() - new Date(dates.checkIn).getTime()) / (1000 * 60 * 60 * 24)))}</span>
+                                        </div>
+                                    )}
 
                                     <div className={styles.summaryRow}>
                                         <span>Rate</span>
-                                        <span>₹{selectedRoom?.price_per_night}/night</span>
+                                        <span>₹{selectedRoom?.price_per_night}{selectedRoom ? getPricingUnit(selectedRoom.type) : '/night'}</span>
                                     </div>
 
                                     <div className={styles.summaryRow + ' ' + styles.total}>
                                         <span>Total Amount</span>
                                         <span className={styles.summaryHighlight}>
-                                            ₹{selectedRoom ? (selectedRoom.price_per_night * Math.max(1, Math.ceil((new Date(dates.checkOut).getTime() - new Date(dates.checkIn).getTime()) / (1000 * 60 * 60 * 24)))) : 0}
+                                            ₹{selectedRoom ? (selectedRoom.price_per_night * (isSpecialRoomType(selectedRoom.type) ? specialQuantity : Math.max(1, Math.ceil((new Date(dates.checkOut).getTime() - new Date(dates.checkIn).getTime()) / (1000 * 60 * 60 * 24))))) : 0}
                                         </span>
                                     </div>
 
@@ -535,7 +559,7 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
                                     <div className={styles.summaryRow} style={{ marginTop: '8px', fontSize: '0.9rem' }}>
                                         <span>Balance Due</span>
                                         <span>
-                                            ₹{(selectedRoom ? (selectedRoom.price_per_night * Math.max(1, Math.ceil((new Date(dates.checkOut).getTime() - new Date(dates.checkIn).getTime()) / (1000 * 60 * 60 * 24)))) : 0) - advanceAmount}
+                                            ₹{(selectedRoom ? (selectedRoom.price_per_night * (isSpecialRoomType(selectedRoom.type) ? specialQuantity : Math.max(1, Math.ceil((new Date(dates.checkOut).getTime() - new Date(dates.checkIn).getTime()) / (1000 * 60 * 60 * 24))))) : 0) - advanceAmount}
                                         </span>
                                     </div>
                                 </div>

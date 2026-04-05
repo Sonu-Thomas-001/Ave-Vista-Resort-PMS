@@ -32,3 +32,39 @@ export const INVOICE_STATUS = {
 } as const;
 
 export type InvoiceStatusType = typeof INVOICE_STATUS[keyof typeof INVOICE_STATUS];
+
+// Special room types with non-standard pricing
+export const SPECIAL_ROOM_TYPES = {
+  AUDITORIUM: 'Mini Auditorium',
+  SWIMMING_POOL: 'Swimming Pool',
+} as const;
+
+/**
+ * Returns the pricing unit label for a room type.
+ * Mini Auditorium = /hour, Swimming Pool = /person, others = /night
+ */
+export function getPricingUnit(roomType: string): string {
+  const typeLower = roomType.toLowerCase();
+  if (typeLower.includes('auditorium')) return '/hour';
+  if (typeLower.includes('pool') || typeLower.includes('swimming')) return '/person';
+  return '/night';
+}
+
+/**
+ * Returns the quantity label for a room type.
+ * Mini Auditorium = "Hours", Swimming Pool = "Persons", others = "Nights"
+ */
+export function getQuantityLabel(roomType: string): string {
+  const typeLower = roomType.toLowerCase();
+  if (typeLower.includes('auditorium')) return 'Hours';
+  if (typeLower.includes('pool') || typeLower.includes('swimming')) return 'Persons';
+  return 'Nights';
+}
+
+/**
+ * Check if a room type is a special (non-night-based) room
+ */
+export function isSpecialRoomType(roomType: string): boolean {
+  const typeLower = roomType.toLowerCase();
+  return typeLower.includes('auditorium') || typeLower.includes('pool') || typeLower.includes('swimming');
+}
