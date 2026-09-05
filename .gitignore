@@ -48,3 +48,8 @@ public/workbox-*.js.map
 public/swe-worker-*.js
 public/swe-worker-*.js.map
 public/fallback-*.js
+
+# AI agent auto-generated docs
+AGENTS.md
+CLAUDE.md
+
