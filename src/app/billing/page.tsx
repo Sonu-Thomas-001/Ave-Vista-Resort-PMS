@@ -1,8 +1,41 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import Header from '@/components/Header';
-import { Download, Eye, FileText, X, Pencil } from 'lucide-react';
+import {
+    Download,
+    Eye,
+    FileText,
+    X,
+    Pencil,
+    Search,
+    Filter,
+    IndianRupee,
+    CreditCard,
+    Banknote,
+    QrCode,
+    CheckCircle2,
+    AlertCircle,
+    Clock,
+    TrendingUp,
+    Receipt,
+    Building2,
+    Calendar,
+    User,
+    Sparkles,
+    RefreshCw,
+    Percent,
+    ExternalLink,
+    AlertTriangle,
+    ChevronLeft,
+    ChevronRight,
+    LogIn,
+    LogOut,
+    BedDouble,
+    Lock,
+    Unlock,
+    Check
+} from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
 import styles from './page.module.css';
@@ -21,7 +54,7 @@ interface InvoiceWithDetails extends Invoice {
 }
 
 export default function BillingPage() {
-    const [activeTab, setActiveTab] = useState('Invoices'); // Invoices | DailyReport
+    const [activeTab, setActiveTab] = useState<'Invoices' | 'DailyReport'>('Invoices');
     const [invoices, setInvoices] = useState<any[]>([]);
     const [bookings, setBookings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -31,11 +64,111 @@ export default function BillingPage() {
     const [pendingUpdate, setPendingUpdate] = useState(false);
     const invoiceRef = useRef<HTMLDivElement>(null);
 
+    // Filters
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState<string>('ALL');
+    const [modeFilter, setModeFilter] = useState<string>('ALL');
+    const [sourceFilter, setSourceFilter] = useState<string>('ALL');
+
+    // Daily Closing & Reconciliation State
+    const [closingDate, setClosingDate] = useState(() => new Date().toISOString().split('T')[0]);
+    const [closingMetrics, setClosingMetrics] = useState({
+        revenue: 0,
+        expenses: 0,
+        netProfit: 0,
+        checkIns: 0,
+        checkOuts: 0,
+        roomsOccupied: 0,
+        roomsTotal: 10,
+        occupancyRate: 0,
+        bookingsCount: 0,
+    });
+    const [closingNotes, setClosingNotes] = useState('');
+    const [closingIsLocked, setClosingIsLocked] = useState(false);
+    const [closingLoading, setClosingLoading] = useState(false);
+    const [closingSaving, setClosingSaving] = useState(false);
+    const [closingSuccessMsg, setClosingSuccessMsg] = useState<string | null>(null);
+
+    const fetchDailyClosing = async (dateStr: string) => {
+        setClosingLoading(true);
+        try {
+            const res = await fetch(`/api/daily-closing/metrics?date=${dateStr}`, { cache: 'no-store' });
+            if (res.ok) {
+                const data = await res.json();
+                const apiMetrics = data.metrics || {};
+
+                // Reconcile with live invoices matching this date
+                const dayInvoices = invoices.filter((inv) => (inv.invoice_date || inv.created_at || '').startsWith(dateStr));
+                const liveRevenue = dayInvoices.reduce((sum, inv) => sum + (Number(inv.paid_amount) || 0), 0);
+                const resolvedRevenue = Math.max(apiMetrics.revenue || 0, liveRevenue);
+                const expenses = apiMetrics.expenses || 0;
+                const netProfit = resolvedRevenue - expenses;
+
+                setClosingMetrics({
+                    revenue: resolvedRevenue,
+                    expenses,
+                    netProfit,
+                    checkIns: apiMetrics.checkIns || 0,
+                    checkOuts: apiMetrics.checkOuts || 0,
+                    roomsOccupied: apiMetrics.roomsOccupied || 0,
+                    roomsTotal: apiMetrics.roomsTotal || 10,
+                    occupancyRate: apiMetrics.occupancyRate || (apiMetrics.roomsTotal ? (apiMetrics.roomsOccupied / apiMetrics.roomsTotal) * 100 : 0),
+                    bookingsCount: apiMetrics.bookingsCount || dayInvoices.length,
+                });
+                setClosingNotes(data.notes || '');
+                setClosingIsLocked(data.isLocked || false);
+            }
+        } catch (e) {
+            console.error('Failed to fetch daily closing metrics:', e);
+        } finally {
+            setClosingLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (activeTab === 'DailyReport') {
+            fetchDailyClosing(closingDate);
+        }
+    }, [activeTab, closingDate, invoices]);
+
+    const handleSaveClosingNotes = async () => {
+        setClosingSaving(true);
+        setClosingSuccessMsg(null);
+        try {
+            const response = await fetch('/api/daily-closing', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    date: closingDate,
+                    notes: closingNotes,
+                }),
+            });
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.error || 'Failed to save daily closing');
+            }
+
+            setClosingSuccessMsg('Daily closing record & handover remarks saved successfully!');
+            setTimeout(() => setClosingSuccessMsg(null), 4000);
+        } catch (err: any) {
+            alert(err.message || 'Failed to save daily closing record');
+        } finally {
+            setClosingSaving(false);
+        }
+    };
+
+    const handleShiftDate = (days: number) => {
+        const current = new Date(closingDate);
+        current.setDate(current.getDate() + days);
+        setClosingDate(current.toISOString().split('T')[0]);
+    };
+
     useEffect(() => {
         fetchInvoices();
         fetchBookings();
 
-        // Set up polling for real-time updates every 15 seconds
+        // Polling for real-time updates every 15 seconds
         const interval = setInterval(() => {
             fetchInvoices();
         }, 15000);
@@ -200,10 +333,7 @@ export default function BillingPage() {
         setPendingUpdate(false);
     };
 
-
-
     const handleViewInvoice = async (invoice: Invoice) => {
-        // Fetch related booking and guest data
         const { data: booking } = await supabase
             .from('bookings')
             .select('*, guest:guests(*), room:rooms(*)')
@@ -216,7 +346,6 @@ export default function BillingPage() {
     };
 
     const handleDownloadInvoice = async (invoice: Invoice) => {
-        // Fetch related data first
         const { data: booking } = await supabase
             .from('bookings')
             .select('*, guest:guests(*), room:rooms(*)')
@@ -224,18 +353,16 @@ export default function BillingPage() {
             .single();
 
         if (booking) {
-            // Create a temporary container for printing
             const printContainer = document.createElement('div');
             printContainer.style.position = 'fixed';
             printContainer.style.top = '0';
-            printContainer.style.left = '-9999px'; // Hide off-screen
-            printContainer.style.width = '210mm'; // A4 width
+            printContainer.style.left = '-9999px';
+            printContainer.style.width = '210mm';
             printContainer.style.zIndex = '9999';
             printContainer.style.background = 'white';
             printContainer.className = 'print-only-container';
             document.body.appendChild(printContainer);
 
-            // Render invoice into the container
             const { createRoot } = await import('react-dom/client');
             const root = createRoot(printContainer);
 
@@ -248,10 +375,8 @@ export default function BillingPage() {
                 />
             );
 
-            // Wait for rendering and trigger print
             setTimeout(() => {
                 window.print();
-                // Clean up after print
                 setTimeout(() => {
                     root.unmount();
                     document.body.removeChild(printContainer);
@@ -260,135 +385,744 @@ export default function BillingPage() {
         }
     };
 
-    const calculateGST = (baseAmount: number, rate: number) => {
-        return (baseAmount * rate) / 100;
+    // Financial KPI Analytics (Real-time computed)
+    const totalInvoiced = useMemo(() => {
+        return invoices.reduce((sum, inv) => sum + (Number(inv.total_amount) || 0), 0);
+    }, [invoices]);
+
+    const totalRealized = useMemo(() => {
+        return invoices.reduce((sum, inv) => sum + (Number(inv.paid_amount) || 0), 0);
+    }, [invoices]);
+
+    const pendingDues = useMemo(() => {
+        return invoices.reduce((sum, inv) => {
+            const total = Number(inv.total_amount) || 0;
+            const paid = Number(inv.paid_amount) || 0;
+            return sum + Math.max(0, total - paid);
+        }, 0);
+    }, [invoices]);
+
+    const realizationRate = useMemo(() => {
+        if (!totalInvoiced) return 0;
+        return Math.round((totalRealized / totalInvoiced) * 100);
+    }, [totalInvoiced, totalRealized]);
+
+    const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+    const todayStats = useMemo(() => {
+        const matching = invoices.filter((inv) => {
+            const dateStr = inv.invoice_date || inv.created_at || '';
+            return dateStr.startsWith(todayStr);
+        });
+        const collection = matching.reduce((sum, inv) => sum + (Number(inv.paid_amount) || 0), 0);
+        return {
+            collection,
+            count: matching.length
+        };
+    }, [invoices, todayStr]);
+
+    // Status Counts for Filter Chips
+    const statusCounts = useMemo(() => {
+        return {
+            ALL: invoices.length,
+            Paid: invoices.filter((i) => i.status === 'Paid').length,
+            Partial: invoices.filter((i) => i.status === 'Partial').length,
+            Pending: invoices.filter((i) => i.status === 'Pending').length
+        };
+    }, [invoices]);
+
+    // Filtered Invoices
+    const filteredInvoices = useMemo(() => {
+        return invoices.filter((inv) => {
+            // Text Search
+            if (searchQuery.trim()) {
+                const q = searchQuery.toLowerCase().trim();
+                const invNum = (inv.invoice_number || '').toLowerCase();
+                const guestName = (inv.guest_name || '').toLowerCase();
+                const roomNum = (inv.room_number || '').toLowerCase();
+                const bookNum = (inv.booking?.booking_number || '').toLowerCase();
+                const mode = (inv.payment_mode || '').toLowerCase();
+                if (
+                    !invNum.includes(q) &&
+                    !guestName.includes(q) &&
+                    !roomNum.includes(q) &&
+                    !bookNum.includes(q) &&
+                    !mode.includes(q)
+                ) {
+                    return false;
+                }
+            }
+
+            // Status Filter
+            if (statusFilter !== 'ALL' && inv.status !== statusFilter) {
+                return false;
+            }
+
+            // Payment Mode Filter
+            if (modeFilter !== 'ALL' && (inv.payment_mode || '').toUpperCase() !== modeFilter.toUpperCase()) {
+                return false;
+            }
+
+            // Source Filter
+            if (sourceFilter !== 'ALL') {
+                const src = inv.booking?.source || 'Direct';
+                if (src.toLowerCase() !== sourceFilter.toLowerCase()) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+    }, [invoices, searchQuery, statusFilter, modeFilter, sourceFilter]);
+
+    const isFiltersActive = searchQuery.trim() !== '' || statusFilter !== 'ALL' || modeFilter !== 'ALL' || sourceFilter !== 'ALL';
+
+    const handleResetFilters = () => {
+        setSearchQuery('');
+        setStatusFilter('ALL');
+        setModeFilter('ALL');
+        setSourceFilter('ALL');
     };
 
-    const totalRevenue = invoices.reduce((sum, inv) => sum + (inv.paid_amount || 0), 0);
-    const pendingDues = invoices.reduce((sum, inv) => sum + ((inv.total_amount || 0) - (inv.paid_amount || 0)), 0);
+    const getPaymentModeIcon = (mode: string) => {
+        const lower = (mode || '').toLowerCase();
+        if (lower.includes('card')) return <CreditCard size={13} />;
+        if (lower.includes('upi')) return <QrCode size={13} />;
+        if (lower.includes('cash')) return <Banknote size={13} />;
+        return <IndianRupee size={13} />;
+    };
 
     return (
         <>
             <Header title="Billing & Invoices" />
 
             <div className={styles.container}>
-                {/* Stats Row */}
+                {/* 1. Executive Financial KPI Dashboard */}
                 <div className={styles.statsRow}>
-                    <div className={styles.statCard}>
-                        <span className={styles.statLabel}>Total Revenue (Feb)</span>
-                        <span className={styles.statValue}>₹{totalRevenue.toLocaleString()}</span>
-                        <span className={styles.statSub}>Includes CGST + SGST</span>
+                    {/* Card 1: Realized Revenue */}
+                    <div className={`${styles.statCard} ${styles.statCardGreen}`}>
+                        <div className={styles.statContent}>
+                            <span className={styles.statLabel}>Realized Collection</span>
+                            <span className={styles.statValue}>₹{totalRealized.toLocaleString()}</span>
+                            <span className={styles.statSub}>
+                                <span className={`${styles.rateBadge} ${styles.rateBadgeGreen}`}>
+                                    {realizationRate}% settled
+                                </span>
+                                of total billed
+                            </span>
+                        </div>
+                        <div className={`${styles.statIconBox} ${styles.iconGreen}`}>
+                            <TrendingUp size={22} />
+                        </div>
                     </div>
-                    <div className={styles.statCard}>
-                        <span className={styles.statLabel}>Pending Dues</span>
-                        <span className={styles.statValue} style={{ color: 'var(--status-warning)' }}>
-                            ₹{pendingDues.toLocaleString()}
-                        </span>
-                        <span className={styles.statSub}>{invoices.filter(i => i.status !== 'Paid').length} invoices pending</span>
+
+                    {/* Card 2: Total Invoiced */}
+                    <div className={`${styles.statCard} ${styles.statCardBlue}`}>
+                        <div className={styles.statContent}>
+                            <span className={styles.statLabel}>Total Billed Folio</span>
+                            <span className={styles.statValue}>₹{totalInvoiced.toLocaleString()}</span>
+                            <span className={styles.statSub}>
+                                {invoices.length} {invoices.length === 1 ? 'Invoice' : 'Invoices'} generated
+                            </span>
+                        </div>
+                        <div className={`${styles.statIconBox} ${styles.iconBlue}`}>
+                            <Receipt size={22} />
+                        </div>
                     </div>
-                    <div className={styles.statCard}>
-                        <span className={styles.statLabel}>Today's Collection</span>
-                        <span className={styles.statValue}>₹12,400</span>
-                        <span className={styles.statSub}>4 Transactions</span>
+
+                    {/* Card 3: Pending Receivables */}
+                    <div className={`${styles.statCard} ${styles.statCardAmber}`}>
+                        <div className={styles.statContent}>
+                            <span className={styles.statLabel}>Outstanding Receivables</span>
+                            <span className={styles.statValue} style={{ color: '#d97706' }}>
+                                ₹{pendingDues.toLocaleString()}
+                            </span>
+                            <span className={styles.statSub}>
+                                <span className={`${styles.rateBadge} ${styles.rateBadgeAmber}`}>
+                                    {statusCounts.Pending + statusCounts.Partial} Pending
+                                </span>
+                                across accounts
+                            </span>
+                        </div>
+                        <div className={`${styles.statIconBox} ${styles.iconAmber}`}>
+                            <AlertCircle size={22} />
+                        </div>
+                    </div>
+
+                    {/* Card 4: Today's Collection */}
+                    <div className={`${styles.statCard} ${styles.statCardPurple}`}>
+                        <div className={styles.statContent}>
+                            <span className={styles.statLabel}>Today's Settlement</span>
+                            <span className={styles.statValue}>₹{todayStats.collection.toLocaleString()}</span>
+                            <span className={styles.statSub}>
+                                {todayStats.count} {todayStats.count === 1 ? 'transaction' : 'transactions'} today
+                            </span>
+                        </div>
+                        <div className={`${styles.statIconBox} ${styles.iconPurple}`}>
+                            <Sparkles size={22} />
+                        </div>
                     </div>
                 </div>
 
-                <div className={styles.controls}>
-                    <div className={styles.tabs}>
-                        <button
-                            className={`${styles.tabBtn} ${activeTab === 'Invoices' ? styles.active : ''}`}
-                            onClick={() => setActiveTab('Invoices')}
-                        >
-                            All Invoices
-                        </button>
-                        <button
-                            className={`${styles.tabBtn} ${activeTab === 'DailyReport' ? styles.active : ''}`}
-                            onClick={() => setActiveTab('DailyReport')}
-                        >
-                            Daily Reports
-                        </button>
+                {/* 2. Controls & Tabs Toolbar */}
+                <div className={styles.toolbarCard}>
+                    <div className={styles.toolbarTop}>
+                        {/* Tab Switcher */}
+                        <div className={styles.tabs}>
+                            <button
+                                className={`${styles.tabBtn} ${activeTab === 'Invoices' ? styles.active : ''}`}
+                                onClick={() => setActiveTab('Invoices')}
+                            >
+                                <Receipt size={16} /> All Invoices
+                                <span className={styles.tabCount}>{invoices.length}</span>
+                            </button>
+                            <button
+                                className={`${styles.tabBtn} ${activeTab === 'DailyReport' ? styles.active : ''}`}
+                                onClick={() => setActiveTab('DailyReport')}
+                            >
+                                <Calendar size={16} /> Daily Closing & Reconciliation
+                            </button>
+                        </div>
+
+                        {activeTab === 'Invoices' && (
+                            <div className={styles.selectFilters}>
+                                {/* Payment Mode Filter */}
+                                <select
+                                    className={styles.filterSelect}
+                                    value={modeFilter}
+                                    onChange={(e) => setModeFilter(e.target.value)}
+                                    title="Filter by Payment Mode"
+                                >
+                                    <option value="ALL">All Payment Modes</option>
+                                    <option value="Cash">Cash</option>
+                                    <option value="Card">Card</option>
+                                    <option value="UPI">UPI</option>
+                                </select>
+
+                                {/* Booking Channel Filter */}
+                                <select
+                                    className={styles.filterSelect}
+                                    value={sourceFilter}
+                                    onChange={(e) => setSourceFilter(e.target.value)}
+                                    title="Filter by Booking Channel"
+                                >
+                                    <option value="ALL">All Booking Channels</option>
+                                    <option value="Direct">Direct</option>
+                                    <option value="OTA">OTA</option>
+                                    <option value="Corporate">Corporate</option>
+                                    <option value="Standard">Standard</option>
+                                    <option value="Complementary">Complementary</option>
+                                </select>
+
+                                {isFiltersActive && (
+                                    <button className={styles.resetBtn} onClick={handleResetFilters}>
+                                        <X size={14} /> Clear
+                                    </button>
+                                )}
+                            </div>
+                        )}
                     </div>
 
+                    {/* Search & Status Filters Row (Shown when on Invoices tab) */}
+                    {activeTab === 'Invoices' && (
+                        <div className={styles.filterControlsRow}>
+                            {/* Search Input */}
+                            <div className={styles.searchBox}>
+                                <Search size={16} className={styles.searchIcon} />
+                                <input
+                                    type="text"
+                                    className={styles.searchInput}
+                                    placeholder="Search by invoice #, guest, room, or booking..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                                {searchQuery && (
+                                    <button
+                                        className={styles.clearSearchBtn}
+                                        onClick={() => setSearchQuery('')}
+                                        title="Clear search"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Status Filter Chips */}
+                            <div className={styles.statusFilterPills}>
+                                <button
+                                    className={`${styles.statusPill} ${statusFilter === 'ALL' ? styles.statusPillActive : ''}`}
+                                    onClick={() => setStatusFilter('ALL')}
+                                >
+                                    All Folios
+                                    <span className={styles.pillBadge}>{statusCounts.ALL}</span>
+                                </button>
+                                <button
+                                    className={`${styles.statusPill} ${statusFilter === 'Paid' ? styles.statusPillActive : ''}`}
+                                    onClick={() => setStatusFilter('Paid')}
+                                >
+                                    <CheckCircle2 size={13} color="#10b981" /> Paid
+                                    <span className={styles.pillBadge}>{statusCounts.Paid}</span>
+                                </button>
+                                <button
+                                    className={`${styles.statusPill} ${statusFilter === 'Partial' ? styles.statusPillActive : ''}`}
+                                    onClick={() => setStatusFilter('Partial')}
+                                >
+                                    <Clock size={13} color="#f59e0b" /> Partial
+                                    <span className={styles.pillBadge}>{statusCounts.Partial}</span>
+                                </button>
+                                <button
+                                    className={`${styles.statusPill} ${statusFilter === 'Pending' ? styles.statusPillActive : ''}`}
+                                    onClick={() => setStatusFilter('Pending')}
+                                >
+                                    <AlertCircle size={13} color="#ef4444" /> Pending
+                                    <span className={styles.pillBadge}>{statusCounts.Pending}</span>
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
+                {/* 3. Invoices Table or Daily Closing Report */}
                 {activeTab === 'Invoices' ? (
                     <div className={styles.tableWrapper}>
                         {fetchError && (
                             <div className={styles.fetchErrorBanner}>
-                                {fetchError}
+                                <AlertTriangle size={18} />
+                                <span>{fetchError}</span>
                             </div>
                         )}
-                        <table className={styles.table}>
-                            <thead>
-                                <tr>
-                                    <th>Invoice No</th>
-                                    <th>Date</th>
-                                    <th>Booking ID</th>
-                                    <th>Booking Type</th>
-                                    <th>Payment Mode</th>
-                                    <th>Amount</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {invoices.map((inv) => (
-                                    <tr key={inv.id}>
-                                        <td className={styles.idCell}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <FileText size={16} />
-                                                <span className={styles.mono}>{inv.invoice_number}</span>
-                                            </div>
-                                        </td>
-                                        <td>{inv.invoice_date}</td>
-                                        <td className={styles.mono}>{inv.booking?.booking_number || 'N/A'}</td>
-                                        <td>
-                                            <span className={styles.badge}>{inv.booking?.source || 'Direct'}</span>
-                                        </td>
-                                        <td>{inv.payment_mode || 'N/A'}</td>
-                                        <td className={styles.amount}>₹{inv.paid_amount.toLocaleString()}</td>
-                                        <td>
-                                            <span className={`${styles.status} ${styles[inv.status.toLowerCase()]}`}>
-                                                {inv.status}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div className={styles.actions} style={{ justifyContent: 'flex-end', width: '100%' }}>
-                                                <button
-                                                    className={styles.actionBtn}
-                                                    title="Edit"
-                                                    aria-label={`Edit Invoice ${inv.invoice_number}`}
-                                                    onClick={() => openEditInvoice(inv)}
-                                                >
-                                                    <Pencil size={18} />
-                                                </button>
-                                                <button
-                                                    className={styles.actionBtn}
-                                                    title="View"
-                                                    aria-label={`View Invoice ${inv.invoice_number}`}
-                                                    onClick={() => handleViewInvoice(inv)}
-                                                >
-                                                    <Eye size={18} />
-                                                </button>
-                                                <button
-                                                    className={styles.actionBtn}
-                                                    title="Download"
-                                                    aria-label={`Download Invoice ${inv.invoice_number}`}
-                                                    onClick={() => handleDownloadInvoice(inv)}
-                                                >
-                                                    <Download size={18} />
-                                                </button>
-                                            </div>
-                                        </td>
+
+                        <div className={styles.tableContainer}>
+                            <table className={styles.table}>
+                                <thead>
+                                    <tr>
+                                        <th>Invoice & Date</th>
+                                        <th>Guest & Reservation</th>
+                                        <th>Booking Channel</th>
+                                        <th>Payment Mode</th>
+                                        <th>Settlement (Paid / Total)</th>
+                                        <th>Status</th>
+                                        <th style={{ textAlign: 'right' }}>Actions</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {filteredInvoices.map((inv) => {
+                                        const total = Number(inv.total_amount) || 0;
+                                        const paid = Number(inv.paid_amount) || 0;
+                                        const balance = Math.max(0, total - paid);
+                                        const pct = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 0;
+                                        const src = inv.booking?.source || 'Direct';
+
+                                        return (
+                                            <tr key={inv.id}>
+                                                {/* Folio & Date */}
+                                                <td>
+                                                    <div className={styles.folioCell}>
+                                                        <span className={styles.folioBadge}>
+                                                            <Receipt size={14} className={styles.folioIcon} />
+                                                            {inv.invoice_number}
+                                                        </span>
+                                                        <span className={styles.invoiceDate}>
+                                                            {inv.invoice_date || (inv.created_at ? new Date(inv.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A')}
+                                                        </span>
+                                                    </div>
+                                                </td>
+
+                                                {/* Guest & Reservation */}
+                                                <td>
+                                                    <div className={styles.guestCell}>
+                                                        <span className={styles.guestName}>
+                                                            {inv.guest_name || 'Individual Guest'}
+                                                        </span>
+                                                        <div className={styles.stayMetaRow}>
+                                                            {inv.room_number && (
+                                                                <span className={styles.roomChip}>
+                                                                    Room {inv.room_number}
+                                                                </span>
+                                                            )}
+                                                            {inv.booking?.booking_number && (
+                                                                <span className={styles.bookingIdChip}>
+                                                                    #{inv.booking.booking_number}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                {/* Channel / Source */}
+                                                <td>
+                                                    <span className={`${styles.channelBadge} ${
+                                                        src === 'OTA'
+                                                            ? styles.channelOTA
+                                                            : src === 'Corporate'
+                                                            ? styles.channelCorporate
+                                                            : src === 'Direct'
+                                                            ? styles.channelDirect
+                                                            : styles.channelStandard
+                                                    }`}>
+                                                        {src === 'Corporate' && <Building2 size={11} />}
+                                                        {src}
+                                                    </span>
+                                                </td>
+
+                                                {/* Payment Mode */}
+                                                <td>
+                                                    <span className={styles.modeChip}>
+                                                        {getPaymentModeIcon(inv.payment_mode)}
+                                                        {inv.payment_mode || 'Pending'}
+                                                    </span>
+                                                </td>
+
+                                                {/* Settlement Amounts with Mini Progress Bar */}
+                                                <td>
+                                                    <div className={styles.amountCell}>
+                                                        <span className={styles.amountTotal}>
+                                                            ₹{paid.toLocaleString()}
+                                                            <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>
+                                                                {' '}/ ₹{total.toLocaleString()}
+                                                            </span>
+                                                        </span>
+                                                        {total > 0 && (
+                                                            <div className={styles.amountSub}>
+                                                                <div className={styles.progressBarContainer}>
+                                                                    <div
+                                                                        className={styles.progressBarFill}
+                                                                        style={{
+                                                                            width: `${pct}%`,
+                                                                            background: pct === 100
+                                                                                ? 'linear-gradient(90deg, #10b981, #059669)'
+                                                                                : pct > 0
+                                                                                ? 'linear-gradient(90deg, #f59e0b, #d97706)'
+                                                                                : '#cbd5e1'
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                                {balance > 0 ? (
+                                                                    <span className={styles.dueAmount}>
+                                                                        Due ₹{balance.toLocaleString()}
+                                                                    </span>
+                                                                ) : (
+                                                                    <span style={{ color: '#16a34a' }}>Settled</span>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </td>
+
+                                                {/* Status Capsule */}
+                                                <td>
+                                                    {inv.status === 'Paid' ? (
+                                                        <span className={`${styles.statusCapsule} ${styles.statusPaid}`}>
+                                                            <span className={styles.statusDot} />
+                                                            Paid
+                                                        </span>
+                                                    ) : inv.status === 'Partial' ? (
+                                                        <span className={`${styles.statusCapsule} ${styles.statusPartial}`}>
+                                                            <span className={styles.statusDot} />
+                                                            Partial ({pct}%)
+                                                        </span>
+                                                    ) : (
+                                                        <span className={`${styles.statusCapsule} ${styles.statusPending}`}>
+                                                            <span className={styles.statusDot} />
+                                                            Pending
+                                                        </span>
+                                                    )}
+                                                </td>
+
+                                                {/* Actions */}
+                                                <td>
+                                                    <div className={styles.actionsCell} style={{ justifyContent: 'flex-end' }}>
+                                                        <button
+                                                            className={styles.actionBtn}
+                                                            title="Edit Invoice"
+                                                            aria-label={`Edit Invoice ${inv.invoice_number}`}
+                                                            onClick={() => openEditInvoice(inv)}
+                                                        >
+                                                            <Pencil size={15} />
+                                                        </button>
+                                                        <button
+                                                            className={styles.actionBtn}
+                                                            title="View Full Folio"
+                                                            aria-label={`View Invoice ${inv.invoice_number}`}
+                                                            onClick={() => handleViewInvoice(inv)}
+                                                        >
+                                                            <Eye size={15} />
+                                                        </button>
+                                                        <button
+                                                            className={styles.actionBtn}
+                                                            title="Download / Print Invoice"
+                                                            aria-label={`Download Invoice ${inv.invoice_number}`}
+                                                            onClick={() => handleDownloadInvoice(inv)}
+                                                        >
+                                                            <Download size={15} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Empty Search Results */}
+                        {!loading && filteredInvoices.length === 0 && (
+                            <div className={styles.emptyState}>
+                                <div className={styles.emptyIconBox}>
+                                    <Receipt size={32} />
+                                </div>
+                                <h3 className={styles.emptyTitle}>No Invoices Found</h3>
+                                <p className={styles.emptySubtitle}>
+                                    {isFiltersActive
+                                        ? 'No records match your active search terms or filters. Try adjusting your query.'
+                                        : 'No billing invoices have been generated yet.'}
+                                </p>
+                                {isFiltersActive && (
+                                    <button className={styles.resetBtn} onClick={handleResetFilters}>
+                                        <RefreshCw size={13} /> Reset All Filters
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Table Footer Summary */}
+                        <div className={styles.tableFooter}>
+                            <span>
+                                Showing <strong>{filteredInvoices.length}</strong> of <strong>{invoices.length}</strong> total invoices
+                            </span>
+                            <span>
+                                Real-time Supabase sync active
+                            </span>
+                        </div>
                     </div>
                 ) : (
-                    <div className={styles.emptyState}>
-                        <FileText size={48} />
-                        <p>Detailed Daily Report Mockup</p>
+                    /* Daily Closing & Reconciliation View */
+                    <div className={styles.closingContainer}>
+                        {/* 1. Date Navigator Bar */}
+                        <div className={styles.closingNavCard}>
+                            <div className={styles.closingDateGroup}>
+                                <h3 className={styles.closingTitle}>
+                                    <Calendar size={18} color="#0284c7" />
+                                    Daily Closing: {new Date(closingDate).toLocaleDateString('en-IN', {
+                                        weekday: 'short',
+                                        day: '2-digit',
+                                        month: 'short',
+                                        year: 'numeric'
+                                    })}
+                                </h3>
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <button
+                                        className={styles.dateNavBtn}
+                                        onClick={() => handleShiftDate(-1)}
+                                        title="Previous Day"
+                                    >
+                                        <ChevronLeft size={14} /> Prev
+                                    </button>
+
+                                    <input
+                                        type="date"
+                                        className={styles.datePickerInput}
+                                        value={closingDate}
+                                        onChange={(e) => setClosingDate(e.target.value)}
+                                        title="Pick Closing Date"
+                                    />
+
+                                    <button
+                                        className={styles.dateNavBtn}
+                                        onClick={() => handleShiftDate(1)}
+                                        title="Next Day"
+                                    >
+                                        Next <ChevronRight size={14} />
+                                    </button>
+
+                                    <button
+                                        className={styles.dateNavBtn}
+                                        onClick={() => setClosingDate(new Date().toISOString().split('T')[0])}
+                                        title="Jump to Today"
+                                    >
+                                        Today
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                {closingIsLocked ? (
+                                    <span className={`${styles.closingStatusBadge} ${styles.closingStatusLocked}`}>
+                                        <Lock size={12} /> Closing Locked & Audited
+                                    </span>
+                                ) : (
+                                    <span className={`${styles.closingStatusBadge} ${styles.closingStatusOpen}`}>
+                                        <span className={`${styles.statusDot} ${styles.pulseDot}`} style={{ background: '#10b981' }} />
+                                        Day Audit Open
+                                    </span>
+                                )}
+
+                                <button
+                                    className={styles.dateNavBtn}
+                                    onClick={() => fetchDailyClosing(closingDate)}
+                                    title="Refresh Data"
+                                >
+                                    <RefreshCw size={13} className={closingLoading ? 'spin' : ''} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* 2. Daily Financial Performance (3 Cards) */}
+                        <div className={styles.closingGrid3}>
+                            {/* Revenue Card */}
+                            <div className={`${styles.closingMetricCard} ${styles.metricCardRevenue}`}>
+                                <div className={styles.metricCardHeader}>
+                                    <span className={styles.metricCardLabel}>Gross Daily Collections</span>
+                                    <div className={`${styles.statIconBox} ${styles.iconBlue}`} style={{ width: '36px', height: '36px' }}>
+                                        <IndianRupee size={18} />
+                                    </div>
+                                </div>
+                                <span className={styles.metricCardAmount} style={{ color: '#0284c7' }}>
+                                    ₹{closingMetrics.revenue.toLocaleString()}
+                                </span>
+                                <span className={styles.metricCardSub}>
+                                    From paid invoices on record
+                                </span>
+                            </div>
+
+                            {/* Expenses Card */}
+                            <div className={`${styles.closingMetricCard} ${styles.metricCardExpenses}`}>
+                                <div className={styles.metricCardHeader}>
+                                    <span className={styles.metricCardLabel}>Daily Operating Expenses</span>
+                                    <div className={`${styles.statIconBox} ${styles.iconAmber}`} style={{ width: '36px', height: '36px', background: '#fee2e2', color: '#dc2626' }}>
+                                        <Receipt size={18} />
+                                    </div>
+                                </div>
+                                <span className={styles.metricCardAmount} style={{ color: '#dc2626' }}>
+                                    ₹{closingMetrics.expenses.toLocaleString()}
+                                </span>
+                                <span className={styles.metricCardSub}>
+                                    Operational vouchers & expenses
+                                </span>
+                            </div>
+
+                            {/* Net Operating Surplus Card */}
+                            <div className={`${styles.closingMetricCard} ${styles.metricCardProfit}`}>
+                                <div className={styles.metricCardHeader}>
+                                    <span className={styles.metricCardLabel}>Net Operating Balance</span>
+                                    <div className={`${styles.statIconBox} ${styles.iconGreen}`} style={{ width: '36px', height: '36px' }}>
+                                        <TrendingUp size={18} />
+                                    </div>
+                                </div>
+                                <span className={styles.metricCardAmount} style={{ color: closingMetrics.netProfit >= 0 ? '#10b981' : '#dc2626' }}>
+                                    {closingMetrics.netProfit >= 0 ? '+' : ''}₹{closingMetrics.netProfit.toLocaleString()}
+                                </span>
+                                <span className={styles.metricCardSub}>
+                                    {closingMetrics.netProfit >= 0 ? 'Surplus operating day' : 'Operating deficit'}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* 3. Daily Front-Desk & Rooms Operations */}
+                        <div className={styles.operationsCard}>
+                            <div className={styles.operationsHeader}>
+                                <h4 className={styles.operationsTitle}>
+                                    <BedDouble size={16} color="#0284c7" />
+                                    Daily Front-Desk & Rooms Movement
+                                </h4>
+                                <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>
+                                    Live occupancy & movement status
+                                </span>
+                            </div>
+
+                            <div className={styles.operationsGrid}>
+                                <div className={styles.opItem}>
+                                    <div className={styles.opIconBox} style={{ background: '#ecfdf5', color: '#10b981' }}>
+                                        <LogIn size={18} />
+                                    </div>
+                                    <span className={styles.opItemLabel}>Check-Ins</span>
+                                    <span className={styles.opItemVal}>{closingMetrics.checkIns}</span>
+                                </div>
+
+                                <div className={styles.opItem}>
+                                    <div className={styles.opIconBox} style={{ background: '#e0f2fe', color: '#0284c7' }}>
+                                        <LogOut size={18} />
+                                    </div>
+                                    <span className={styles.opItemLabel}>Check-Outs</span>
+                                    <span className={styles.opItemVal}>{closingMetrics.checkOuts}</span>
+                                </div>
+
+                                <div className={styles.opItem}>
+                                    <div className={styles.opIconBox} style={{ background: '#f3e8ff', color: '#8b5cf6' }}>
+                                        <BedDouble size={18} />
+                                    </div>
+                                    <span className={styles.opItemLabel}>Occupied</span>
+                                    <span className={styles.opItemVal}>
+                                        {closingMetrics.roomsOccupied} / {closingMetrics.roomsTotal}
+                                    </span>
+                                </div>
+
+                                <div className={styles.opItem}>
+                                    <div className={styles.opIconBox} style={{ background: '#fef3c7', color: '#f59e0b' }}>
+                                        <Percent size={18} />
+                                    </div>
+                                    <span className={styles.opItemLabel}>Occupancy Rate</span>
+                                    <span className={styles.opItemVal}>
+                                        {closingMetrics.occupancyRate.toFixed(1)}%
+                                    </span>
+                                </div>
+
+                                <div className={styles.opItem}>
+                                    <div className={styles.opIconBox} style={{ background: '#f1f5f9', color: '#475569' }}>
+                                        <Receipt size={18} />
+                                    </div>
+                                    <span className={styles.opItemLabel}>Day Folios</span>
+                                    <span className={styles.opItemVal}>{closingMetrics.bookingsCount}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 4. Night Audit Handover Notes Card */}
+                        <div className={styles.notesCard}>
+                            <div className={styles.operationsHeader}>
+                                <h4 className={styles.operationsTitle}>
+                                    <FileText size={16} color="#0284c7" />
+                                    Night Audit Handover & Closing Remarks
+                                </h4>
+                                {closingSuccessMsg && (
+                                    <span style={{ fontSize: '0.8rem', color: '#15803d', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <Check size={14} /> {closingSuccessMsg}
+                                    </span>
+                                )}
+                            </div>
+
+                            <textarea
+                                className={styles.notesTextarea}
+                                placeholder="Add daily reconciliation remarks, shift handover notes, cash drawer variance, or audit observations for this day..."
+                                value={closingNotes}
+                                onChange={(e) => setClosingNotes(e.target.value)}
+                                disabled={closingIsLocked || closingSaving}
+                            />
+
+                            <div className={styles.notesFooter}>
+                                <span style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 500 }}>
+                                    Audit remarks are saved permanently against date: <strong>{closingDate}</strong>
+                                </span>
+
+                                {!closingIsLocked && (
+                                    <button
+                                        className={styles.saveBtn}
+                                        onClick={handleSaveClosingNotes}
+                                        disabled={closingSaving}
+                                    >
+                                        {closingSaving ? (
+                                            <>
+                                                <RefreshCw size={14} className="spin" /> Saving Closing Record...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <CheckCircle2 size={15} /> Save Daily Closing Remarks
+                                            </>
+                                        )}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
@@ -397,8 +1131,12 @@ export default function BillingPage() {
             {viewingInvoice && viewingInvoice.booking && (
                 <div className={styles.modalOverlay} onClick={() => setViewingInvoice(null)}>
                     <div className={styles.invoiceViewerModal} onClick={(e) => e.stopPropagation()}>
-                        <button onClick={() => setViewingInvoice(null)} className={styles.closeBtn}>
-                            <X size={20} />
+                        <button
+                            onClick={() => setViewingInvoice(null)}
+                            className={styles.viewerCloseBtn}
+                            title="Close Invoice Viewer"
+                        >
+                            <X size={18} />
                         </button>
                         <div ref={invoiceRef}>
                             <InvoiceTemplate
@@ -411,347 +1149,336 @@ export default function BillingPage() {
                 </div>
             )}
 
-            {/* Edit Invoice Modal */}
+            {/* Modernized Edit Invoice Modal */}
             {editingInvoice && (
                 <div className={styles.modalOverlay} onClick={() => setEditingInvoice(null)}>
-                    <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+                    <div className={styles.editModal} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
-                            <h3>Edit Invoice #{editingInvoice.invoice_number}</h3>
-                            <button onClick={() => setEditingInvoice(null)} className={styles.closeBtn}>
-                                <X size={20} />
+                            <div className={styles.modalTitleGroup}>
+                                <Receipt size={20} color="#0284c7" />
+                                <h3 className={styles.modalTitle}>
+                                    Edit Invoice #{editingInvoice.invoice_number}
+                                </h3>
+                            </div>
+                            <button
+                                onClick={() => setEditingInvoice(null)}
+                                className={styles.closeBtn}
+                                title="Close Modal"
+                            >
+                                <X size={18} />
                             </button>
                         </div>
+
                         <div className={styles.modalBody}>
-                            <div className={styles.row}>
-                                <div className={styles.formGroup}>
-                                    <label>Created At</label>
-                                    <input
-                                        type="text"
-                                        className={styles.input}
-                                        value={editingInvoice.created_at ? new Date(editingInvoice.created_at).toLocaleString() : ''}
-                                        readOnly
-                                    />
+                            {/* Live Settlement Summary Card */}
+                            <div className={styles.settlementSummaryCard}>
+                                <div className={styles.summaryItem}>
+                                    <span className={styles.summaryLabel}>Total Amount</span>
+                                    <span className={styles.summaryValue}>
+                                        ₹{Number(editingInvoice.total_amount || 0).toLocaleString()}
+                                    </span>
                                 </div>
+                                <div className={styles.summaryItem}>
+                                    <span className={styles.summaryLabel}>Paid Amount</span>
+                                    <span className={styles.summaryValue} style={{ color: '#059669' }}>
+                                        ₹{Number(editingInvoice.paid_amount || 0).toLocaleString()}
+                                    </span>
+                                </div>
+                                <div className={styles.summaryItem}>
+                                    <span className={styles.summaryLabel}>GST ({editingInvoice.gst_rate || 0}%)</span>
+                                    <span className={styles.summaryValue}>
+                                        ₹{calculateInvoiceGstAmount(Number(editingInvoice.total_amount || 0), Number(editingInvoice.gst_rate || 0)).toLocaleString()}
+                                    </span>
+                                </div>
+                                <div className={styles.summaryItem}>
+                                    <span className={styles.summaryLabel}>Balance Due</span>
+                                    <span className={`${styles.summaryValue} ${styles.summaryDue}`}>
+                                        ₹{Math.max(0, Number(editingInvoice.total_amount || 0) - Number(editingInvoice.paid_amount || 0)).toLocaleString()}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Section 1: Folio & Booking Linkage */}
+                            <div className={styles.formSection}>
+                                <div className={styles.sectionHeader}>
+                                    <Receipt size={14} /> 1. Folio & Booking Linkage
+                                </div>
+                                <div className={styles.formGrid3}>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.formLabel}>Invoice Number</label>
+                                        <input
+                                            type="text"
+                                            className={styles.input}
+                                            value={editingInvoice.invoice_number}
+                                            onChange={(e) => setEditingInvoice({ ...editingInvoice, invoice_number: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.formLabel}>Invoice Date</label>
+                                        <input
+                                            type="date"
+                                            className={styles.input}
+                                            value={editingInvoice.invoice_date || ''}
+                                            onChange={(e) => setEditingInvoice({ ...editingInvoice, invoice_date: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.formLabel}>Linked Booking</label>
+                                        <select
+                                            className={styles.input}
+                                            value={editingInvoice.booking_id || ''}
+                                            onChange={(e) => {
+                                                const bookingId = e.target.value || null;
+                                                const linkedBooking = bookings.find((item) => item.id === bookingId);
+                                                setEditingInvoice({
+                                                    ...editingInvoice,
+                                                    booking_id: bookingId,
+                                                    booking: linkedBooking
+                                                        ? { booking_number: linkedBooking.booking_number, source: linkedBooking.source }
+                                                        : undefined,
+                                                    booking_source: linkedBooking?.source || editingInvoice.booking_source || 'Direct',
+                                                    guest_name: linkedBooking?.guests ? `${linkedBooking.guests.first_name} ${linkedBooking.guests.last_name}` : editingInvoice.guest_name,
+                                                    guest_email: linkedBooking?.guests?.email || '',
+                                                    guest_phone: linkedBooking?.guests?.phone || '',
+                                                    guest_company_name: linkedBooking?.guests?.company_name || '',
+                                                    guest_gst_number: linkedBooking?.guests?.gst_number || '',
+                                                    guest_address: linkedBooking?.guests?.address || '',
+                                                    check_in_date: linkedBooking?.check_in_date || '',
+                                                    check_out_date: linkedBooking?.check_out_date || '',
+                                                    room_type: linkedBooking?.rooms?.type || '',
+                                                    room_rate: linkedBooking?.room_rate ?? 0,
+                                                    extra_pax: linkedBooking?.extra_pax ?? 0,
+                                                    extra_pax_rate: linkedBooking?.extra_pax_rate ?? 600,
+                                                    room_number: linkedBooking?.rooms?.room_number || editingInvoice.room_number,
+                                                });
+                                            }}
+                                        >
+                                            <option value="">No Linked Booking</option>
+                                            {bookings.map((b) => (
+                                                <option key={b.id} value={b.id}>
+                                                    {b.booking_number || b.id} - {b.guests ? `${b.guests.first_name} ${b.guests.last_name}` : 'Guest'}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className={styles.formGrid2}>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.formLabel}>Booking Source / Channel</label>
+                                        <select
+                                            className={styles.input}
+                                            value={editingInvoice.booking_source || editingInvoice.booking?.source || 'Direct'}
+                                            onChange={(e) => setEditingInvoice({ ...editingInvoice, booking_source: e.target.value })}
+                                        >
+                                            <option value="Direct">Direct</option>
+                                            <option value="OTA">OTA</option>
+                                            <option value="Corporate">Corporate</option>
+                                            <option value="Standard">Standard</option>
+                                            <option value="Complementary">Complementary</option>
+                                        </select>
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.formLabel}>Assigned Room Number</label>
+                                        <input
+                                            type="text"
+                                            className={styles.input}
+                                            value={editingInvoice.room_number || ''}
+                                            onChange={(e) => setEditingInvoice({ ...editingInvoice, room_number: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Section 2: Guest & Corporate Profile */}
+                            <div className={styles.formSection}>
+                                <div className={styles.sectionHeader}>
+                                    <User size={14} /> 2. Guest & Corporate Profile
+                                </div>
+                                <div className={styles.formGrid3}>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.formLabel}>Guest Name</label>
+                                        <input
+                                            type="text"
+                                            className={styles.input}
+                                            value={editingInvoice.guest_name || ''}
+                                            onChange={(e) => setEditingInvoice({ ...editingInvoice, guest_name: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.formLabel}>Email Address</label>
+                                        <input
+                                            type="email"
+                                            className={styles.input}
+                                            value={editingInvoice.guest_email || ''}
+                                            onChange={(e) => setEditingInvoice({ ...editingInvoice, guest_email: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.formLabel}>Phone Number</label>
+                                        <input
+                                            type="text"
+                                            className={styles.input}
+                                            value={editingInvoice.guest_phone || ''}
+                                            onChange={(e) => setEditingInvoice({ ...editingInvoice, guest_phone: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className={styles.formGrid2}>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.formLabel}>Corporate Company Name</label>
+                                        <input
+                                            type="text"
+                                            className={styles.input}
+                                            placeholder="Optional corporate client"
+                                            value={editingInvoice.guest_company_name || ''}
+                                            onChange={(e) => setEditingInvoice({ ...editingInvoice, guest_company_name: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.formLabel}>GSTIN Registration</label>
+                                        <input
+                                            type="text"
+                                            className={styles.input}
+                                            placeholder="Optional 15-digit GSTIN"
+                                            value={editingInvoice.guest_gst_number || ''}
+                                            onChange={(e) => setEditingInvoice({ ...editingInvoice, guest_gst_number: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
                                 <div className={styles.formGroup}>
-                                    <label>Invoice Date</label>
-                                    <input
-                                        type="date"
+                                    <label className={styles.formLabel}>Registered Street Address</label>
+                                    <textarea
                                         className={styles.input}
-                                        value={editingInvoice.invoice_date || ''}
-                                        onChange={(e) => setEditingInvoice({ ...editingInvoice, invoice_date: e.target.value })}
+                                        rows={2}
+                                        value={editingInvoice.guest_address || ''}
+                                        onChange={(e) => setEditingInvoice({ ...editingInvoice, guest_address: e.target.value })}
                                     />
                                 </div>
                             </div>
 
-                            <div className={styles.row}>
-                                <div className={styles.formGroup}>
-                                    <label>Invoice Number</label>
-                                    <input
-                                        type="text"
-                                        className={styles.input}
-                                        value={editingInvoice.invoice_number}
-                                        onChange={(e) => setEditingInvoice({ ...editingInvoice, invoice_number: e.target.value })}
-                                    />
+                            {/* Section 3: Tariff & Settlement */}
+                            <div className={styles.formSection}>
+                                <div className={styles.sectionHeader}>
+                                    <IndianRupee size={14} /> 3. Tariff, Taxes & Payment Settlement
                                 </div>
-                                <div className={styles.formGroup}>
-                                    <label>Invoice ID</label>
-                                    <input
-                                        type="text"
-                                        className={styles.input}
-                                        value={editingInvoice.id}
-                                        readOnly
-                                    />
-                                </div>
-                            </div>
 
-                            <div className={styles.row}>
-                                <div className={styles.formGroup}>
-                                    <label>Booking</label>
-                                    <select
-                                        className={styles.input}
-                                        value={editingInvoice.booking_id || ''}
-                                        onChange={(e) => {
-                                            const bookingId = e.target.value || null;
-                                            const linkedBooking = bookings.find((item) => item.id === bookingId);
-                                            setEditingInvoice({
-                                                ...editingInvoice,
-                                                booking_id: bookingId,
-                                                booking: linkedBooking
-                                                    ? { booking_number: linkedBooking.booking_number, source: linkedBooking.source }
-                                                    : undefined,
-                                                booking_source: linkedBooking?.source || editingInvoice.booking_source || 'Direct',
-                                                guest_name: linkedBooking?.guests ? `${linkedBooking.guests.first_name} ${linkedBooking.guests.last_name}` : editingInvoice.guest_name,
-                                                guest_email: linkedBooking?.guests?.email || '',
-                                                guest_phone: linkedBooking?.guests?.phone || '',
-                                                guest_company_name: linkedBooking?.guests?.company_name || '',
-                                                guest_gst_number: linkedBooking?.guests?.gst_number || '',
-                                                guest_address: linkedBooking?.guests?.address || '',
-                                                check_in_date: linkedBooking?.check_in_date || '',
-                                                check_out_date: linkedBooking?.check_out_date || '',
-                                                room_type: linkedBooking?.rooms?.type || '',
-                                                room_rate: linkedBooking?.room_rate ?? 0,
-                                                extra_pax: linkedBooking?.extra_pax ?? 0,
-                                                extra_pax_rate: linkedBooking?.extra_pax_rate ?? 600,
-                                                room_number: linkedBooking?.rooms?.room_number || editingInvoice.room_number,
-                                            });
-                                        }}
-                                    >
-                                        <option value="">No Linked Booking</option>
-                                        {bookings.map((booking) => (
-                                            <option key={booking.id} value={booking.id}>
-                                                {booking.booking_number || booking.id} - {booking.guests ? `${booking.guests.first_name} ${booking.guests.last_name}` : 'Guest'}
-                                            </option>
-                                        ))}
-                                    </select>
+                                <div className={styles.formGrid3}>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.formLabel}>Room Rate (₹ / Night)</label>
+                                        <input
+                                            type="number"
+                                            className={styles.input}
+                                            value={editingInvoice.room_rate || 0}
+                                            onChange={(e) => setEditingInvoice({ ...editingInvoice, room_rate: Number(e.target.value) })}
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.formLabel}>Extra Pax Count</label>
+                                        <input
+                                            type="number"
+                                            className={styles.input}
+                                            value={editingInvoice.extra_pax || 0}
+                                            onChange={(e) => setEditingInvoice({ ...editingInvoice, extra_pax: Number(e.target.value) })}
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.formLabel}>Extra Pax Rate (₹)</label>
+                                        <input
+                                            type="number"
+                                            className={styles.input}
+                                            value={editingInvoice.extra_pax_rate || 600}
+                                            onChange={(e) => setEditingInvoice({ ...editingInvoice, extra_pax_rate: Number(e.target.value) })}
+                                        />
+                                    </div>
                                 </div>
-                                <div className={styles.formGroup}>
-                                    <label>Booking Type</label>
-                                    <select
-                                        className={styles.input}
-                                        value={editingInvoice.booking_source || editingInvoice.booking?.source || 'Direct'}
-                                        onChange={(e) => setEditingInvoice({ ...editingInvoice, booking_source: e.target.value })}
-                                    >
-                                        <option value="Standard">Standard</option>
-                                        <option value="Complementary">Complementary</option>
-                                        <option value="Corporate">Corporate</option>
-                                        <option value="OTA">OTA</option>
-                                        <option value="Direct">Direct</option>
-                                    </select>
-                                </div>
-                            </div>
 
-                            <div className={styles.row}>
-                                <div className={styles.formGroup}>
-                                    <label>Guest Name</label>
-                                    <input
-                                        type="text"
-                                        className={styles.input}
-                                        value={editingInvoice.guest_name || ''}
-                                        onChange={(e) => setEditingInvoice({ ...editingInvoice, guest_name: e.target.value })}
-                                    />
-                                </div>
-                                <div className={styles.formGroup}>
-                                    <label>Room Number</label>
-                                    <input
-                                        type="text"
-                                        className={styles.input}
-                                        value={editingInvoice.room_number || ''}
-                                        onChange={(e) => setEditingInvoice({ ...editingInvoice, room_number: e.target.value })}
-                                    />
-                                </div>
-                            </div>
+                                <div className={styles.formGrid3}>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.formLabel}>Total Amount (₹)</label>
+                                        <input
+                                            type="number"
+                                            className={styles.input}
+                                            value={editingInvoice.total_amount || 0}
+                                            onChange={(e) => {
+                                                const total = Number(e.target.value);
+                                                const paid = Number(editingInvoice.paid_amount || 0);
+                                                setEditingInvoice({
+                                                    ...editingInvoice,
+                                                    total_amount: total,
+                                                    status: autoInvoiceStatus(paid, total)
+                                                });
+                                            }}
+                                        />
+                                    </div>
 
-                            <div className={styles.row}>
-                                <div className={styles.formGroup}>
-                                    <label>Guest Email</label>
-                                    <input
-                                        type="email"
-                                        className={styles.input}
-                                        value={editingInvoice.guest_email || ''}
-                                        onChange={(e) => setEditingInvoice({ ...editingInvoice, guest_email: e.target.value })}
-                                    />
-                                </div>
-                                <div className={styles.formGroup}>
-                                    <label>Guest Phone</label>
-                                    <input
-                                        type="text"
-                                        className={styles.input}
-                                        value={editingInvoice.guest_phone || ''}
-                                        onChange={(e) => setEditingInvoice({ ...editingInvoice, guest_phone: e.target.value })}
-                                    />
-                                </div>
-                            </div>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.formLabel}>Paid Amount (₹)</label>
+                                        <input
+                                            type="number"
+                                            className={styles.input}
+                                            value={editingInvoice.paid_amount || 0}
+                                            onChange={(e) => {
+                                                const paid = Number(e.target.value);
+                                                const total = Number(editingInvoice.total_amount || 0);
+                                                setEditingInvoice({
+                                                    ...editingInvoice,
+                                                    paid_amount: paid,
+                                                    status: autoInvoiceStatus(paid, total)
+                                                });
+                                            }}
+                                        />
+                                    </div>
 
-                            <div className={styles.row}>
-                                <div className={styles.formGroup}>
-                                    <label>Company Name</label>
-                                    <input
-                                        type="text"
-                                        className={styles.input}
-                                        value={editingInvoice.guest_company_name || ''}
-                                        onChange={(e) => setEditingInvoice({ ...editingInvoice, guest_company_name: e.target.value })}
-                                    />
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.formLabel}>GST Rate (%)</label>
+                                        <input
+                                            type="number"
+                                            className={styles.input}
+                                            value={editingInvoice.gst_rate || 0}
+                                            onChange={(e) => setEditingInvoice({ ...editingInvoice, gst_rate: Number(e.target.value) })}
+                                        />
+                                    </div>
                                 </div>
-                                <div className={styles.formGroup}>
-                                    <label>Guest GST Number</label>
-                                    <input
-                                        type="text"
-                                        className={styles.input}
-                                        value={editingInvoice.guest_gst_number || ''}
-                                        onChange={(e) => setEditingInvoice({ ...editingInvoice, guest_gst_number: e.target.value })}
-                                    />
-                                </div>
-                            </div>
 
-                            <div className={styles.formGroup}>
-                                <label>Guest Address</label>
-                                <textarea
-                                    className={styles.input}
-                                    value={editingInvoice.guest_address || ''}
-                                    onChange={(e) => setEditingInvoice({ ...editingInvoice, guest_address: e.target.value })}
-                                    rows={3}
-                                />
-                            </div>
+                                <div className={styles.formGrid2}>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.formLabel}>Payment Settlement Status</label>
+                                        <select
+                                            className={styles.input}
+                                            value={editingInvoice.status}
+                                            onChange={(e) => {
+                                                const status = e.target.value as any;
+                                                setEditingInvoice({
+                                                    ...editingInvoice,
+                                                    status,
+                                                    is_partial: status === 'Partial'
+                                                });
+                                            }}
+                                        >
+                                            <option value="Paid">Paid (Fully Settled)</option>
+                                            <option value="Partial">Partial Settlement</option>
+                                            <option value="Pending">Pending (Unsettled)</option>
+                                        </select>
+                                    </div>
 
-                            <div className={styles.row}>
-                                <div className={styles.formGroup}>
-                                    <label>Check-in Date</label>
-                                    <input
-                                        type="date"
-                                        className={styles.input}
-                                        value={editingInvoice.check_in_date || ''}
-                                        onChange={(e) => setEditingInvoice({ ...editingInvoice, check_in_date: e.target.value })}
-                                    />
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.formLabel}>Payment Instrument / Mode</label>
+                                        <select
+                                            className={styles.input}
+                                            value={editingInvoice.payment_mode || ''}
+                                            onChange={(e) => setEditingInvoice({ ...editingInvoice, payment_mode: e.target.value as any })}
+                                        >
+                                            <option value="">Select Instrument</option>
+                                            <option value="Cash">Cash</option>
+                                            <option value="Card">Card / POS</option>
+                                            <option value="UPI">UPI / QR Transfer</option>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div className={styles.formGroup}>
-                                    <label>Check-out Date</label>
-                                    <input
-                                        type="date"
-                                        className={styles.input}
-                                        value={editingInvoice.check_out_date || ''}
-                                        onChange={(e) => setEditingInvoice({ ...editingInvoice, check_out_date: e.target.value })}
-                                    />
-                                </div>
-                            </div>
 
-                            <div className={styles.row}>
-                                <div className={styles.formGroup}>
-                                    <label>Room Type</label>
-                                    <input
-                                        type="text"
-                                        className={styles.input}
-                                        value={editingInvoice.room_type || ''}
-                                        readOnly
-                                    />
-                                </div>
-                                <div className={styles.formGroup}>
-                                    <label>Room Rate</label>
-                                    <input
-                                        type="number"
-                                        className={styles.input}
-                                        value={editingInvoice.room_rate || 0}
-                                        onChange={(e) => setEditingInvoice({ ...editingInvoice, room_rate: Number(e.target.value) })}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className={styles.row}>
-                                <div className={styles.formGroup}>
-                                    <label>Extra Pax</label>
-                                    <input
-                                        type="number"
-                                        className={styles.input}
-                                        value={editingInvoice.extra_pax || 0}
-                                        onChange={(e) => setEditingInvoice({ ...editingInvoice, extra_pax: Number(e.target.value) })}
-                                    />
-                                </div>
-                                <div className={styles.formGroup}>
-                                    <label>Extra Pax Rate</label>
-                                    <input
-                                        type="number"
-                                        className={styles.input}
-                                        value={editingInvoice.extra_pax_rate || 600}
-                                        onChange={(e) => setEditingInvoice({ ...editingInvoice, extra_pax_rate: Number(e.target.value) })}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className={styles.row}>
-                                <div className={styles.formGroup}>
-                                    <label>Total Amount</label>
-                                    <input
-                                        type="number"
-                                        className={styles.input}
-                                        value={editingInvoice.total_amount || 0}
-                                        onChange={(e) => {
-                                            const total = Number(e.target.value);
-                                            const paid = Number(editingInvoice.paid_amount || 0);
-                                            setEditingInvoice({
-                                                ...editingInvoice,
-                                                total_amount: total,
-                                                status: autoInvoiceStatus(paid, total)
-                                            });
-                                        }}
-                                    />
-                                </div>
-                                <div className={styles.formGroup}>
-                                    <label>Paid Amount</label>
-                                    <input
-                                        type="number"
-                                        className={styles.input}
-                                        value={editingInvoice.paid_amount || 0}
-                                        onChange={(e) => {
-                                            const paid = Number(e.target.value);
-                                            const total = Number(editingInvoice.total_amount || 0);
-                                            setEditingInvoice({
-                                                ...editingInvoice,
-                                                paid_amount: paid,
-                                                status: autoInvoiceStatus(paid, total)
-                                            });
-                                        }}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className={styles.row}>
-                                <div className={styles.formGroup}>
-                                    <label>GST Rate (%)</label>
-                                    <input
-                                        type="number"
-                                        className={styles.input}
-                                        value={editingInvoice.gst_rate || 0}
-                                        onChange={(e) => setEditingInvoice({ ...editingInvoice, gst_rate: Number(e.target.value) })}
-                                    />
-                                </div>
-                                <div className={styles.formGroup}>
-                                    <label>GST Amount</label>
-                                    <input
-                                        type="number"
-                                        className={styles.input}
-                                        value={calculateInvoiceGstAmount(Number(editingInvoice.total_amount || 0), Number(editingInvoice.gst_rate || 0))}
-                                        readOnly
-                                    />
-                                </div>
-                            </div>
-
-                            <div className={styles.row}>
-                                <div className={styles.formGroup}>
-                                    <label>Status</label>
-                                    <select
-                                        className={styles.input}
-                                        value={editingInvoice.status}
-                                        onChange={(e) => {
-                                            const status = e.target.value as any;
-                                            setEditingInvoice({
-                                                ...editingInvoice,
-                                                status,
-                                                is_partial: status === 'Partial'
-                                            });
-                                        }}
-                                    >
-                                        <option value="Paid">Paid</option>
-                                        <option value="Partial">Partial</option>
-                                        <option value="Pending">Pending</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div className={styles.row}>
-                                <div className={styles.formGroup}>
-                                    <label>Payment Mode</label>
-                                    <select
-                                        className={styles.input}
-                                        value={editingInvoice.payment_mode || ''}
-                                        onChange={(e) => setEditingInvoice({ ...editingInvoice, payment_mode: e.target.value as any })}
-                                    >
-                                        <option value="">Select Mode</option>
-                                        <option value="Cash">Cash</option>
-                                        <option value="Card">Card</option>
-                                        <option value="UPI">UPI</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className={styles.row}>
                                 <div className={styles.formGroup}>
                                     <label className={styles.checkboxLabel}>
                                         <input
@@ -759,24 +1486,33 @@ export default function BillingPage() {
                                             checked={!!editingInvoice.is_partial}
                                             onChange={(e) => setEditingInvoice({ ...editingInvoice, is_partial: e.target.checked })}
                                         />
-                                        Mark as Partial Invoice
+                                        Flag folio as Partial Settlement
                                     </label>
-                                </div>
-                                <div className={styles.formGroup}>
-                                    <label>Balance Due</label>
-                                    <input
-                                        type="number"
-                                        className={styles.input}
-                                        value={Math.max(0, Number(editingInvoice.total_amount || 0) - Number(editingInvoice.paid_amount || 0))}
-                                        readOnly
-                                    />
                                 </div>
                             </div>
                         </div>
+
                         <div className={styles.modalFooter}>
-                            <button className={styles.cancelBtn} onClick={() => setEditingInvoice(null)}>Cancel</button>
-                            <button className={styles.submitBtn} onClick={handleUpdateInvoice} disabled={pendingUpdate}>
-                                {pendingUpdate ? 'Saving...' : 'Save Changes'}
+                            <button
+                                className={styles.cancelBtn}
+                                onClick={() => setEditingInvoice(null)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className={styles.saveBtn}
+                                onClick={handleUpdateInvoice}
+                                disabled={pendingUpdate}
+                            >
+                                {pendingUpdate ? (
+                                    <>
+                                        <RefreshCw size={14} className="spin" /> Saving Changes...
+                                    </>
+                                ) : (
+                                    <>
+                                        <CheckCircle2 size={15} /> Save Changes
+                                    </>
+                                )}
                             </button>
                         </div>
                     </div>
