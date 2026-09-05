@@ -1,0 +1,172 @@
+/* ==========================================================================
+   Ave Vista PMS - Executive 500 Server Error Boundary Stylesheet
+   Ocean Sky Blue Logo Palette (#0284C7 / #0369A1 / #F0F9FF)
+   ========================================================================== */
+
+.container {
+    min-height: calc(100vh - 120px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(24px, 4vh, 48px) 20px;
+    background: #f8fafc;
+    box-sizing: border-box;
+}
+
+.card {
+    max-width: 580px;
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
+    padding: clamp(32px, 4vh, 48px) clamp(24px, 3.5vw, 44px);
+    text-align: center;
+    box-shadow: 0 10px 35px rgba(15, 23, 42, 0.05);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 9999px;
+    color: #b91c1c;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+.iconEmblem {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    background: #fef2f2;
+    border: 1.5px solid #fecaca;
+    color: #dc2626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.12);
+}
+
+.title {
+    font-size: clamp(1.4rem, 2vw, 1.8rem);
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+}
+
+.description {
+    font-size: 0.94rem;
+    color: #64748b;
+    line-height: 1.6;
+    max-width: 460px;
+    margin-bottom: 24px;
+}
+
+.diagnosticCard {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    width: 100%;
+    margin-bottom: 28px;
+    text-align: left;
+    font-size: 0.82rem;
+    color: #64748b;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.diagnosticLabel {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #94a3b8;
+}
+
+.diagnosticDigest {
+    font-family: monospace;
+    color: #0f172a;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    padding: 6px 10px;
+    border-radius: 6px;
+    word-break: break-all;
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.primaryBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: #ffffff;
+    border-radius: 11px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.24);
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.primaryBtn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(2, 132, 199, 0.35);
+}
+
+.secondaryBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: #ffffff;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    text-decoration: none;
+    border-radius: 11px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.secondaryBtn:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+    border-color: #94a3b8;
+}
+
+@media (max-width: 600px) {
+    .actions {
+        flex-direction: column;
+    }
+
+    .primaryBtn,
+    .secondaryBtn {
+        width: 100%;
+        justify-content: center;
+    }
+}

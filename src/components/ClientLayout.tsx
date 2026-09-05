@@ -9,6 +9,8 @@ import { hasAccess } from '@/lib/permissions';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { Menu } from 'lucide-react';
 import sidebarStyles from './Sidebar.module.css'; // Find where to import styles for button, or inline styles
+import OfflineBanner from './ui/OfflineBanner';
+import CookieConsentBanner from './ui/CookieConsentBanner';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -21,7 +23,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     const [isMobileOpen, setIsMobileOpen] = useState(false);
 
     const authPages = ['/login', '/signup', '/forgot-password', '/reset-password'];
-    const publicPages = ['/help', '/privacy', '/terms'];
+    const publicPages = ['/help', '/privacy', '/terms', '/cancellation-policy', '/cookie-policy', '/maintenance', '/forbidden'];
 
     const isAuthPage = authPages.some(page => pathname.startsWith(page));
     const isPublicPage = publicPages.some(page => pathname.startsWith(page));
@@ -68,9 +70,9 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         }
 
         // 3. RBAC Check
-        if (!loading && user && !isPublicPage && pathname !== '/') {
+        if (!loading && user && !isPublicPage && pathname !== '/' && pathname !== '/forbidden') {
             if (!hasAccess(user.role, pathname)) {
-                router.push('/');
+                router.push('/forbidden');
             }
         }
 
@@ -107,13 +109,23 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
     if (!user) {
         if (isAuthPage) {
-            return <main style={{ minHeight: '100vh', width: '100%', maxWidth: '100vw', overflowX: 'hidden', backgroundColor: 'var(--background)' }}>{children}</main>;
+            return (
+                <>
+                    <OfflineBanner />
+                    <main style={{ minHeight: '100vh', width: '100%', maxWidth: '100vw', overflowX: 'hidden', backgroundColor: 'var(--background)' }}>{children}</main>
+                    <CookieConsentBanner />
+                </>
+            );
         }
         return (
-            <main style={{ minHeight: '100vh', backgroundColor: 'var(--background)', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ flex: 1 }}>{children}</div>
-                <Footer />
-            </main>
+            <>
+                <OfflineBanner />
+                <main style={{ minHeight: '100vh', backgroundColor: 'var(--background)', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ flex: 1 }}>{children}</div>
+                    <Footer />
+                </main>
+                <CookieConsentBanner />
+            </>
         );
     }
 
@@ -135,6 +147,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
     return (
         <div style={{ display: 'flex', minHeight: '100vh' }}>
+            <OfflineBanner />
             <Sidebar
                 isMobile={isMobile}
                 isOpen={isMobileOpen}
@@ -162,6 +175,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                     <Footer />
                 </div>
             </main>
+            <CookieConsentBanner />
         </div>
     );
 }

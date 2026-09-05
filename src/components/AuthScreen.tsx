@@ -112,8 +112,9 @@ export default function AuthScreen({ initialMode }: AuthScreenProps) {
                         </span>
                         <div className={styles.showcaseLinks}>
                             <Link href="/help" className={styles.showcaseLink}>Help Desk</Link>
-                            <Link href="/privacy" className={styles.showcaseLink}>Privacy Policy</Link>
-                            <Link href="/terms" className={styles.showcaseLink}>Terms of Service</Link>
+                            <Link href="/privacy" className={styles.showcaseLink}>Privacy</Link>
+                            <Link href="/terms" className={styles.showcaseLink}>Terms</Link>
+                            <Link href="/cancellation-policy" className={styles.showcaseLink}>Refunds</Link>
                         </div>
                     </div>
                 </div>
