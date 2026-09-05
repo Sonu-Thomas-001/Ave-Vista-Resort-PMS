@@ -7,8 +7,7 @@ import {
     YAxis,
     CartesianGrid,
     Tooltip,
-    ResponsiveContainer,
-    Legend
+    ResponsiveContainer
 } from 'recharts';
 import styles from './OccupancyAnalytics.module.css';
 
@@ -20,57 +19,68 @@ export default function CheckInOutChart({ data }: CheckInOutChartProps) {
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <h3>Check-ins vs Check-outs</h3>
-                <div className={styles.legend}>
-                    <span className={styles.legendItem} style={{ color: '#3b82f6' }}>
-                        <span className={styles.dot} style={{ backgroundColor: '#3b82f6' }}></span> Check-ins
-                    </span>
-                    <span className={styles.legendItem} style={{ color: '#10b981', marginLeft: '12px' }}>
-                        <span className={styles.dot} style={{ backgroundColor: '#10b981' }}></span> Check-outs
-                    </span>
+                <div className={styles.titleBlock}>
+                    <h3 className={styles.chartTitle}>Guest Flow: Arrivals & Departures</h3>
+                    <span className={styles.chartSubtitle}>Daily check-in and check-out volume</span>
+                </div>
+                <div className={styles.legendCapsule}>
+                    <div className={styles.legendBadge}>
+                        <span className={styles.legendDotBlue} />
+                        <span>Check-ins</span>
+                    </div>
+                    <div className={styles.legendBadge}>
+                        <span className={styles.legendDotEmerald} />
+                        <span>Check-outs</span>
+                    </div>
                 </div>
             </div>
 
-            <div style={{ width: '100%', height: 300 }}>
+            <div style={{ width: '100%', height: 260 }}>
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                         data={data}
-                        margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                        margin={{ top: 12, right: 10, left: -20, bottom: 0 }}
+                        barGap={6}
                     >
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                         <XAxis
                             dataKey="date"
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: '#64748B', fontSize: 12 }}
+                            tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }}
                             dy={10}
                         />
                         <YAxis
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: '#64748B', fontSize: 12 }}
+                            tick={{ fill: '#64748b', fontSize: 11, fontWeight: 500 }}
                             allowDecimals={false}
                         />
                         <Tooltip
                             contentStyle={{
-                                backgroundColor: '#fff',
+                                backgroundColor: '#0f172a',
                                 border: 'none',
-                                borderRadius: '8px',
-                                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                                borderRadius: '10px',
+                                boxShadow: '0 10px 25px -4px rgba(0, 0, 0, 0.3)',
+                                color: '#ffffff',
+                                padding: '8px 12px',
+                                fontSize: '0.82rem'
                             }}
-                            cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }}
+                            cursor={{ fill: 'rgba(241, 245, 249, 0.6)' }}
                         />
                         <Bar
                             dataKey="checkIns"
-                            fill="#3b82f6"
-                            radius={[8, 8, 0, 0]}
+                            fill="#0284c7"
+                            radius={[6, 6, 0, 0]}
                             name="Check-ins"
+                            maxBarSize={28}
                         />
                         <Bar
                             dataKey="checkOuts"
                             fill="#10b981"
-                            radius={[8, 8, 0, 0]}
+                            radius={[6, 6, 0, 0]}
                             name="Check-outs"
+                            maxBarSize={28}
                         />
                     </BarChart>
                 </ResponsiveContainer>

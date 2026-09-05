@@ -1,45 +1,203 @@
+/* ==========================================================================
+   SHARED CHART & OCCUPANCY ANALYTICS STYLES
+   ========================================================================== */
+
 .container {
-    background: white;
-    padding: var(--spacing-xl);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
+    background: #ffffff;
+    padding: 22px 24px;
+    border-radius: 16px;
+    border: 1px solid rgba(226, 232, 240, 0.85);
     height: 100%;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 6px 16px -2px rgba(15, 23, 42, 0.02);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.container:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.06);
+}
+
+/* Header Area */
 .header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    gap: 12px;
 }
 
-.header h3 {
-    font-size: 1.1rem;
+.titleBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.chartTitle {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+}
+
+.chartSubtitle {
+    font-size: 0.76rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.headerMetric {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+}
+
+.metricLabel {
+    font-size: 0.68rem;
     font-weight: 600;
-    color: var(--text-main);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
 }
 
-.legendItem {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
+.metricValue {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0f172a;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Legend Capsules */
+.legendCapsule {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.legendBadge {
     display: flex;
     align-items: center;
     gap: 6px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: #475569;
 }
 
-.dot {
+.legendDotBlue {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: var(--primary);
+    background: #0284c7;
 }
 
+.legendDotEmerald {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+}
+
+/* Donut Chart Layout */
+.donutLayout {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex: 1;
+}
+
+.donutCenter {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.centerNumber {
+    font-size: 1.55rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1;
+}
+
+.centerText {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 2px;
+}
+
+.legendList {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.legendItemCard {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    transition: all 0.15s ease;
+}
+
+.legendItemCard:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.legendColorDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.legendItemName {
+    flex: 1;
+    font-weight: 500;
+    color: #334155;
+}
+
+.legendItemCount {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.legendItemPercent {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #64748b;
+    min-width: 32px;
+    text-align: right;
+}
+
+/* --------------------------------------------------------------------------
+   Occupancy Trends Interactive Bar Chart
+   -------------------------------------------------------------------------- */
 .chartContainer {
     flex: 1;
     position: relative;
-    min-height: 200px;
+    min-height: 240px;
+    margin-top: 10px;
 }
 
 .bars {
@@ -64,7 +222,7 @@
 }
 
 .barWrapper {
-    height: 80%;
+    height: 82%;
     width: 100%;
     display: flex;
     align-items: flex-end;
@@ -73,37 +231,38 @@
 }
 
 .bar {
-    width: 12px;
-    /* Slim bars for elegance */
-    background: linear-gradient(180deg, var(--primary), var(--primary-light));
-    border-radius: 20px 20px 0 0;
+    width: 18px;
+    background: linear-gradient(180deg, #0284c7 0%, #38bdf8 100%);
+    border-radius: 6px 6px 0 0;
     position: relative;
+    transition: all 0.2s ease;
 }
 
 .barGroup:hover .bar {
-    background: linear-gradient(180deg, var(--secondary), var(--primary));
-    width: 16px;
-    transition: width 0.2s, background 0.3s;
+    background: linear-gradient(180deg, #0369a1 0%, #0284c7 100%);
+    width: 22px;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
 }
 
 .label {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    font-weight: 500;
+    font-size: 0.78rem;
+    color: #64748b;
+    font-weight: 600;
 }
 
 .tooltip {
     position: absolute;
-    top: -30px;
+    top: -34px;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--text-main);
-    color: white;
+    background: #0f172a;
+    color: #ffffff;
     padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
+    border-radius: 6px;
+    font-size: 0.74rem;
+    font-weight: 700;
     white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .gridLines {
@@ -123,7 +282,14 @@
 .line {
     width: 100%;
     height: 1px;
-    background: var(--surface-hover);
-    border-top: 1px dashed var(--border);
-    opacity: 0.5;
+    background: #f1f5f9;
+}
+
+@media (max-width: 640px) {
+    .donutLayout {
+        flex-direction: column;
+    }
+    .donutLayout > div:first-child {
+        width: 100% !important;
+    }
 }

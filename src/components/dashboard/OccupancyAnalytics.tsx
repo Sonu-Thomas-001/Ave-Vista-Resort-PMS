@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import styles from './OccupancyAnalytics.module.css';
 
@@ -11,15 +11,24 @@ interface OccupancyAnalyticsProps {
 export default function OccupancyAnalytics({ data }: OccupancyAnalyticsProps) {
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-    // Default to empty array if no data
     const chartData = data || [];
+
+    const avgOccupancy = useMemo(() => {
+        if (!chartData.length) return 0;
+        const sum = chartData.reduce((acc, curr) => acc + (curr.value || 0), 0);
+        return Math.round(sum / chartData.length);
+    }, [chartData]);
 
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <h3>Occupancy Trends</h3>
-                <div className={styles.legend}>
-                    <span className={styles.legendItem}><span className={styles.dot}></span> Occupied</span>
+                <div className={styles.titleBlock}>
+                    <h3 className={styles.chartTitle}>7-Day Occupancy Trend</h3>
+                    <span className={styles.chartSubtitle}>Resort capacity utilization</span>
+                </div>
+                <div className={styles.headerMetric}>
+                    <span className={styles.metricLabel}>7-Day Average</span>
+                    <span className={styles.metricValue}>{avgOccupancy}%</span>
                 </div>
             </div>
 
@@ -36,13 +45,13 @@ export default function OccupancyAnalytics({ data }: OccupancyAnalyticsProps) {
                                 <motion.div
                                     className={styles.bar}
                                     initial={{ height: 0 }}
-                                    animate={{ height: `${item.value}%` }}
-                                    transition={{ duration: 0.8, delay: index * 0.1, type: "spring" }}
+                                    animate={{ height: `${Math.max(4, item.value)}%` }}
+                                    transition={{ duration: 0.6, delay: index * 0.08, type: "spring" }}
                                 >
                                     {hoveredIndex === index && (
                                         <motion.div
                                             className={styles.tooltip}
-                                            initial={{ opacity: 0, y: 10 }}
+                                            initial={{ opacity: 0, y: 6 }}
                                             animate={{ opacity: 1, y: 0 }}
                                         >
                                             {item.value}%
@@ -55,11 +64,11 @@ export default function OccupancyAnalytics({ data }: OccupancyAnalyticsProps) {
                     ))}
                 </div>
                 <div className={styles.gridLines}>
-                    <div className={styles.line}></div>
-                    <div className={styles.line}></div>
-                    <div className={styles.line}></div>
-                    <div className={styles.line}></div>
-                    <div className={styles.line}></div>
+                    <div className={styles.line} />
+                    <div className={styles.line} />
+                    <div className={styles.line} />
+                    <div className={styles.line} />
+                    <div className={styles.line} />
                 </div>
             </div>
         </div>

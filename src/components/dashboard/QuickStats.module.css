@@ -1,51 +1,105 @@
+/* ==========================================================================
+   QUICK STATS BENCHMARKS COMPONENT
+   ========================================================================== */
+
 .container {
-    background: white;
-    padding: var(--spacing-xl);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
+    background: #ffffff;
+    padding: 22px 24px;
+    border-radius: 16px;
+    border: 1px solid rgba(226, 232, 240, 0.85);
     height: 100%;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 6px 16px -2px rgba(15, 23, 42, 0.02);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.container:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.06);
+}
+
+.header {
+    margin-bottom: 20px;
+}
+
+.titleBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text-main);
-    margin-bottom: 20px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+}
+
+.subtitle {
+    font-size: 0.76rem;
+    color: #64748b;
+    font-weight: 500;
 }
 
 .grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
     flex: 1;
 }
 
 .statCard {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px;
-    border-radius: 8px;
-    background: var(--surface);
-    transition: all 0.2s;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .statCard:hover {
-    background: var(--surface-hover);
+    background: #ffffff;
+    border-color: #cbd5e1;
     transform: translateY(-2px);
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
 }
 
 .iconWrapper {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.statCard:hover .iconWrapper {
+    transform: scale(1.08);
+}
+
+.iconWrapper.blue {
+    background: #e0f2fe;
+    color: #0284c7;
+}
+
+.iconWrapper.emerald {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.iconWrapper.amber {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.iconWrapper.indigo {
+    background: #e0e7ff;
+    color: #4f46e5;
 }
 
 .content {
@@ -56,33 +110,31 @@
 }
 
 .label {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    font-weight: 500;
+    font-size: 0.74rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
 .value {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--text-main);
+    font-size: 1.15rem;
+    font-weight: 750;
+    color: #0f172a;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-@media (max-width: 768px) {
-    .container {
-        padding: 1rem;
-    }
-
-    .grid {
-        grid-template-columns: repeat(2, 1fr);
-        /* 2 cols often fit on mobile for small stats */
-        gap: 12px;
-    }
+.subtext {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    font-weight: 500;
 }
 
-@media (max-width: 380px) {
+@media (max-width: 640px) {
     .grid {
         grid-template-columns: 1fr;
     }

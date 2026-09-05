@@ -209,10 +209,11 @@ export default async function Dashboard() {
       
       <Header title="Resort Overview" />
 
-      <div className={styles.container}>
+      <main className={styles.container}>
+        {/* 1. Executive Quick Actions Hub */}
         <DashboardQuickActions />
         
-        {/* 1. Hero KPI Section */}
+        {/* 3. Executive KPI Cards */}
         <HeroSection
           checkIns={metrics.checkIns}
           checkOuts={metrics.checkOuts}
@@ -221,38 +222,23 @@ export default async function Dashboard() {
           availableRooms={metrics.availableRooms}
         />
 
-        {/* 2. Main Analytics Grid */}
-        <div className={styles.chartsGrid}>
-          <div className={styles.chartCard} style={{ display: 'flex', flexDirection: 'column' }}>
-            <RevenueChart data={revenueData} />
-          </div>
-          <div className={styles.chartCard} style={{ display: 'flex', flexDirection: 'column' }}>
-            <RoomStatusChart data={roomChartData} />
-          </div>
-          <div className={styles.chartCard} style={{ display: 'flex', flexDirection: 'column' }}>
-            <CheckInOutChart data={checkInOutData} />
-          </div>
-          <div className={styles.chartCard} style={{ display: 'flex', flexDirection: 'column' }}>
-            <QuickStats stats={quickStats} />
-          </div>
-          <div className={styles.chartCard} style={{ display: 'flex', flexDirection: 'column' }}>
+        {/* 4. Financial & Room Analytics Grid */}
+        <section className={styles.chartsGrid}>
+          <RevenueChart data={revenueData} />
+          <RoomStatusChart data={roomChartData} />
+          <CheckInOutChart data={checkInOutData} />
+          <QuickStats stats={quickStats} />
+          <div className={styles.fullWidthWidget}>
             <ExpenseDashboardWidget />
           </div>
-        </div>
+        </section>
 
-        {/* 3. Detailed Operations */}
-        <div className={styles.contentGrid}>
-          {/* Detailed Occupancy (Existing Bar Chart) */}
-          <div className={styles.mainPanel}>
-            <OccupancyAnalytics data={occupancyData} />
-          </div>
-
-          {/* Live Operations Feed */}
-          <div className={styles.sidePanel}>
-            <LiveOperations />
-          </div>
-        </div>
-      </div>
+        {/* 5. Operations & Live Stream Grid */}
+        <section className={styles.contentGrid}>
+          <OccupancyAnalytics data={occupancyData} />
+          <LiveOperations />
+        </section>
+      </main>
     </>
   );
 }

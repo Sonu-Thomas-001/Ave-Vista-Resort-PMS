@@ -1,13 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { CheckCircle2, User, Home, BellRing, Clock } from 'lucide-react';
+import { CheckCircle2, User, Home, BellRing, Clock, Radio } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { Activity, BookingWithGuest, Invoice, Room } from '@/types/dashboard';
 import styles from './LiveOperations.module.css';
-
-// Re-using defined Activity type from dashboard types
 
 export default function LiveOperations() {
     const [activities, setActivities] = useState<Activity[]>([]);
@@ -16,9 +14,9 @@ export default function LiveOperations() {
     useEffect(() => {
         fetchRecentActivities();
 
-        // Set up real-time subscriptions
+        // Real-time subscriptions
         const bookingsSubscription = supabase
-            .channel('bookings-changes')
+            .channel('bookings-changes-live')
             .on('postgres_changes',
                 { event: '*', schema: 'public', table: 'bookings' },
                 () => fetchRecentActivities()
@@ -26,7 +24,7 @@ export default function LiveOperations() {
             .subscribe();
 
         const invoicesSubscription = supabase
-            .channel('invoices-changes')
+            .channel('invoices-changes-live')
             .on('postgres_changes',
                 { event: '*', schema: 'public', table: 'invoices' },
                 () => fetchRecentActivities()
@@ -34,7 +32,7 @@ export default function LiveOperations() {
             .subscribe();
 
         const roomsSubscription = supabase
-            .channel('rooms-changes')
+            .channel('rooms-changes-live')
             .on('postgres_changes',
                 { event: '*', schema: 'public', table: 'rooms' },
                 () => fetchRecentActivities()
@@ -52,7 +50,7 @@ export default function LiveOperations() {
         try {
             const allActivities: Activity[] = [];
 
-            // Fetch recent check-ins (bookings with status 'Checked In' updated recently)
+            // Fetch recent check-ins
             const { data: checkIns } = await supabase
                 .from('bookings')
                 .select(`
@@ -72,7 +70,7 @@ export default function LiveOperations() {
                         : 'Guest';
                     allActivities.push({
                         id: `checkin-${booking.id}`,
-                        text: `${guestName} checked in`,
+                        text: `${guestName} checked in at front desk`,
                         time: getRelativeTime(new Date(booking.created_at)),
                         type: 'guest',
                         timestamp: new Date(booking.created_at)
@@ -80,7 +78,7 @@ export default function LiveOperations() {
                 });
             }
 
-            // Fetch recent bookings (newly created)
+            // Fetch recent bookings
             const { data: newBookings } = await supabase
                 .from('bookings')
                 .select(`
@@ -97,7 +95,7 @@ export default function LiveOperations() {
                     const source = booking.source || 'Direct';
                     allActivities.push({
                         id: `booking-${booking.id}`,
-                        text: `New booking via ${source}`,
+                        text: `New reservation confirmed via ${source}`,
                         time: getRelativeTime(new Date(booking.created_at)),
                         type: 'booking',
                         timestamp: new Date(booking.created_at)
@@ -117,7 +115,7 @@ export default function LiveOperations() {
                 payments.forEach((payment) => {
                     allActivities.push({
                         id: `payment-${payment.id}`,
-                        text: `Payment received ₹${payment.paid_amount.toLocaleString()}`,
+                        text: `Payment received: ₹${Number(payment.paid_amount).toLocaleString('en-IN')}`,
                         time: getRelativeTime(new Date(payment.created_at)),
                         type: 'payment',
                         timestamp: new Date(payment.created_at)
@@ -137,7 +135,7 @@ export default function LiveOperations() {
                 rooms.forEach((room) => {
                     allActivities.push({
                         id: `room-${room.id}`,
-                        text: `Room ${room.room_number} marked ${room.status}`,
+                        text: `Room ${room.room_number} marked as ${room.status}`,
                         time: getRelativeTime(new Date(room.created_at)),
                         type: 'task',
                         timestamp: new Date(room.created_at)
@@ -145,10 +143,9 @@ export default function LiveOperations() {
                 });
             }
 
-            // Sort all activities by timestamp (most recent first)
+            // Sort by timestamp descending
             allActivities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
-            // Take top 5 activities
             setActivities(allActivities.slice(0, 5));
             setLoading(false);
         } catch (error) {
@@ -173,17 +170,28 @@ export default function LiveOperations() {
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <h3>Live Operations</h3>
-                <div className={styles.badge}>
-                    <span className={styles.pulse}></span> Live
+                <div className={styles.titleBlock}>
+                    <h3 className={styles.title}>Live Operations Stream</h3>
+                    <span className={styles.subtitle}>Real-time activity across resort</span>
+                </div>
+                <div className={styles.liveBadge}>
+                    <span className={styles.pulse} />
+                    <span>LIVE STREAM</span>
                 </div>
             </div>
 
             <div className={styles.list}>
                 {loading ? (
-                    <div className={styles.loading}>Loading activities...</div>
+                    <div className={styles.loadingContainer}>
+                        <div className={styles.skeletonItem} />
+                        <div className={styles.skeletonItem} />
+                        <div className={styles.skeletonItem} />
+                    </div>
                 ) : activities.length === 0 ? (
-                    <div className={styles.empty}>No recent activities</div>
+                    <div className={styles.empty}>
+                        <Radio size={24} className={styles.emptyIcon} />
+                        <span>No recent events recorded today</span>
+                    </div>
                 ) : (
                     <AnimatePresence>
                         {activities.map((item, index) => {
@@ -192,13 +200,12 @@ export default function LiveOperations() {
                                 <motion.div
                                     key={item.id}
                                     className={styles.item}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: index * 0.1 }}
-                                    whileHover={{ scale: 1.02, background: 'var(--surface-hover)' }}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.06 }}
                                 >
                                     <div className={`${styles.iconBase} ${styles[item.type]}`}>
-                                        <Icon size={16} />
+                                        <Icon size={16} strokeWidth={2.2} />
                                     </div>
                                     <div className={styles.content}>
                                         <p className={styles.text}>{item.text}</p>

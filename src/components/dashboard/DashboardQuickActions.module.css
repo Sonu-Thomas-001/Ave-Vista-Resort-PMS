@@ -1,56 +1,228 @@
-.container {
-    display: flex;
-    justify-content: flex-end;
+/* ==========================================================================
+   QUICK OPERATIONS HUB COMPONENT
+   ========================================================================== */
+
+.wrapper {
     margin-bottom: 24px;
-    align-items: center;
-    gap: 16px;
 }
 
-.quickActionBtn {
+.headerRow {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    background-color: var(--primary);
-    color: var(--text-inverse);
-    border: none;
-    border-radius: var(--radius-md);
-    font-weight: 500;
-    font-size: 14px;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.sectionLabel {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+}
+
+.sparkleIcon {
+    color: #0284c7;
+}
+
+.actionGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+}
+
+.actionBtn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
     cursor: pointer;
-    box-shadow: 0 4px 6px -1px rgba(3, 155, 229, 0.2);
-    transition: all 0.2s ease;
+    text-align: left;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 
-.quickActionBtn:hover {
-    background-color: var(--primary-hover);
-    box-shadow: 0 6px 8px -1px rgba(3, 155, 229, 0.3);
-    transform: translateY(-1px);
+.actionBtn:hover {
+    transform: translateY(-2px);
+    border-color: #cbd5e1;
+    box-shadow: 0 6px 16px -2px rgba(15, 23, 42, 0.08);
 }
 
+/* Primary Booking Action */
+.primaryBtn {
+    background: linear-gradient(135deg, #0284c7 0%, #039be5 100%);
+    border-color: transparent;
+    color: #ffffff;
+    box-shadow: 0 4px 14px -1px rgba(3, 155, 229, 0.35);
+}
+
+.primaryBtn:hover {
+    box-shadow: 0 8px 20px -2px rgba(3, 155, 229, 0.45);
+    border-color: transparent;
+}
+
+.iconCirclePrimary {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    backdrop-filter: blur(4px);
+}
+
+.primaryBtn .actionTitle {
+    color: #ffffff;
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.primaryBtn .actionSubtitle {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.72rem;
+    font-weight: 500;
+}
+
+/* Expense Action */
+.expenseBtn {
+    background: #ffffff;
+    border: 1px solid #fed7aa;
+}
+
+.expenseBtn:hover {
+    border-color: #f97316;
+    background: #fffaf5;
+}
+
+.iconCircleExpense {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #ffedd5;
+    color: #ea580c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.expenseBtn:hover .iconCircleExpense {
+    transform: scale(1.08);
+}
+
+/* Standard Quick Links */
+.iconCircle {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.actionBtn:hover .iconCircle {
+    transform: scale(1.08);
+}
+
+.iconSky {
+    background: #e0f2fe;
+    color: #0284c7;
+}
+
+.iconIndigo {
+    background: #e0e7ff;
+    color: #4f46e5;
+}
+
+.iconAmber {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.actionDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.actionTitle {
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: #0f172a;
+    line-height: 1.2;
+}
+
+.actionSubtitle {
+    font-size: 0.72rem;
+    color: #64748b;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Toast */
 .toast {
     position: fixed;
     bottom: 24px;
     right: 24px;
-    background: var(--secondary);
-    color: var(--text-inverse);
-    padding: 12px 20px;
-    border-radius: 8px;
+    background: #0f172a;
+    color: #ffffff;
+    padding: 12px 18px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
-    gap: 12px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    gap: 10px;
+    box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.3);
     z-index: 2000;
-    animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    font-size: 0.86rem;
+    font-weight: 500;
+    animation: toastSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes slideIn {
+.toastCheck {
+    color: #10b981;
+}
+
+@keyframes toastSlideUp {
     from {
-        transform: translateX(100%);
         opacity: 0;
+        transform: translateY(12px);
     }
     to {
-        transform: translateX(0);
         opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .actionGrid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+    }
+
+    .actionBtn {
+        padding: 10px;
+        gap: 8px;
+    }
+
+    .iconCircle,
+    .iconCirclePrimary,
+    .iconCircleExpense {
+        width: 32px;
+        height: 32px;
     }
 }

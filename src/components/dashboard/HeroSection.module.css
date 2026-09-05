@@ -1,111 +1,199 @@
+/* ==========================================================================
+   HERO KPI SECTION STYLES
+   ========================================================================== */
+
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: var(--spacing-lg);
-    margin-bottom: var(--spacing-xl);
+    gap: 18px;
+    margin-bottom: 24px;
 }
 
-.card {
-    background: white;
-    padding: 24px;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
+.kpiCard {
+    background: #ffffff;
+    padding: 20px 22px;
+    border-radius: 16px;
+    border: 1px solid rgba(226, 232, 240, 0.85);
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    cursor: pointer;
-    transition: box-shadow 0.3s ease;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 6px 16px -2px rgba(15, 23, 42, 0.02);
+    cursor: default;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.card::before {
-    content: '';
+.kpiCard:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.08);
+}
+
+/* Top Accent Glow Line */
+.accentGlow {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 4px;
-    background: transparent;
-    transition: background 0.3s;
+    right: 0;
+    height: 3px;
 }
 
-.card:hover::before {
-    background: linear-gradient(90deg, var(--primary), var(--secondary));
+.glow_sky {
+    background: linear-gradient(90deg, #0284c7, #38bdf8);
+}
+
+.glow_indigo {
+    background: linear-gradient(90deg, #4f46e5, #818cf8);
+}
+
+.glow_emerald {
+    background: linear-gradient(90deg, #059669, #34d399);
+}
+
+.glow_amber {
+    background: linear-gradient(90deg, #d97706, #fbbf24);
+}
+
+/* Card Header */
+.cardHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
 }
 
 .iconBox {
-    width: 48px;
-    height: 48px;
+    width: 42px;
+    height: 42px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 4px;
+    transition: transform 0.2s ease;
 }
 
-.iconBox.blue {
-    background: #E3F2FD;
-    color: #1565C0;
+.kpiCard:hover .iconBox {
+    transform: scale(1.08);
 }
 
-.iconBox.purple {
-    background: #F3E5F5;
-    color: #7B1FA2;
+.icon_sky {
+    background: #e0f2fe;
+    color: #0284c7;
 }
 
-.iconBox.green {
-    background: #E8F5E9;
-    color: #2E7D32;
+.icon_indigo {
+    background: #e0e7ff;
+    color: #4f46e5;
 }
 
-.iconBox.orange {
-    background: #FFF3E0;
-    color: #EF6C00;
+.icon_emerald {
+    background: #dcfce7;
+    color: #15803d;
 }
 
-.content {
+.icon_amber {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+/* Status Badges */
+.statusBadge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.badge_sky {
+    background: #f0f9ff;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+}
+
+.badge_indigo {
+    background: #eef2ff;
+    color: #4338ca;
+    border: 1px solid #c7d2fe;
+}
+
+.badge_emerald {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.badge_amber {
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+
+/* Card Body */
+.cardBody {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
 }
 
-.title {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    font-weight: 500;
+.kpiTitle {
+    color: #64748b;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
-.valueRow {
+.kpiValueRow {
     display: flex;
     align-items: baseline;
-    gap: 8px;
+    margin: 4px 0;
 }
 
-.value {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--text-main);
-    letter-spacing: -0.5px;
+.kpiValue {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
 }
 
-.trendRow {
-    display: flex;
-    align-items: center;
+/* Dynamic Progress Bar (for Occupancy) */
+.progressTrack {
+    width: 100%;
+    height: 5px;
+    background: #f1f5f9;
+    border-radius: 9999px;
+    margin: 6px 0 4px;
+    overflow: hidden;
 }
 
-.trend {
-    font-size: 0.85rem;
+.progressBar {
+    height: 100%;
+    background: linear-gradient(90deg, #4f46e5, #818cf8);
+    border-radius: 9999px;
+    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.kpiSubtext {
+    font-size: 0.76rem;
+    color: #94a3b8;
+    margin-top: 2px;
     font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 4px;
 }
 
-.trend.up {
-    color: #2E7D32;
-}
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 12px;
+    }
 
-.trend.down {
-    color: #C62828;
+    .kpiCard {
+        padding: 16px;
+    }
+
+    .kpiValue {
+        font-size: 1.45rem;
+    }
 }

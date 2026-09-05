@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { ArrowUpRight, IndianRupee, TrendingDown, Receipt } from 'lucide-react';
+import Link from 'next/link';
 import styles from './ExpenseDashboardWidget.module.css';
 import { supabase } from '@/lib/supabase';
 
@@ -21,9 +22,7 @@ export default function ExpenseDashboardWidget() {
         const fetchExpenses = async () => {
             try {
                 setIsLoading(true);
-                // (We don't need the today-only fetch anymore since we process everything below anyway)
 
-                // Calculate totals
                 let todayTotal = 0;
                 let weekTotal = 0;
                 let monthTotal = 0;
@@ -34,7 +33,6 @@ export default function ExpenseDashboardWidget() {
 
                 const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-                // Fetch all expenses for week and month calculation
                 const { data, error } = await supabase
                     .from('expenses')
                     .select('*')
@@ -46,17 +44,14 @@ export default function ExpenseDashboardWidget() {
                 allExpenses.forEach((expense: Expense) => {
                     const expenseDate = new Date(expense.date);
 
-                    // Today
                     if (expenseDate.toDateString() === now.toDateString()) {
                         todayTotal += expense.amount;
                     }
 
-                    // Week
                     if (expenseDate >= startOfWeek && expenseDate <= now) {
                         weekTotal += expense.amount;
                     }
 
-                    // Month
                     if (expenseDate >= startOfMonth && expenseDate <= now) {
                         monthTotal += expense.amount;
                     }
@@ -77,67 +72,88 @@ export default function ExpenseDashboardWidget() {
         fetchExpenses();
     }, []);
 
-    const handleCardClick = (path: string) => {
-        window.location.href = path;
-    };
-
     if (isLoading) {
         return (
             <div className={styles.card}>
-                <h3 className={styles.title}>Expenses</h3>
-                <div className={styles.skeleton} />
+                <div className={styles.header}>
+                    <div className={styles.titleBlock}>
+                        <h3 className={styles.title}>Expense Outflows</h3>
+                        <span className={styles.subtitle}>Operational cost overview</span>
+                    </div>
+                </div>
+                <div className={styles.skeletonContainer}>
+                    <div className={styles.skeletonBox} />
+                    <div className={styles.skeletonBox} />
+                    <div className={styles.skeletonBox} />
+                </div>
             </div>
         );
     }
 
     return (
-        <div
-            className={styles.card}
-            onClick={() => handleCardClick('/expenses')}
-        >
-            <h3 className={styles.title}>Expenses</h3>
+        <div className={styles.card}>
+            <div className={styles.header}>
+                <div className={styles.titleBlock}>
+                    <h3 className={styles.title}>Expense Outflows</h3>
+                    <span className={styles.subtitle}>Operational cost overview</span>
+                </div>
+                <div className={styles.headerIcon}>
+                    <Receipt size={18} />
+                </div>
+            </div>
 
             {error ? (
                 <div className={styles.error}>{error}</div>
             ) : (
                 <div className={styles.content}>
-                    <div className={styles.stat}>
-                        <span className={styles.label}>Today</span>
-                        <span className={styles.amount}>
-                            ₹{todayExpenses.toLocaleString('en-IN', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                            })}
-                        </span>
+                    <div className={styles.statsGrid}>
+                        {/* Today */}
+                        <div className={styles.statCapsule}>
+                            <div className={styles.statLabelRow}>
+                                <span className={styles.statDotOrange} />
+                                <span className={styles.label}>Today</span>
+                            </div>
+                            <span className={styles.amount}>
+                                ₹{todayExpenses.toLocaleString('en-IN', {
+                                    maximumFractionDigits: 0
+                                })}
+                            </span>
+                            <span className={styles.statHelper}>Disbursed today</span>
+                        </div>
+
+                        {/* This Week */}
+                        <div className={styles.statCapsule}>
+                            <div className={styles.statLabelRow}>
+                                <span className={styles.statDotSky} />
+                                <span className={styles.label}>This Week</span>
+                            </div>
+                            <span className={styles.amount}>
+                                ₹{weekExpenses.toLocaleString('en-IN', {
+                                    maximumFractionDigits: 0
+                                })}
+                            </span>
+                            <span className={styles.statHelper}>Weekly outflow</span>
+                        </div>
+
+                        {/* This Month */}
+                        <div className={styles.statCapsule}>
+                            <div className={styles.statLabelRow}>
+                                <span className={styles.statDotAmber} />
+                                <span className={styles.label}>This Month</span>
+                            </div>
+                            <span className={styles.amount}>
+                                ₹{monthExpenses.toLocaleString('en-IN', {
+                                    maximumFractionDigits: 0
+                                })}
+                            </span>
+                            <span className={styles.statHelper}>Month-to-date</span>
+                        </div>
                     </div>
 
-                    <div className={styles.divider} />
-
-                    <div className={styles.stat}>
-                        <span className={styles.label}>This Week</span>
-                        <span className={styles.amount}>
-                            ₹{weekExpenses.toLocaleString('en-IN', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                            })}
-                        </span>
-                    </div>
-
-                    <div className={styles.divider} />
-
-                    <div className={styles.stat}>
-                        <span className={styles.label}>This Month</span>
-                        <span className={styles.amount}>
-                            ₹{monthExpenses.toLocaleString('en-IN', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                            })}
-                        </span>
-                    </div>
-
-                    <div className={styles.cta}>
-                        View Expense Analytics →
-                    </div>
+                    <Link href="/expenses" className={styles.ctaButton}>
+                        <span>Open Expense Ledger & Reports</span>
+                        <ArrowUpRight size={16} />
+                    </Link>
                 </div>
             )}
         </div>
