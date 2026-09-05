@@ -20,55 +20,138 @@
 }
 
 /* --------------------------------------------------------------------------
-   Left Section: Title & Context
+   Left Section: Luxury Page Context & Breadcrumbs
    -------------------------------------------------------------------------- */
 .leftSection {
     flex: 0 0 auto;
     display: flex;
     align-items: center;
+    gap: 14px;
+}
+
+.emblemContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.emblemSquircle {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.emblemSquircle::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(2, 132, 199, 0.04) 100%);
+    pointer-events: none;
+}
+
+.leftSection:hover .emblemSquircle {
+    border-color: #a7f3d0;
+    color: #059669;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.15);
+    transform: translateY(-1px);
 }
 
 .titleSection {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-}
-
-.title {
-    font-size: 1.35rem;
-    font-weight: 700;
-    color: #0f172a;
-    letter-spacing: -0.025em;
-    line-height: 1.2;
+    gap: 3px;
 }
 
 .breadcrumbs {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.76rem;
+    gap: 4px;
+    font-size: 0.74rem;
     color: #64748b;
     font-weight: 500;
 }
 
-.breadcrumbDot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #0284c7;
-    box-shadow: 0 0 6px rgba(2, 132, 199, 0.6);
-    display: inline-block;
+.homeCrumbBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    padding: 2px 6px;
+    border-radius: 6px;
+    color: #64748b;
+    font-size: 0.74rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
 }
 
-.breadcrumb {
+.homeCrumbBtn:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.breadcrumbChevron {
+    color: #94a3b8;
+    flex-shrink: 0;
+}
+
+.breadcrumbItem {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.crumbBtn {
+    background: none;
+    border: none;
+    padding: 2px 6px;
+    border-radius: 6px;
+    color: #64748b;
+    font-size: 0.74rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.crumbBtn:hover:not(:disabled) {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.crumbBtnActive {
+    color: #059669;
+    background: #ecfdf5;
+    font-weight: 700;
+    cursor: default;
+    border: 1px solid #a7f3d0;
+    padding: 1px 7px;
+}
+
+.titleRow {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
 }
 
-.separator {
-    color: #cbd5e1;
-    font-size: 0.72rem;
+.title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+    margin: 0;
 }
 
 /* --------------------------------------------------------------------------

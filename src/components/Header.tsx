@@ -14,7 +14,18 @@ import {
     User,
     X,
     Sparkles,
-    Shield
+    Shield,
+    Home,
+    ChevronRight,
+    LayoutDashboard,
+    CalendarDays,
+    KeyRound,
+    UtensilsCrossed,
+    BarChart3,
+    Receipt,
+    HelpCircle,
+    FileText,
+    Building2
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
@@ -31,6 +42,47 @@ interface SearchResult {
     subtitle: string;
     path: string;
 }
+
+const getHeaderEmblem = (title: string, pathname: string) => {
+    const t = title.toLowerCase();
+    const p = pathname.toLowerCase();
+
+    if (p.includes('rooms') || t.includes('room')) {
+        return <BedDouble size={20} />;
+    }
+    if (p.includes('bookings') || t.includes('reservation') || t.includes('booking')) {
+        return <CalendarDays size={20} />;
+    }
+    if (p.includes('front-desk') || t.includes('front desk') || t.includes('check-in') || t.includes('check-out')) {
+        return <KeyRound size={20} />;
+    }
+    if (p.includes('restaurant') || t.includes('restaurant') || t.includes('dining') || t.includes('menu')) {
+        return <UtensilsCrossed size={20} />;
+    }
+    if (p.includes('guests') || t.includes('guest')) {
+        return <Users size={20} />;
+    }
+    if (p.includes('reports') || t.includes('report') || t.includes('intelligence')) {
+        return <BarChart3 size={20} />;
+    }
+    if (p.includes('billing') || p.includes('expenses') || t.includes('billing') || t.includes('invoice') || t.includes('expense')) {
+        return <Receipt size={20} />;
+    }
+    if (p.includes('settings') || t.includes('settings')) {
+        return <Settings size={20} />;
+    }
+    if (p.includes('profile') || t.includes('profile')) {
+        return <User size={20} />;
+    }
+    if (p.includes('help') || t.includes('help')) {
+        return <HelpCircle size={20} />;
+    }
+    if (p.includes('terms') || p.includes('privacy') || t.includes('terms') || t.includes('policy')) {
+        return <FileText size={20} />;
+    }
+    // Default: Dashboard / Resort Overview
+    return <LayoutDashboard size={20} />;
+};
 
 export default function Header({ title = "Dashboard" }: HeaderProps) {
     const { user, logout } = useAuth();
@@ -285,18 +337,48 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
 
     return (
         <header className={styles.header}>
-            {/* Left Section: Title & Luxury Breadcrumbs */}
+            {/* Left Section: Luxury Page Context & Interactive Breadcrumbs */}
             <div className={styles.leftSection}>
+                <div className={styles.emblemContainer}>
+                    <div className={styles.emblemSquircle} title={title}>
+                        {getHeaderEmblem(title, pathname)}
+                    </div>
+                </div>
+
                 <div className={styles.titleSection}>
-                    <h1 className={styles.title}>{title}</h1>
+                    {/* Top Eyebrow / Breadcrumbs */}
                     <div className={styles.breadcrumbs}>
-                        <span className={styles.breadcrumbDot} />
-                        {breadcrumbs.map((crumb, index) => (
-                            <span key={crumb.path} className={styles.breadcrumb}>
-                                {index > 0 && <span className={styles.separator}>/</span>}
-                                <span>{crumb.label}</span>
-                            </span>
-                        ))}
+                        <button
+                            type="button"
+                            className={styles.homeCrumbBtn}
+                            onClick={() => router.push('/')}
+                            title="Go to Resort Dashboard"
+                        >
+                            <Home size={12} />
+                            <span>Ave Vista</span>
+                        </button>
+                        <ChevronRight size={11} className={styles.breadcrumbChevron} />
+                        {breadcrumbs.map((crumb, index) => {
+                            const isLast = index === breadcrumbs.length - 1;
+                            return (
+                                <span key={crumb.path} className={styles.breadcrumbItem}>
+                                    {index > 0 && <ChevronRight size={11} className={styles.breadcrumbChevron} />}
+                                    <button
+                                        type="button"
+                                        className={`${styles.crumbBtn} ${isLast ? styles.crumbBtnActive : ''}`}
+                                        onClick={() => !isLast && router.push(crumb.path)}
+                                        disabled={isLast}
+                                    >
+                                        {crumb.label}
+                                    </button>
+                                </span>
+                            );
+                        })}
+                    </div>
+
+                    {/* Main Title Row */}
+                    <div className={styles.titleRow}>
+                        <h1 className={styles.title}>{title}</h1>
                     </div>
                 </div>
             </div>
