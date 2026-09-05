@@ -25,8 +25,10 @@ import {
     Receipt,
     HelpCircle,
     FileText,
-    Building2
+    Building2,
+    LogIn
 } from 'lucide-react';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import styles from './Header.module.css';
@@ -109,6 +111,8 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
 
     useEffect(() => {
         setMounted(true);
+        if (!user) return;
+
         fetchRealTimeStats();
 
         // Subscribe to changes
@@ -130,7 +134,7 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
             bookingsSubscription.unsubscribe();
             roomsSubscription.unsubscribe();
         };
-    }, []);
+    }, [user]);
 
     const fetchRealTimeStats = () => {
         fetchTodaysBookings();
@@ -414,174 +418,183 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
                     </div>
                 )}
 
-                {/* Spotlight / Command Search */}
-                <div
-                    className={`${styles.searchWrapper} ${showMobileSearch ? styles.mobileSearchOpen : ''}`}
-                    ref={searchRef}
-                >
-                    {/* Mobile Search Toggle */}
-                    <button
-                        className={styles.mobileSearchToggle}
-                        onClick={() => setShowMobileSearch(!showMobileSearch)}
-                        aria-label="Open search"
-                    >
-                        <Search size={18} />
-                    </button>
-
-                    <div className={styles.search}>
-                        <Search size={16} className={styles.searchIcon} />
-                        <input
-                            ref={searchInputRef}
-                            type="text"
-                            placeholder="Search guests, rooms, bookings..."
-                            className={styles.searchInput}
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            onFocus={() => searchQuery.length >= 2 && setShowSearchResults(true)}
-                        />
-                        <div className={styles.searchKeycap}>
-                            <kbd>Ctrl</kbd>
-                            <span>K</span>
-                        </div>
-
-                        {/* Mobile close button */}
-                        <button
-                            className={styles.mobileSearchClose}
-                            onClick={() => {
-                                setShowMobileSearch(false);
-                                setSearchQuery('');
-                            }}
-                            aria-label="Close search"
+                {user ? (
+                    <>
+                        {/* Spotlight / Command Search */}
+                        <div
+                            className={`${styles.searchWrapper} ${showMobileSearch ? styles.mobileSearchOpen : ''}`}
+                            ref={searchRef}
                         >
-                            <X size={16} />
-                        </button>
-                    </div>
+                            {/* Mobile Search Toggle */}
+                            <button
+                                className={styles.mobileSearchToggle}
+                                onClick={() => setShowMobileSearch(!showMobileSearch)}
+                                aria-label="Open search"
+                            >
+                                <Search size={18} />
+                            </button>
 
-                    {/* Search Results Dropdown */}
-                    {showSearchResults && (
-                        <div className={styles.searchResults}>
-                            {searchResults.length === 0 ? (
-                                <div className={styles.emptySearchState}>
-                                    <Search size={28} />
-                                    <p>No results found for &ldquo;{searchQuery}&rdquo;</p>
+                            <div className={styles.search}>
+                                <Search size={16} className={styles.searchIcon} />
+                                <input
+                                    ref={searchInputRef}
+                                    type="text"
+                                    placeholder="Search guests, rooms, bookings..."
+                                    className={styles.searchInput}
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onFocus={() => searchQuery.length >= 2 && setShowSearchResults(true)}
+                                />
+                                <div className={styles.searchKeycap}>
+                                    <kbd>Ctrl</kbd>
+                                    <span>K</span>
                                 </div>
-                            ) : (
-                                <>
-                                    <div className={styles.searchResultsHeader}>
-                                        <span>Quick Results</span>
-                                        <span className={styles.resultsCountBadge}>
-                                            {searchResults.length} match{searchResults.length !== 1 ? 'es' : ''}
-                                        </span>
-                                    </div>
-                                    <div className={styles.searchResultsList}>
-                                        {searchResults.map(result => (
-                                            <div
-                                                key={`${result.type}-${result.id}`}
-                                                className={styles.searchResultItem}
-                                                onClick={() => handleSearchResultClick(result)}
-                                            >
-                                                <div className={`${styles.searchResultIcon} ${styles[result.type]}`}>
-                                                    {getResultIcon(result.type)}
-                                                </div>
-                                                <div className={styles.searchResultContent}>
-                                                    <h4>{result.title}</h4>
-                                                    <p>{result.subtitle}</p>
-                                                </div>
+
+                                {/* Mobile close button */}
+                                <button
+                                    className={styles.mobileSearchClose}
+                                    onClick={() => {
+                                        setShowMobileSearch(false);
+                                        setSearchQuery('');
+                                    }}
+                                    aria-label="Close search"
+                                >
+                                    <X size={16} />
+                                </button>
+                            </div>
+
+                            {/* Search Results Dropdown */}
+                            {showSearchResults && (
+                                <div className={styles.searchResults}>
+                                    {searchResults.length === 0 ? (
+                                        <div className={styles.emptySearchState}>
+                                            <Search size={28} />
+                                            <p>No results found for &ldquo;{searchQuery}&rdquo;</p>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className={styles.searchResultsHeader}>
+                                                <span>Quick Results</span>
+                                                <span className={styles.resultsCountBadge}>
+                                                    {searchResults.length} match{searchResults.length !== 1 ? 'es' : ''}
+                                                </span>
                                             </div>
-                                        ))}
-                                    </div>
-                                </>
+                                            <div className={styles.searchResultsList}>
+                                                {searchResults.map(result => (
+                                                    <div
+                                                        key={`${result.type}-${result.id}`}
+                                                        className={styles.searchResultItem}
+                                                        onClick={() => handleSearchResultClick(result)}
+                                                    >
+                                                        <div className={`${styles.searchResultIcon} ${styles[result.type]}`}>
+                                                            {getResultIcon(result.type)}
+                                                        </div>
+                                                        <div className={styles.searchResultContent}>
+                                                            <h4>{result.title}</h4>
+                                                            <p>{result.subtitle}</p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
                             )}
                         </div>
-                    )}
-                </div>
 
-                {/* Live Operations Stat Chips */}
-                <div className={styles.quickStats}>
-                    <div className={styles.statChipGreen} title="Bookings created today">
-                        <div className={styles.statIconWrapperGreen}>
-                            <Users size={14} />
-                        </div>
-                        <span className={styles.statChipLabel}>Bookings</span>
-                        <span className={styles.statChipValueGreen}>{todaysBookings}</span>
-                    </div>
-
-                    <div className={styles.statChipBlue} title="Occupied rooms / Total rooms">
-                        <div className={styles.statIconWrapperBlue}>
-                            <BedDouble size={14} />
-                        </div>
-                        <span className={styles.statChipLabel}>Rooms</span>
-                        <span className={styles.statChipValueBlue}>
-                            {roomStats.occupied}/{roomStats.total}
-                        </span>
-                    </div>
-                </div>
-
-                {/* Quick Action: Settings */}
-                <button
-                    className={styles.iconBtn}
-                    onClick={navigateToSettings}
-                    aria-label="Settings"
-                    title="System Settings"
-                >
-                    <Settings size={18} />
-                </button>
-
-                {/* Executive User Profile Capsule */}
-                <div className={styles.profileWrapper} ref={profileRef}>
-                    <div
-                        className={styles.profile}
-                        onClick={() => setShowProfileMenu(!showProfileMenu)}
-                    >
-                        <div className={styles.avatarWrapper}>
-                            <div className={styles.avatar}>
-                                {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
+                        {/* Live Operations Stat Chips */}
+                        <div className={styles.quickStats}>
+                            <div className={styles.statChipGreen} title="Bookings created today">
+                                <div className={styles.statIconWrapperGreen}>
+                                    <Users size={14} />
+                                </div>
+                                <span className={styles.statChipLabel}>Bookings</span>
+                                <span className={styles.statChipValueGreen}>{todaysBookings}</span>
                             </div>
-                            <span className={styles.userStatusDot} />
-                        </div>
 
-                        <div className={styles.userInfo}>
-                            <span className={styles.userName}>{user?.name || 'Guest User'}</span>
-                            <div className={styles.roleContainer}>
-                                <span className={`${styles.roleBadge} ${styles[user?.role?.toLowerCase() || 'admin']}`}>
-                                    {user?.role || 'Admin'}
+                            <div className={styles.statChipBlue} title="Occupied rooms / Total rooms">
+                                <div className={styles.statIconWrapperBlue}>
+                                    <BedDouble size={14} />
+                                </div>
+                                <span className={styles.statChipLabel}>Rooms</span>
+                                <span className={styles.statChipValueBlue}>
+                                    {roomStats.occupied}/{roomStats.total}
                                 </span>
                             </div>
                         </div>
 
-                        <ChevronDown
-                            size={14}
-                            className={`${styles.chevron} ${showProfileMenu ? styles.chevronOpen : ''}`}
-                        />
-                    </div>
+                        {/* Quick Action: Settings */}
+                        <button
+                            className={styles.iconBtn}
+                            onClick={navigateToSettings}
+                            aria-label="Settings"
+                            title="System Settings"
+                        >
+                            <Settings size={18} />
+                        </button>
 
-                    {/* Profile Menu Dropdown */}
-                    {showProfileMenu && (
-                        <div className={styles.profileMenu}>
-                            <div className={styles.profileMenuHeader}>
-                                <div className={styles.menuHeaderName}>{user?.name || 'User'}</div>
-                                <div className={styles.menuHeaderEmail}>{user?.email}</div>
+                        {/* Executive User Profile Capsule */}
+                        <div className={styles.profileWrapper} ref={profileRef}>
+                            <div
+                                className={styles.profile}
+                                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                            >
+                                <div className={styles.avatarWrapper}>
+                                    <div className={styles.avatar}>
+                                        {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
+                                    </div>
+                                    <span className={styles.userStatusDot} />
+                                </div>
+
+                                <div className={styles.userInfo}>
+                                    <span className={styles.userName}>{user?.name}</span>
+                                    <div className={styles.roleContainer}>
+                                        <span className={`${styles.roleBadge} ${styles[user?.role?.toLowerCase() || 'admin']}`}>
+                                            {user?.role}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <ChevronDown
+                                    size={14}
+                                    className={`${styles.chevron} ${showProfileMenu ? styles.chevronOpen : ''}`}
+                                />
                             </div>
-                            <div className={styles.menuDivider} />
 
-                            <button className={styles.menuItem} onClick={navigateToProfile}>
-                                <div className={styles.menuItemIcon}><User size={15} /></div>
-                                <span>My Profile</span>
-                            </button>
-                            <button className={styles.menuItem} onClick={navigateToSettings}>
-                                <div className={styles.menuItemIcon}><Settings size={15} /></div>
-                                <span>Settings</span>
-                            </button>
+                            {/* Profile Menu Dropdown */}
+                            {showProfileMenu && (
+                                <div className={styles.profileMenu}>
+                                    <div className={styles.profileMenuHeader}>
+                                        <div className={styles.menuHeaderName}>{user?.name || 'User'}</div>
+                                        <div className={styles.menuHeaderEmail}>{user?.email}</div>
+                                    </div>
+                                    <div className={styles.menuDivider} />
 
-                            <div className={styles.menuDivider} />
+                                    <button className={styles.menuItem} onClick={navigateToProfile}>
+                                        <div className={styles.menuItemIcon}><User size={15} /></div>
+                                        <span>My Profile</span>
+                                    </button>
+                                    <button className={styles.menuItem} onClick={navigateToSettings}>
+                                        <div className={styles.menuItemIcon}><Settings size={15} /></div>
+                                        <span>Settings</span>
+                                    </button>
 
-                            <button className={`${styles.menuItem} ${styles.logoutMenuItem}`} onClick={logout}>
-                                <div className={styles.menuItemIcon}><LogOut size={15} /></div>
-                                <span>Sign Out</span>
-                            </button>
+                                    <div className={styles.menuDivider} />
+
+                                    <button className={`${styles.menuItem} ${styles.logoutMenuItem}`} onClick={logout}>
+                                        <div className={styles.menuItemIcon}><LogOut size={15} /></div>
+                                        <span>Sign Out</span>
+                                    </button>
+                                </div>
+                            )}
                         </div>
-                    )}
-                </div>
+                    </>
+                ) : (
+                    <Link href="/login" className={styles.loginBtn}>
+                        <LogIn size={15} />
+                        <span>Staff Sign In</span>
+                    </Link>
+                )}
             </div>
         </header>
     );
