@@ -1,22 +1,24 @@
 .card {
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid rgba(226, 232, 240, 0.85);
     overflow: hidden;
-    box-shadow: var(--shadow-sm);
-    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.05), 0 2px 6px -2px rgba(15, 23, 42, 0.03);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
 .card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 32px -8px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+    border-color: rgba(3, 155, 229, 0.3);
 }
 
 .imageWrapper {
-    height: 160px;
-    background: var(--surface-hover);
+    height: 180px;
+    background: #f1f5f9;
     position: relative;
     overflow: hidden;
 }
@@ -25,52 +27,132 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card:hover .roomImage {
+    transform: scale(1.05);
+}
+
+.imageOverlayGradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.35) 0%, rgba(15, 23, 42, 0) 40%, rgba(15, 23, 42, 0.7) 100%);
+    pointer-events: none;
 }
 
 .placeholderImage {
     width: 100%;
     height: 100%;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: #e0e0e0;
-    color: #757575;
+    gap: 8px;
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    color: #64748b;
 }
 
+/* Status Badges */
 .statusBadge {
     position: absolute;
     top: 12px;
     right: 12px;
-    padding: 4px 8px;
-    border-radius: var(--radius-full);
+    padding: 6px 12px;
+    border-radius: 9999px;
     font-size: 0.75rem;
-    font-weight: 600;
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(4px);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 2;
 }
 
-.clean,
-.free {
-    color: #4CAF50;
+.statusDot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
 }
 
-.dirty {
-    color: #FF9800;
+.free,
+.clean {
+    background: rgba(16, 185, 129, 0.92);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.free .statusDot,
+.clean .statusDot {
+    background: #ffffff;
+    box-shadow: 0 0 8px #ffffff;
+    animation: pulse 2s infinite;
 }
 
 .occupied {
-    color: #2196F3;
+    background: rgba(2, 132, 199, 0.92);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.occupied .statusDot {
+    background: #ffffff;
+    box-shadow: 0 0 8px #ffffff;
+}
+
+.dirty {
+    background: rgba(245, 158, 11, 0.92);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dirty .statusDot {
+    background: #ffffff;
+    box-shadow: 0 0 8px #ffffff;
+    animation: pulse 1.5s infinite;
 }
 
 .maintenance {
-    color: #F44336;
+    background: rgba(239, 68, 68, 0.92);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
+.maintenance .statusDot {
+    background: #ffffff;
+    box-shadow: 0 0 8px #ffffff;
+}
+
+/* Floating Rate Badge */
+.rateBadge {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 4px 10px;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    z-index: 2;
+}
+
+.rateUnit {
+    font-size: 0.72rem;
+    font-weight: 500;
+    opacity: 0.85;
+}
+
+/* Card Content */
 .content {
-    padding: var(--spacing-md);
+    padding: 16px 18px 14px;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -80,75 +162,181 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
+}
+
+.roomTitleGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .number {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--text-main);
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
 }
 
 .type {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    margin-bottom: var(--spacing-md);
+    font-size: 0.83rem;
+    font-weight: 600;
+    color: #0284c7;
+    background: #e0f2fe;
+    padding: 2px 8px;
+    border-radius: 6px;
+    width: fit-content;
+    margin-top: 2px;
 }
 
-.details {
+/* Active Guest Banner */
+.guestBanner {
+    margin-top: 10px;
+    padding: 8px 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-top: auto;
-    padding-top: var(--spacing-md);
-    border-top: 1px solid var(--border);
+    gap: 8px;
+    font-size: 0.78rem;
 }
 
-.detailItem {
+.guestAvatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #0284c7;
+    color: white;
     display: flex;
     align-items: center;
-    gap: 4px;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+}
+
+.guestInfo {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.guestName {
+    font-weight: 600;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.guestStay {
+    color: #64748b;
+    font-size: 0.72rem;
+}
+
+/* Spec Chips */
+.specsRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed #e2e8f0;
+}
+
+.specItem {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8rem;
+    color: #64748b;
     font-weight: 500;
 }
 
-.price {
-    font-weight: 700;
-    color: var(--primary);
+.specItem svg {
+    color: #94a3b8;
 }
 
+/* Action Buttons */
 .actions {
     display: flex;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-md);
-    background: var(--background);
-    border-top: 1px solid var(--border);
+    gap: 8px;
+    padding: 12px 16px;
+    background: #f8fafc;
+    border-top: 1px solid #f1f5f9;
 }
 
 .actionBtn {
     flex: 1;
-    padding: 6px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: white;
-    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #ffffff;
+    font-size: 0.82rem;
+    font-weight: 600;
     cursor: pointer;
-    color: var(--text-main);
-    transition: all 0.2s;
+    color: #334155;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .actionBtn:hover {
-    background: var(--surface-hover);
-    border-color: var(--text-secondary);
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #0f172a;
 }
 
 .primaryAction {
-    background: var(--primary);
-    color: white;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: #ffffff;
     border: none;
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
 }
 
 .primaryAction:hover {
-    background: var(--primary-hover);
+    background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+}
+
+.cleanAction {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+.cleanAction:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+.restoreAction {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+}
+
+.restoreAction:hover {
+    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+    color: #ffffff;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 6px rgba(255, 255, 255, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
 }
