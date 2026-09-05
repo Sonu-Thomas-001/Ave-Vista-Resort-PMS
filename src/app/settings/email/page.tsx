@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { EmailService } from '@/lib/email-service';
-import { Loader2, Save, X } from 'lucide-react';
+import { Loader2, Save, X, Mail, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function EmailSettingsPage() {
@@ -15,7 +15,7 @@ export default function EmailSettingsPage() {
     useEffect(() => {
         loadData();
 
-        // Set up polling for real-time updates every 10 seconds
+        // Polling for email logs every 10s
         const interval = setInterval(() => {
             loadLogs();
         }, 10000);
@@ -66,7 +66,7 @@ export default function EmailSettingsPage() {
         try {
             await EmailService.updateTemplate(editingTemplate.id, editingTemplate.subject_template, editingTemplate.body_html);
             setEditingTemplate(null);
-            loadData(); // refresh
+            loadData();
         } catch (err) {
             console.error(err);
             alert('Failed to save template');
@@ -129,24 +129,35 @@ export default function EmailSettingsPage() {
         return base;
     }
 
-    if (loading) return <div className={styles.container}><div className="flex justify-center p-10"><Loader2 className="animate-spin" /></div></div>;
+    if (loading) {
+        return (
+            <div className={styles.container}>
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '60px', color: '#10b981' }}>
+                    <Loader2 className="animate-spin" size={32} />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={styles.container}>
+            {/* Header / Master Switch */}
             <div className={styles.headerCard}>
                 <div>
                     <h2 className={styles.title}>Email Communication</h2>
-                    <p className={styles.subtitle}>Manage confirmation emails and alerts.</p>
+                    <p className={styles.subtitle}>Automated booking confirmations, invoices, and front-desk alerts.</p>
                 </div>
                 <div className={styles.toggleContainer}>
-                    <span className={styles.toggleLabel}>System Emails</span>
+                    <span className={styles.toggleLabel}>System Emails:</span>
                     <button
+                        type="button"
                         onClick={() => handleToggle(!enabled)}
                         className={`${styles.toggleBtn} ${enabled ? styles.toggleBtnOn : styles.toggleBtnOff}`}
                     >
                         <div className={`${styles.toggleHandle} ${enabled ? styles.toggleHandleOn : ''}`}></div>
                     </button>
-                    <span className={styles.toggleLabel} style={{ color: enabled ? '#16a34a' : '#6b7280' }}>
+                    <span className={`${styles.statusIndicator} ${enabled ? styles.active : styles.disabled}`}>
+                        {enabled ? <CheckCircle2 size={13} /> : <AlertCircle size={13} />}
                         {enabled ? 'Active' : 'Disabled'}
                     </span>
                 </div>
@@ -171,9 +182,11 @@ export default function EmailSettingsPage() {
                                     </button>
                                 </div>
                                 <p className={styles.templateSubject}>
-                                    <span style={{ fontWeight: 500 }}>Subject:</span> {t.subject_template}
+                                    <span style={{ fontWeight: 600, color: '#0f172a' }}>Subject:</span> {t.subject_template}
                                 </p>
-                                <div className={styles.slug}>{t.slug}</div>
+                                <div className={styles.templateFooter}>
+                                    <div className={styles.slug}>{t.slug}</div>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -189,28 +202,36 @@ export default function EmailSettingsPage() {
                     <table className={styles.table}>
                         <thead>
                             <tr>
-                                <th>Time</th>
-                                <th>Type</th>
+                                <th>Timestamp</th>
+                                <th>Template Type</th>
                                 <th>Recipient</th>
-                                <th>Status</th>
+                                <th>Delivery Status</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {logs.length === 0 && <tr><td colSpan={4} style={{ textAlign: 'center', color: '#9ca3af' }}>No emails sent recently</td></tr>}
-                            {logs.map(log => (
-                                <tr key={log.id}>
-                                    <td data-label="Time">{new Date(log.created_at).toLocaleString()}</td>
-                                    <td data-label="Type" style={{ fontWeight: 500 }}>{log.template_slug}</td>
-                                    <td data-label="Recipient">{log.recipient}</td>
-                                    <td data-label="Status">
-                                        <span className={`${styles.status} ${log.status === 'Sent' ? styles.statusSent :
-                                            log.status === 'Failed' ? styles.statusFailed : styles.statusPending
-                                            }`}>
-                                            {log.status}
-                                        </span>
+                            {logs.length === 0 ? (
+                                <tr>
+                                    <td colSpan={4} style={{ textAlign: 'center', padding: '30px', color: '#94a3b8' }}>
+                                        No emails sent recently
                                     </td>
                                 </tr>
-                            ))}
+                            ) : (
+                                logs.map(log => (
+                                    <tr key={log.id}>
+                                        <td>{new Date(log.created_at).toLocaleString()}</td>
+                                        <td style={{ fontWeight: 600, color: '#0f172a' }}>{log.template_slug}</td>
+                                        <td>{log.recipient}</td>
+                                        <td>
+                                            <span className={`${styles.status} ${
+                                                log.status === 'Sent' ? styles.statusSent :
+                                                log.status === 'Failed' ? styles.statusFailed : styles.statusPending
+                                            }`}>
+                                                {log.status}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -242,7 +263,7 @@ export default function EmailSettingsPage() {
                                         className={`${styles.tab} ${editingTemplate.view === 'preview' ? styles.tabActive : ''}`}
                                         onClick={() => setEditingTemplate({ ...editingTemplate, view: 'preview' })}
                                     >
-                                        Live Preview
+                                        Live HTML Preview
                                     </button>
                                 </div>
 
@@ -272,11 +293,29 @@ export default function EmailSettingsPage() {
                                                 value={editingTemplate.subject_template}
                                                 onChange={e => setEditingTemplate({ ...editingTemplate, subject_template: e.target.value })}
                                             />
-                                            <p className={styles.helperText}>Supports {'{{variable}}'} placeholders.</p>
+                                            <p className={styles.helperText}>Supports dynamic {'{{variable}}'} placeholders.</p>
                                         </div>
 
                                         <div className={styles.formGroup} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                            <label>HTML Body</label>
+                                            <label>HTML Email Body</label>
+                                            <div className={styles.variableChipsBar}>
+                                                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>Insert Placeholders:</span>
+                                                {['{{guest_name}}', '{{room_number}}', '{{room_type}}', '{{check_in_date}}', '{{check_out_date}}', '{{booking_id}}', '{{total_amount}}', '{{paid_amount}}', '{{balance_due}}'].map(chip => (
+                                                    <span
+                                                        key={chip}
+                                                        className={styles.variableChip}
+                                                        title="Click to insert"
+                                                        onClick={() => {
+                                                            setEditingTemplate({
+                                                                ...editingTemplate,
+                                                                body_html: (editingTemplate.body_html || '') + ' ' + chip
+                                                            });
+                                                        }}
+                                                    >
+                                                        {chip}
+                                                    </span>
+                                                ))}
+                                            </div>
                                             <textarea
                                                 className={styles.textarea}
                                                 value={editingTemplate.body_html}
@@ -299,7 +338,7 @@ export default function EmailSettingsPage() {
                                     type="submit"
                                     className={styles.saveBtn}
                                 >
-                                    <Save size={18} /> Save Changes
+                                    <Save size={16} /> Save Changes
                                 </button>
                             </div>
                         </form>
