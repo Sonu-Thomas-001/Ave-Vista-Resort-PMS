@@ -1,12 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import {
+    ChevronLeft,
+    ChevronRight,
+    Calendar as CalendarIcon,
+    RefreshCw,
+    Sparkles
+} from 'lucide-react';
 import styles from './AvailabilityCalendar.module.css';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
 import { isFullResortType } from '@/lib/constants';
+import BookingDetailsModal from './BookingDetailsModal';
 
 type Room = Database['public']['Tables']['rooms']['Row'];
+
 interface Booking {
     id: string;
     room_id: string;
@@ -19,20 +28,19 @@ interface Booking {
     rooms?: { type: string } | null;
 }
 
-import BookingDetailsModal from './BookingDetailsModal';
-
 export default function AvailabilityCalendar() {
     const [rooms, setRooms] = useState<Room[]>([]);
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [viewStartDate, setViewStartDate] = useState(new Date());
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchData();
 
-        // Realtime
+        // Realtime subscription
         const channel = supabase
-            .channel('calendar_updates')
+            .channel('calendar_updates_stream')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
                 fetchData();
             })
@@ -44,119 +52,167 @@ export default function AvailabilityCalendar() {
     }, [viewStartDate]);
 
     const fetchData = async () => {
-        // Fetch Rooms
-        const { data: roomData } = await supabase.from('rooms').select('*').order('room_number');
-        if (roomData) setRooms(roomData);
+        try {
+            setLoading(true);
 
-        // Fetch Bookings overlapping the 7-day view
-        // Start: viewStartDate
-        // End: viewStartDate + 7 days
-        const startStr = viewStartDate.toISOString().split('T')[0];
-        const endData = new Date(viewStartDate);
-        endData.setDate(endData.getDate() + 7);
-        const endStr = endData.toISOString().split('T')[0];
+            // Fetch Rooms
+            const { data: roomData } = await supabase
+                .from('rooms')
+                .select('*')
+                .order('room_number');
+            if (roomData) setRooms(roomData);
 
-        const { data: bookingData } = await supabase
-            .from('bookings')
-            .select('*, guests(first_name, last_name, email, phone), rooms(type)')
-            .or(`and(check_in_date.lt.${endStr},check_out_date.gt.${startStr})`);
+            // Calculate start & end strings (7 days)
+            const startStr = viewStartDate.toISOString().split('T')[0];
+            const endData = new Date(viewStartDate);
+            endData.setDate(endData.getDate() + 7);
+            const endStr = endData.toISOString().split('T')[0];
 
-        if (bookingData) setBookings(bookingData as any);
+            // Fetch Bookings overlapping the 7-day view
+            const { data: bookingData } = await supabase
+                .from('bookings')
+                .select('*, guests(first_name, last_name, email, phone), rooms(type)')
+                .or(`and(check_in_date.lt.${endStr},check_out_date.gt.${startStr})`);
+
+            if (bookingData) setBookings(bookingData as any);
+        } catch (err) {
+            console.error('Error fetching calendar data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Navigation handlers
+    const handlePrevWeek = () => {
+        const newDate = new Date(viewStartDate);
+        newDate.setDate(newDate.getDate() - 7);
+        setViewStartDate(newDate);
+    };
+
+    const handleNextWeek = () => {
+        const newDate = new Date(viewStartDate);
+        newDate.setDate(newDate.getDate() + 7);
+        setViewStartDate(newDate);
+    };
+
+    const handleToday = () => {
+        setViewStartDate(new Date());
     };
 
     // Generate 7 days headers
     const days = Array.from({ length: 7 }, (_, i) => {
         const d = new Date(viewStartDate);
         d.setDate(d.getDate() + i);
+        const isToday = d.toDateString() === new Date().toDateString();
         return {
             date: d.getDate(),
             fullDate: d.toISOString().split('T')[0],
-            day: d.toLocaleDateString('en-US', { weekday: 'short' })
+            day: d.toLocaleDateString('en-US', { weekday: 'short' }),
+            month: d.toLocaleDateString('en-US', { month: 'short' }),
+            isToday
         };
     });
 
+    const rangeLabel = `${days[0].date} ${days[0].month} – ${days[6].date} ${days[6].month} ${viewStartDate.getFullYear()}`;
+
     return (
-        <>
+        <div className={styles.wrapper}>
+            {/* Calendar Control Bar */}
+            <div className={styles.calendarControls}>
+                <div className={styles.navGroup}>
+                    <button className={styles.navBtn} onClick={handlePrevWeek} title="Previous 7 Days">
+                        <ChevronLeft size={18} />
+                    </button>
+                    <button className={styles.todayBtn} onClick={handleToday}>
+                        Today
+                    </button>
+                    <button className={styles.navBtn} onClick={handleNextWeek} title="Next 7 Days">
+                        <ChevronRight size={18} />
+                    </button>
+                    <span className={styles.rangeText}>{rangeLabel}</span>
+                </div>
+
+                {/* Status Legend */}
+                <div className={styles.legendBar}>
+                    <div className={styles.legendItem}>
+                        <span className={`${styles.legendDot} ${styles.dotConfirmed}`} />
+                        <span>Confirmed</span>
+                    </div>
+                    <div className={styles.legendItem}>
+                        <span className={`${styles.legendDot} ${styles.dotCheckedIn}`} />
+                        <span>Checked In</span>
+                    </div>
+                    <div className={styles.legendItem}>
+                        <span className={`${styles.legendDot} ${styles.dotCheckedOut}`} />
+                        <span>Checked Out</span>
+                    </div>
+                    <div className={styles.legendItem}>
+                        <span className={`${styles.legendDot} ${styles.dotPending}`} />
+                        <span>Pending</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Calendar Grid Container */}
             <div className={styles.container}>
+                {/* Header Row */}
                 <div className={styles.header}>
-                    <div className={styles.roomLabel}>Room</div>
+                    <div className={styles.roomLabel}>Inventory / Room</div>
                     {days.map((d, i) => (
-                        <div key={i} className={styles.dayHeader}>
+                        <div key={i} className={`${styles.dayHeader} ${d.isToday ? styles.todayHeader : ''}`}>
                             <span className={styles.dayName}>{d.day}</span>
                             <span className={styles.dateNum}>{d.date}</span>
+                            {d.isToday && <span className={styles.todayPill}>Today</span>}
                         </div>
                     ))}
                 </div>
 
+                {/* Rows Grid */}
                 <div className={styles.grid}>
                     {rooms.map((room) => {
                         return (
                             <div key={room.id} className={styles.row}>
+                                {/* Room Label Cell */}
                                 <div className={styles.roomName}>
-                                    <span>{room.room_number}</span>
-                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>{room.type}</span>
+                                    <span className={styles.roomNumberText}>{room.room_number}</span>
+                                    <span className={styles.roomTypeText}>{room.type}</span>
                                 </div>
+
+                                {/* 7 Days Columns */}
                                 {days.map((day, dayIdx) => {
-                                    // Find booking that covers this day
                                     const dayDate = day.fullDate;
 
-                                    // Booking starts strictly on this day within the grid? 
-                                    // Or it started before, but for this grid cell we need to know if we should render the block HERE.
-                                    // Logic: Render the block ONLY on the day it starts (check_in_date), 
-                                    // OR if it started BEFORE the view, render it on the first day of the view (dayIdx === 0).
-
-                                    const bookingToCheck = bookings.find(b => {
+                                    const bookingToCheck = bookings.find((b) => {
                                         const checkIn = b.check_in_date;
                                         const checkOut = b.check_out_date;
                                         const overlapsDay = dayDate >= checkIn && dayDate < checkOut;
                                         if (!overlapsDay) return false;
 
-                                        if (isFullResortType(room.type)) {
-                                            return true;
-                                        }
-
-                                        if (isFullResortType(b.rooms?.type || '')) {
-                                            return true;
-                                        }
+                                        if (isFullResortType(room.type)) return true;
+                                        if (isFullResortType(b.rooms?.type || '')) return true;
 
                                         return b.room_id === room.id;
                                     });
 
                                     if (bookingToCheck) {
-                                        // Determine if we should render the block
                                         const isStartOfBooking = bookingToCheck.check_in_date === dayDate;
                                         const isStartOfView = dayIdx === 0;
                                         const startsBeforeView = bookingToCheck.check_in_date < days[0].fullDate;
 
                                         if (isStartOfBooking || (isStartOfView && startsBeforeView)) {
-                                            // Calculate ColSpan
-                                            // End of booking OR end of view, whichever is FIRST
                                             const checkOutDate = new Date(bookingToCheck.check_out_date);
-                                            const viewEndDate = new Date(days[6].fullDate);
-                                            // We actually need to count days from CURRENT dayDate until checkOut or viewEnd
-
                                             const currentDayObj = new Date(dayDate);
-                                            const actualEndDate = checkOutDate > new Date(days[6].fullDate + 'T23:59:59') ? new Date(days[6].fullDate) : checkOutDate;
-
-                                            // Days remaining in this view (inclusive of today)
-                                            // If checkOut is 5th, and Today is 3rd, span = 2 (3rd, 4th). 
-                                            // If checkOut is > ViewEnd, span = days until ViewEnd + 1?
-
-                                            // Let's simplify:
-                                            // Span = min(days until checkout, days until view end + 1)
-
                                             const msPerDay = 1000 * 60 * 60 * 24;
-                                            // Add 1 day ms to actualEndDate calculation to correspond to check-out logic or just use math
-                                            // Actually: checkOut - currentDay
-                                            // e.g. Book 1st to 3rd. ColSpan = 2.
 
-                                            // If ends after view:
-                                            // View 1st to 7th. Book 1st to 10th. Span = 7.
-                                            let span = Math.ceil((checkOutDate.getTime() - currentDayObj.getTime()) / msPerDay);
-
-                                            // Cap at remaining days in view
+                                            let span = Math.ceil(
+                                                (checkOutDate.getTime() - currentDayObj.getTime()) / msPerDay
+                                            );
                                             const remainingInView = 7 - dayIdx;
                                             if (span > remainingInView) span = remainingInView;
+
+                                            const guestName = bookingToCheck.guests
+                                                ? `${bookingToCheck.guests.first_name} ${bookingToCheck.guests.last_name}`
+                                                : 'Guest';
 
                                             return (
                                                 <div
@@ -166,32 +222,38 @@ export default function AvailabilityCalendar() {
                                                     onClick={() => setSelectedBooking(bookingToCheck)}
                                                 >
                                                     <div
-                                                        className={`${styles.bookingBlock} ${styles[bookingToCheck.status.toLowerCase().replace(' ', '')] || styles.confirmed}`}
+                                                        className={`${styles.bookingBlock} ${
+                                                            styles[bookingToCheck.status.toLowerCase().replace(/\s+/g, '')] ||
+                                                            styles.confirmed
+                                                        }`}
                                                     >
-                                                        <span>{bookingToCheck.guests?.first_name} {bookingToCheck.guests?.last_name}</span>
-                                                        <span className={styles.bookingSource}>{bookingToCheck.source}</span>
+                                                        <span className={styles.bookingGuest}>{guestName}</span>
+                                                        <span className={styles.bookingSource}>
+                                                            {bookingToCheck.source || 'Direct'}
+                                                        </span>
                                                     </div>
                                                 </div>
                                             );
                                         } else {
-                                            // Covered by a span started earlier in this view
                                             return null;
                                         }
                                     }
 
-                                    return <div key={dayIdx} className={styles.cell}></div>;
+                                    return <div key={dayIdx} className={styles.cell} />;
                                 })}
                             </div>
                         );
                     })}
                 </div>
             </div>
+
+            {/* Modal */}
             {selectedBooking && (
                 <BookingDetailsModal
                     booking={selectedBooking}
                     onClose={() => setSelectedBooking(null)}
                 />
             )}
-        </>
+        </div>
     );
 }

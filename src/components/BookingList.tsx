@@ -1,10 +1,26 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Search, Filter, ChevronUp, ChevronDown, Mail, Eye, Pencil } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import {
+    Search,
+    ChevronUp,
+    ChevronDown,
+    Mail,
+    Eye,
+    Pencil,
+    X,
+    CalendarCheck,
+    Users,
+    BedDouble,
+    Clock,
+    Sparkles,
+    CheckCircle2,
+    Calendar,
+    Phone,
+    IndianRupee
+} from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './BookingList.module.css';
-import CustomSelect from './ui/CustomSelect';
 import BookingDetailsModal from './BookingDetailsModal';
 import EditBookingModal from './EditBookingModal';
 
@@ -29,21 +45,14 @@ interface Booking {
 export default function BookingList() {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState('All Status');
+    const [filter, setFilter] = useState('All');
     const [searchTerm, setSearchTerm] = useState('');
     const [sortColumn, setSortColumn] = useState<string>('check_in_date');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
     const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
-
-    const statusOptions = [
-        { label: 'All Status', value: 'All Status' },
-        { label: 'Confirmed', value: 'Confirmed' },
-        { label: 'Checked In', value: 'Checked In' },
-        { label: 'Checked Out', value: 'Checked Out' },
-        { label: 'Cancelled', value: 'Cancelled' },
-    ];
+    const [emailSuccessToast, setEmailSuccessToast] = useState<string | null>(null);
 
     useEffect(() => {
         fetchBookings();
@@ -93,6 +102,26 @@ export default function BookingList() {
         }
     };
 
+    // Calculate status counts for quick tabs
+    const statusCounts = useMemo(() => {
+        const counts = {
+            All: bookings.length,
+            Confirmed: 0,
+            'Checked In': 0,
+            'Checked Out': 0,
+            Cancelled: 0
+        };
+
+        bookings.forEach((b) => {
+            const status = b.status as keyof typeof counts;
+            if (counts[status] !== undefined) {
+                counts[status]++;
+            }
+        });
+
+        return counts;
+    }, [bookings]);
+
     const handleSendEmail = async (booking: Booking) => {
         if (!booking.guests?.email) {
             alert('No email address found for this guest.');
@@ -130,10 +159,11 @@ export default function BookingList() {
 
             if (!response.ok) throw new Error('Failed to send email');
 
-            alert('Booking confirmation email sent successfully!');
+            setEmailSuccessToast(`Confirmation sent to ${booking.guests.email}`);
+            setTimeout(() => setEmailSuccessToast(null), 4000);
         } catch (error) {
             console.error('Error sending email:', error);
-            alert('Failed to send email. Please check the logs.');
+            alert('Failed to send confirmation email. Please check logs.');
         } finally {
             setSendingEmailId(null);
         }
@@ -152,7 +182,7 @@ export default function BookingList() {
         let filtered = bookings;
 
         // Apply status filter
-        if (filter !== 'All Status') {
+        if (filter !== 'All') {
             filtered = filtered.filter(b => b.status === filter);
         }
 
@@ -160,10 +190,18 @@ export default function BookingList() {
         if (searchTerm) {
             filtered = filtered.filter(b => {
                 const guestName = b.guests ? `${b.guests.first_name} ${b.guests.last_name}`.toLowerCase() : '';
+                const guestEmail = b.guests?.email?.toLowerCase() || '';
+                const guestPhone = b.guests?.phone?.toLowerCase() || '';
                 const roomNumber = b.rooms?.room_number?.toLowerCase() || '';
                 const bookingNumber = b.booking_number?.toLowerCase() || '';
                 const search = searchTerm.toLowerCase();
-                return guestName.includes(search) || roomNumber.includes(search) || bookingNumber.includes(search);
+                return (
+                    guestName.includes(search) ||
+                    guestEmail.includes(search) ||
+                    guestPhone.includes(search) ||
+                    roomNumber.includes(search) ||
+                    bookingNumber.includes(search)
+                );
             });
         }
 
@@ -213,123 +251,261 @@ export default function BookingList() {
 
     const SortIcon = ({ column }: { column: string }) => {
         if (sortColumn !== column) return null;
-        return sortDirection === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />;
+        return sortDirection === 'asc' ? (
+            <ChevronUp size={14} className={styles.sortIconActive} />
+        ) : (
+            <ChevronDown size={14} className={styles.sortIconActive} />
+        );
     };
 
+    const calculateNights = (checkIn: string, checkOut: string) => {
+        const d1 = new Date(checkIn);
+        const d2 = new Date(checkOut);
+        const diff = Math.max(1, Math.round((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24)));
+        return `${diff} ${diff === 1 ? 'night' : 'nights'}`;
+    };
+
+    const sortedBookings = getSortedBookings();
+
     return (
-        <div className={styles.container}>
+        <div className={styles.wrapper}>
+            {/* Quick KPI Strip */}
+            <div className={styles.kpiRow}>
+                <div className={styles.kpiTile}>
+                    <span className={styles.kpiTileLabel}>Total Bookings</span>
+                    <span className={styles.kpiTileValue}>{statusCounts.All}</span>
+                </div>
+                <div className={styles.kpiTile}>
+                    <span className={styles.kpiTileLabel}>Confirmed</span>
+                    <span className={`${styles.kpiTileValue} ${styles.blueVal}`}>{statusCounts.Confirmed}</span>
+                </div>
+                <div className={styles.kpiTile}>
+                    <span className={styles.kpiTileLabel}>In-House (Checked In)</span>
+                    <span className={`${styles.kpiTileValue} ${styles.greenVal}`}>{statusCounts['Checked In']}</span>
+                </div>
+                <div className={styles.kpiTile}>
+                    <span className={styles.kpiTileLabel}>Departed (Checked Out)</span>
+                    <span className={styles.kpiTileValue}>{statusCounts['Checked Out']}</span>
+                </div>
+            </div>
+
+            {/* Filter Tabs & Search Toolbar */}
             <div className={styles.toolbar}>
+                {/* 1-Click Status Filter Tabs */}
+                <div className={styles.statusTabs}>
+                    {(['All', 'Confirmed', 'Checked In', 'Checked Out', 'Cancelled'] as const).map((tab) => {
+                        const isActive = filter === tab;
+                        return (
+                            <button
+                                key={tab}
+                                className={`${styles.tabBtn} ${isActive ? styles.activeTab : ''}`}
+                                onClick={() => setFilter(tab)}
+                            >
+                                <span>{tab}</span>
+                                <span className={`${styles.tabCount} ${isActive ? styles.activeTabCount : ''}`}>
+                                    {statusCounts[tab as keyof typeof statusCounts] || 0}
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Smart Search */}
                 <div className={styles.search}>
-                    <Search className={styles.searchIcon} size={18} />
+                    <Search className={styles.searchIcon} size={16} />
                     <input
                         type="text"
-                        placeholder="Search guests, bookings..."
+                        placeholder="Search guest, room, or code..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
-                </div>
-                <div style={{ width: 180 }}>
-                    <CustomSelect
-                        options={statusOptions}
-                        value={filter}
-                        onChange={setFilter}
-                        icon={<Filter size={16} />}
-                    />
+                    {searchTerm && (
+                        <button className={styles.clearSearchBtn} onClick={() => setSearchTerm('')}>
+                            <X size={14} />
+                        </button>
+                    )}
                 </div>
             </div>
-            <div className={styles.tableWrapper}>
+
+            {/* Table Container */}
+            <div className={styles.tableCard}>
                 {loading ? (
-                    <div className={styles.loading}>Loading reservations...</div>
-                ) : bookings.length === 0 ? (
-                    <div className={styles.empty}>No bookings found. Create one!</div>
+                    <div className={styles.loadingState}>
+                        <div className={styles.spinner} />
+                        <span>Loading resort reservations...</span>
+                    </div>
+                ) : sortedBookings.length === 0 ? (
+                    <div className={styles.emptyState}>
+                        <Calendar size={32} className={styles.emptyIcon} />
+                        <h3>No reservations match your filter</h3>
+                        <p>Try switching filter tabs or clearing your search term.</p>
+                    </div>
                 ) : (
-                    <table className={styles.table}>
-                        <thead>
-                            <tr>
-                                <th>SI No</th>
-                                <th className={styles.sortable} onClick={() => handleSort('booking_number')}>
-                                    Details <SortIcon column="booking_number" />
-                                </th>
-                                <th className={styles.sortable} onClick={() => handleSort('guest')}>
-                                    Guest <SortIcon column="guest" />
-                                </th>
-                                <th className={styles.sortable} onClick={() => handleSort('room')}>
-                                    Room <SortIcon column="room" />
-                                </th>
-                                <th className={styles.sortable} onClick={() => handleSort('check_in_date')}>
-                                    Check-in <SortIcon column="check_in_date" />
-                                </th>
-                                <th className={styles.sortable} onClick={() => handleSort('check_out_date')}>
-                                    Check-out <SortIcon column="check_out_date" />
-                                </th>
-                                <th className={styles.sortable} onClick={() => handleSort('status')}>
-                                    Status <SortIcon column="status" />
-                                </th>
-                                <th className={styles.sortable} onClick={() => handleSort('amount')}>
-                                    Amount <SortIcon column="amount" />
-                                </th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {getSortedBookings().map((booking, index) => (
-                                <tr key={booking.id}>
-                                    <td className={styles.siNo} data-label="SI No">{index + 1}</td>
-                                    <td data-label="Details">
-                                        <div className={styles.idCell}>
-                                            {booking.booking_number || `BK-${booking.id.split('-')[0].toUpperCase()}`}
-                                        </div>
-                                        <span className={styles.sourceTag}>{booking.source || 'Direct'}</span>
-                                    </td>
-                                    <td className={styles.guestCell} data-label="Guest">
-                                        {booking.guests ? `${booking.guests.first_name} ${booking.guests.last_name}` : 'Unknown'}
-                                    </td>
-                                    <td data-label="Room"><strong>{booking.rooms?.room_number || 'N/A'}</strong></td>
-                                    <td data-label="Check-in">{new Date(booking.check_in_date).toLocaleDateString()}</td>
-                                    <td data-label="Check-out">{new Date(booking.check_out_date).toLocaleDateString()}</td>
-                                    <td data-label="Status">
-                                        <span className={`${styles.status} ${styles[booking.status.toLowerCase().replace(' ', '')]}`}>
-                                            {booking.status}
-                                        </span>
-                                    </td>
-                                    <td className={styles.amount} data-label="Amount">₹{booking.total_amount.toLocaleString()}</td>
-                                    <td data-label="Actions">
-                                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', width: '100%' }}>
-                                            <button
-                                                className={styles.actionBtn}
-                                                title="View Details"
-                                                onClick={() => setSelectedBooking(booking)}
-                                            >
-                                                <Eye size={18} />
-                                            </button>
-                                            <button
-                                                className={styles.actionBtn}
-                                                title="Edit Booking"
-                                                onClick={() => setEditingBooking(booking)}
-                                            >
-                                                <Pencil size={18} />
-                                            </button>
-                                            <button
-                                                className={styles.actionBtn}
-                                                title="Resend Confirmation Email"
-                                                onClick={() => handleSendEmail(booking)}
-                                                disabled={sendingEmailId === booking.id}
-                                            >
-                                                {sendingEmailId === booking.id ? (
-                                                    <div style={{ width: 18, height: 18, border: '2px solid var(--primary)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-                                                ) : (
-                                                    <Mail size={18} />
-                                                )}
-                                            </button>
-                                        </div>
-                                    </td>
+                    <div className={styles.tableResponsive}>
+                        <table className={styles.table}>
+                            <thead>
+                                <tr>
+                                    <th className={styles.thIndex}>#</th>
+                                    <th className={styles.sortable} onClick={() => handleSort('booking_number')}>
+                                        <span>Reference</span> <SortIcon column="booking_number" />
+                                    </th>
+                                    <th className={styles.sortable} onClick={() => handleSort('guest')}>
+                                        <span>Guest</span> <SortIcon column="guest" />
+                                    </th>
+                                    <th className={styles.sortable} onClick={() => handleSort('room')}>
+                                        <span>Room</span> <SortIcon column="room" />
+                                    </th>
+                                    <th className={styles.sortable} onClick={() => handleSort('check_in_date')}>
+                                        <span>Dates & Stay</span> <SortIcon column="check_in_date" />
+                                    </th>
+                                    <th className={styles.sortable} onClick={() => handleSort('status')}>
+                                        <span>Status</span> <SortIcon column="status" />
+                                    </th>
+                                    <th className={styles.sortable} onClick={() => handleSort('amount')}>
+                                        <span>Folio Total</span> <SortIcon column="amount" />
+                                    </th>
+                                    <th className={styles.thActions}>Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {sortedBookings.map((booking, index) => {
+                                    const guestName = booking.guests
+                                        ? `${booking.guests.first_name} ${booking.guests.last_name}`
+                                        : 'Guest';
+                                    const guestInitial = guestName[0]?.toUpperCase() || 'G';
+                                    const refCode =
+                                        booking.booking_number || `BK-${booking.id.split('-')[0].toUpperCase()}`;
+
+                                    return (
+                                        <tr key={booking.id} className={styles.tableRow}>
+                                            <td className={styles.tdIndex}>{index + 1}</td>
+
+                                            {/* Reference & Source */}
+                                            <td>
+                                                <div className={styles.refCell}>
+                                                    <span className={styles.refCode}>{refCode}</span>
+                                                    <span
+                                                        className={`${styles.sourceBadge} ${
+                                                            styles[booking.source?.toLowerCase().replace(/\s+/g, '') || 'direct']
+                                                        }`}
+                                                    >
+                                                        {booking.source || 'Direct'}
+                                                    </span>
+                                                </div>
+                                            </td>
+
+                                            {/* Guest Avatar & Contact */}
+                                            <td>
+                                                <div className={styles.guestCell}>
+                                                    <div className={styles.guestAvatar}>{guestInitial}</div>
+                                                    <div className={styles.guestDetails}>
+                                                        <span className={styles.guestName}>{guestName}</span>
+                                                        <span className={styles.guestContact}>
+                                                            {booking.guests?.phone || booking.guests?.email || 'No contact'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            {/* Room & Category */}
+                                            <td>
+                                                <div className={styles.roomCell}>
+                                                    <span className={styles.roomNum}>
+                                                        {booking.rooms?.room_number || 'TBD'}
+                                                    </span>
+                                                    <span className={styles.roomCategory}>
+                                                        {booking.rooms?.type || 'Room'}
+                                                    </span>
+                                                </div>
+                                            </td>
+
+                                            {/* Dates & Duration */}
+                                            <td>
+                                                <div className={styles.dateCell}>
+                                                    <span className={styles.dateRange}>
+                                                        {new Date(booking.check_in_date).toLocaleDateString('en-IN', {
+                                                            day: '2-digit',
+                                                            month: 'short'
+                                                        })}{' '}
+                                                        →{' '}
+                                                        {new Date(booking.check_out_date).toLocaleDateString('en-IN', {
+                                                            day: '2-digit',
+                                                            month: 'short'
+                                                        })}
+                                                    </span>
+                                                    <span className={styles.stayNights}>
+                                                        {calculateNights(booking.check_in_date, booking.check_out_date)}
+                                                    </span>
+                                                </div>
+                                            </td>
+
+                                            {/* Status Pill */}
+                                            <td>
+                                                <span
+                                                    className={`${styles.statusPill} ${
+                                                        styles[booking.status.toLowerCase().replace(/\s+/g, '')] || styles.confirmed
+                                                    }`}
+                                                >
+                                                    <span className={styles.statusDot} />
+                                                    <span>{booking.status}</span>
+                                                </span>
+                                            </td>
+
+                                            {/* Folio Total & Advance */}
+                                            <td>
+                                                <div className={styles.amountCell}>
+                                                    <span className={styles.totalAmount}>
+                                                        ₹{(booking.total_amount || 0).toLocaleString('en-IN')}
+                                                    </span>
+                                                    {Number(booking.advance_amount) > 0 && (
+                                                        <span className={styles.advanceChip}>
+                                                            Adv: ₹{Number(booking.advance_amount).toLocaleString('en-IN')}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </td>
+
+                                            {/* Actions */}
+                                            <td>
+                                                <div className={styles.actionsCell}>
+                                                    <button
+                                                        className={styles.actionIconBtn}
+                                                        title="View Folio Details"
+                                                        onClick={() => setSelectedBooking(booking)}
+                                                    >
+                                                        <Eye size={16} />
+                                                    </button>
+                                                    <button
+                                                        className={styles.actionIconBtn}
+                                                        title="Edit Reservation"
+                                                        onClick={() => setEditingBooking(booking)}
+                                                    >
+                                                        <Pencil size={15} />
+                                                    </button>
+                                                    <button
+                                                        className={styles.actionIconBtn}
+                                                        title="Send Confirmation Email"
+                                                        onClick={() => handleSendEmail(booking)}
+                                                        disabled={sendingEmailId === booking.id}
+                                                    >
+                                                        {sendingEmailId === booking.id ? (
+                                                            <div className={styles.miniSpinner} />
+                                                        ) : (
+                                                            <Mail size={15} />
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
             </div>
 
+            {/* Modals */}
             {selectedBooking && (
                 <BookingDetailsModal
                     booking={selectedBooking}
@@ -346,6 +522,14 @@ export default function BookingList() {
                         fetchBookings();
                     }}
                 />
+            )}
+
+            {/* Email Toast */}
+            {emailSuccessToast && (
+                <div className={styles.toast}>
+                    <CheckCircle2 size={18} className={styles.toastCheck} />
+                    <span>{emailSuccessToast}</span>
+                </div>
             )}
         </div>
     );

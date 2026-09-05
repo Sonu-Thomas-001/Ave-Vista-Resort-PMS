@@ -5,57 +5,62 @@ import Header from '@/components/Header';
 import AvailabilityCalendar from '@/components/AvailabilityCalendar';
 import BookingList from '@/components/BookingList';
 import NewBookingModal from '@/components/NewBookingModal';
-import { Plus, List, Calendar as CalendarIcon } from 'lucide-react';
+import { CalendarPlus, CalendarDays, LayoutList } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function BookingsPage() {
-    const [view, setView] = useState<'calendar' | 'list'>('list'); // Default to list to see data
+    const [view, setView] = useState<'calendar' | 'list'>('list');
     const [showModal, setShowModal] = useState(false);
 
     return (
         <>
-            <Header title="Reservations" />
+            <Header title="Reservations & Bookings" />
 
-            <div className={styles.container}>
-                <div className={styles.controls}>
-                    <div className={styles.filters}>
+            <main className={styles.container}>
+                {/* Control Bar: View Switcher & Primary Action */}
+                <div className={styles.controlsBar}>
+                    <div className={styles.viewSwitcher}>
                         <button
-                            className={`${styles.filterBtn} ${view === 'calendar' ? styles.active : ''}`}
-                            onClick={() => setView('calendar')}
-                        >
-                            <CalendarIcon size={16} /> Calendar
-                        </button>
-                        <button
-                            className={`${styles.filterBtn} ${view === 'list' ? styles.active : ''}`}
+                            className={`${styles.switchBtn} ${view === 'list' ? styles.activeSwitch : ''}`}
                             onClick={() => setView('list')}
+                            aria-label="List View"
                         >
-                            <List size={16} /> List View
+                            <LayoutList size={16} strokeWidth={2.2} />
+                            <span>List View</span>
+                        </button>
+
+                        <button
+                            className={`${styles.switchBtn} ${view === 'calendar' ? styles.activeSwitch : ''}`}
+                            onClick={() => setView('calendar')}
+                            aria-label="Availability Calendar"
+                        >
+                            <CalendarDays size={16} strokeWidth={2.2} />
+                            <span>Availability Calendar</span>
                         </button>
                     </div>
 
-                    <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-                        <Plus size={18} />
-                        New Booking
+                    <button
+                        className={styles.newBookingBtn}
+                        onClick={() => setShowModal(true)}
+                    >
+                        <CalendarPlus size={18} strokeWidth={2.2} />
+                        <span>New Reservation</span>
                     </button>
                 </div>
 
+                {/* Main Content Area */}
                 <div className={styles.contentWrapper}>
                     {view === 'calendar' ? <AvailabilityCalendar /> : <BookingList />}
                 </div>
 
+                {/* New Booking Modal */}
                 {showModal && (
-                    <div style={{ position: 'fixed', inset: 0, zIndex: 1000 }}>
-                        {/* Simple wrapper if needed, or just the component handles overlay */}
-                        <NewBookingModal
-                            onClose={() => setShowModal(false)}
-                            onSuccess={() => {
-                                // Optional: refresh list if not using realtime, but we are.
-                                setShowModal(false);
-                            }}
-                        />
-                    </div>
+                    <NewBookingModal
+                        onClose={() => setShowModal(false)}
+                        onSuccess={() => setShowModal(false)}
+                    />
                 )}
-            </div>
+            </main>
         </>
     );
 }
