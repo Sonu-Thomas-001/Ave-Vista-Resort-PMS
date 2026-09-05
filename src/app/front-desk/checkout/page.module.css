@@ -1,260 +1,692 @@
 .container {
-    padding: 0 var(--spacing-lg) var(--spacing-xl);
-    max-width: 800px;
+    padding: 0 1.5rem 3rem;
+    max-width: 900px;
     margin: 0 auto;
 }
 
+/* Top Nav */
+.topNav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.backLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.backLink:hover {
+    color: #f43f5e;
+}
+
+.pageBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 9999px;
+    background: #ffe4e6;
+    color: #be123c;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border: 1px solid #fecdd3;
+}
+
+/* Stepper */
 .stepper {
     display: flex;
     justify-content: space-between;
-    margin-bottom: var(--spacing-xl);
-    padding: var(--spacing-md);
-    background: var(--surface);
-    border-radius: var(--radius-full);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border);
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 1rem 1.5rem;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.04);
+    border: 1px solid rgba(226, 232, 240, 0.85);
+    position: relative;
 }
 
 .step {
     display: flex;
     align-items: center;
-    gap: 8px;
-    color: var(--text-secondary);
-    flex: 1;
+    gap: 10px;
+    color: #94a3b8;
     position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
 }
 
 .activeStep {
-    color: var(--primary);
+    color: #f43f5e;
+    font-weight: 700;
+}
+
+.completedStep {
+    color: #10b981;
     font-weight: 600;
 }
 
-.activeStep .stepIcon {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
-}
-
 .stepIcon {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 2px solid var(--border);
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--background);
+    background: #f8fafc;
+    color: #94a3b8;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.activeStep .stepIcon {
+    background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+    color: #ffffff;
+    border-color: #f43f5e;
+    box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
+}
+
+.completedStep .stepIcon {
+    background: #10b981;
+    color: #ffffff;
+    border-color: #10b981;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.stepLabel {
+    font-size: 0.88rem;
+    white-space: nowrap;
 }
 
 .connector {
     flex: 1;
     height: 2px;
-    background: var(--border);
-    margin: 0 8px;
+    background: #e2e8f0;
+    margin: 0 12px;
+    border-radius: 2px;
+    transition: background-color 0.3s ease;
 }
 
-.content {
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-xl);
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-sm);
-    min-height: 400px;
+.connectorActive {
+    background: #10b981;
+}
+
+/* Wizard Content Card */
+.contentCard {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 2.25rem;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.05);
+    min-height: 440px;
+    position: relative;
+}
+
+.stepHeader {
+    margin-bottom: 1.75rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
 }
 
 .stepTitle {
-    margin-bottom: var(--spacing-lg);
-    color: var(--text-main);
-    border-bottom: 1px solid var(--border);
-    padding-bottom: var(--spacing-md);
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
 }
 
+.stepSubtitle {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.stepCounter {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #f43f5e;
+    background: #ffe4e6;
+    padding: 4px 10px;
+    border-radius: 8px;
+}
+
+/* Step 1: Select Room / Guest */
 .searchBox {
     display: flex;
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-lg);
+    gap: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.inputWrapper {
+    position: relative;
+    flex: 1;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
 }
 
 .input {
-    flex: 1;
-    padding: 12px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    font-size: 1rem;
+    width: 100%;
+    padding: 12px 14px 12px 42px;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    color: #0f172a;
+    background: #f8fafc;
+    transition: all 0.2s ease;
 }
 
-.searchBtn {
-    padding: 0 24px;
-    background: var(--primary);
-    color: white;
-    border: none;
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    font-weight: 600;
+.input:focus {
+    outline: none;
+    background: #ffffff;
+    border-color: #f43f5e;
+    box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.12);
+}
+
+.guestList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 380px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+    padding-right: 4px;
+}
+
+.guestList::-webkit-scrollbar {
+    width: 5px;
+}
+
+.guestList::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.guestList::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+}
+
+.guestList::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 
 .guestCard {
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-md);
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
-    transition: background 0.2s;
+    background: #ffffff;
+    transition: all 0.2s ease;
 }
 
 .guestCard:hover {
-    background: var(--surface-hover);
+    background: #fff1f2;
+    border-color: #fda4af;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px -4px rgba(244, 63, 94, 0.1);
 }
 
 .cardInfo {
     display: flex;
     align-items: center;
-    gap: var(--spacing-lg);
+    gap: 1.25rem;
 }
 
 .roomBig {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--primary);
-    background: var(--primary-light);
-    padding: 8px 16px;
-    border-radius: var(--radius-md);
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #be123c;
+    background: #ffe4e6;
+    padding: 10px 16px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.1;
+    min-width: 80px;
+}
+
+.roomBigSub {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.8;
+}
+
+.guestMeta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .guestName {
-    display: block;
-    font-weight: 600;
-    font-size: 1.1rem;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #0f172a;
 }
 
 .detail {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
+    font-size: 0.82rem;
+    color: #64748b;
 }
 
+.selectFolioBtn {
+    padding: 8px 16px;
+    border-radius: 10px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+    font-size: 0.84rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.guestCard:hover .selectFolioBtn {
+    background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+    color: #ffffff;
+    border-color: #f43f5e;
+}
+
+/* Step 2: Bill Summary */
 .billSummary {
-    background: var(--background);
-    padding: var(--spacing-lg);
-    border-radius: var(--radius-lg);
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 1.75rem;
+}
+
+.folioHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 1.25rem;
+}
+
+.folioGuest {
+    display: flex;
+    flex-direction: column;
+}
+
+.folioGuestName {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.folioRoom {
+    font-size: 0.84rem;
+    color: #64748b;
+}
+
+.folioDates {
+    text-align: right;
+    font-size: 0.82rem;
+    color: #64748b;
 }
 
 .billRow {
     display: flex;
     justify-content: space-between;
     margin-bottom: 12px;
-    color: var(--text-main);
+    font-size: 0.92rem;
+    color: #334155;
 }
 
 .totalRow {
-    font-weight: 700;
+    font-weight: 800;
     font-size: 1.1rem;
-    border-top: 1px dashed var(--border);
-    padding-top: 12px;
-    margin-top: 12px;
+    color: #0f172a;
+    border-top: 1px dashed #cbd5e1;
+    padding-top: 14px;
+    margin-top: 14px;
 }
 
 .paidRow {
     display: flex;
     justify-content: space-between;
-    color: #4CAF50;
-    margin-bottom: 8px;
+    color: #15803d;
+    font-weight: 700;
+    margin-top: 8px;
+    font-size: 0.95rem;
 }
 
 .dueRow {
     display: flex;
     justify-content: space-between;
-    color: #F44336;
-    font-weight: 700;
-    font-size: 1.2rem;
-    margin-top: 8px;
+    align-items: center;
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    padding: 14px 16px;
+    border-radius: 14px;
+    color: #be123c;
+    font-weight: 800;
+    font-size: 1.25rem;
+    margin-top: 16px;
 }
 
+/* Step 3: Payment Methods */
 .amountDisplay {
     text-align: center;
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: 1.75rem;
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-radius: 18px;
+    border: 1px solid #e2e8f0;
 }
 
 .amountDisplay .label {
     display: block;
-    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
 }
 
 .amountDisplay .amount {
     font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--text-main);
+    font-weight: 800;
+    color: #be123c;
+    letter-spacing: -0.02em;
 }
 
 .paymentMethods {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-lg);
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 1.5rem;
 }
 
 .methodBtn {
-    padding: 20px;
-    border: 1px solid var(--border);
-    background: white;
-    border-radius: var(--radius-md);
+    padding: 18px 12px;
+    border: 2px solid #e2e8f0;
+    background: #ffffff;
+    border-radius: 16px;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: 700;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    color: #334155;
+    transition: all 0.2s ease;
 }
 
-.methodBtn.selected {
-    border-color: var(--primary);
-    background: var(--primary-light);
-    color: var(--primary);
+.methodBtn:hover {
+    border-color: #f43f5e;
+    background: #fff1f2;
 }
 
+.methodBtnSelected {
+    border-color: #f43f5e;
+    background: #fff1f2;
+    color: #be123c;
+    box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2);
+}
+
+.methodIconBox {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+    color: #64748b;
+    transition: all 0.2s ease;
+}
+
+.methodBtnSelected .methodIconBox {
+    background: #f43f5e;
+    color: #ffffff;
+}
+
+/* Actions */
 .actions {
     display: flex;
     justify-content: space-between;
-    margin-top: 32px;
+    align-items: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #f1f5f9;
 }
 
 .backBtn {
-    padding: 12px 24px;
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
+    padding: 10px 20px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
     cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.backBtn:hover {
+    background: #e2e8f0;
+    color: #0f172a;
 }
 
 .primaryBtn {
     padding: 12px 24px;
-    background: var(--primary);
-    color: white;
+    background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+    color: #ffffff;
     border: none;
-    border-radius: var(--radius-md);
+    border-radius: 12px;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 0.92rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(244, 63, 94, 0.3);
+    transition: all 0.2s ease;
 }
 
+.primaryBtn:hover {
+    background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+    box-shadow: 0 6px 20px rgba(244, 63, 94, 0.4);
+}
+
+/* Step 4: Success Settlement */
 .successState {
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: var(--spacing-lg);
-    padding: var(--spacing-xl) 0;
+    gap: 1.25rem;
+    padding: 2rem 0;
 }
 
-.shareOptions {
+.successIconWrapper {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #dcfce7;
+    color: #10b981;
     display: flex;
-    gap: var(--spacing-md);
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.3);
+    animation: popIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.shareBtn {
-    padding: 8px 16px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-full);
-    background: white;
+.successCard {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.invoiceNumBadge {
+    font-family: monospace;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #0284c7;
+    background: #e0f2fe;
+    padding: 6px 14px;
+    border-radius: 8px;
+    display: inline-block;
+    width: fit-content;
+    margin: 0 auto;
+}
+
+.successChipsRow {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.turnoverChip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #fef3c7;
+    color: #b45309;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border: 1px solid #fde68a;
+}
+
+.emailChip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #dcfce7;
+    color: #15803d;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border: 1px solid #bbf7d0;
+}
+
+.successActions {
+    display: flex;
+    gap: 12px;
+    margin-top: 1rem;
+    width: 100%;
+    max-width: 480px;
+}
+
+.printBtn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: #ffffff;
+    border: none;
     cursor: pointer;
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
 }
 
-.shareBtn:hover {
-    background: var(--surface-hover);
+.printBtn:hover {
+    background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+}
+
+.secondaryActionBtn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: #334155;
+    text-decoration: none;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.secondaryActionBtn:hover {
+    background: #f1f5f9;
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 1rem 2rem;
+    }
+
+    .stepper {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .connector {
+        display: none;
+    }
+
+    .paymentMethods {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .successActions {
+        flex-direction: column;
+    }
 }
