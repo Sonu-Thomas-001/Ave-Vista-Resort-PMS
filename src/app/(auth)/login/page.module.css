@@ -1,245 +1,159 @@
-.container {
-    display: flex;
-    min-height: 100vh;
-    width: 100vw;
-    background: #FFFFFF;
-    font-family: var(--font-geist-sans);
-    overflow: hidden;
-}
-
-.imageSection {
-    flex: 1;
-    background-image: url('/auth-bg.jpg');
-    /* Updated to JPG */
-    background-size: cover;
-    background-position: center;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 3rem;
-    color: white;
-}
-
-/* Dark overlay for text readability */
-.imageSection::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.7) 100%);
-    z-index: 1;
-}
-
-.imageContent {
-    position: relative;
-    z-index: 2;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.brandLogo {
-    /* Style for logo on image side if needed */
-}
-
-.testimonial {
-    max-width: 600px;
-}
-
-.quote {
-    font-size: 1.5rem;
-    font-weight: 500;
-    line-height: 1.4;
-    margin-bottom: 1.5rem;
-}
-
-.imageFooter {
-    font-size: 0.9rem;
-    opacity: 0.8;
-}
-
-.formSection {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 2rem 4rem;
-    background: #FFFFFF;
-    overflow-y: auto;
-    max-width: 50%;
-    /* Ensure it doesn't grow too wide on large screens */
-}
-
-.formContainer {
-    width: 100%;
-    max-width: 440px;
-}
-
-.brandHeader {
-    text-align: center;
-    margin-bottom: 2.5rem;
-}
-
-.welcomeText {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--text-main);
-    margin-bottom: 0.5rem;
-    letter-spacing: -0.5px;
-}
-
-.subtitle {
-    color: var(--text-secondary);
-    font-size: 1rem;
-}
+/* ==========================================================================
+   Ave Vista PMS - Auth Form Controls & Shared Authentication Stylesheet
+   Ocean Sky Blue Logo Palette (#0284C7 / #0369A1 / #F0F9FF)
+   Modern, Substantial, Luxury Sizing & Spacing
+   ========================================================================== */
 
 .form {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
-    /* Reduced gap */
+    gap: 14px;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .inputGroup {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
-    /* Slight adjustments */
+    gap: 5px;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .label {
-    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.86rem;
     font-weight: 600;
-    color: var(--text-main);
-    margin-bottom: 0.25rem;
+    color: #1e293b;
+    margin: 0;
 }
 
 .inputWrapper {
     position: relative;
     display: flex;
     align-items: center;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .icon {
     position: absolute;
-    left: 1rem;
-    color: var(--text-secondary);
+    left: 13px;
+    color: #94a3b8;
     pointer-events: none;
-    z-index: 10;
-}
-
-.label {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-main);
-    margin-bottom: 0.35rem;
-    text-align: left;
-    /* Force left alignment */
-    display: block;
-    width: 100%;
+    flex-shrink: 0;
 }
 
 .input {
     width: 100%;
-    padding: 0.95rem 1rem 0.95rem 2.85rem;
-    border: 1px solid transparent;
-    /* Transparent border to prevent layout shift */
-    border-radius: 12px;
-    /* Smooth rounded corners */
-    font-size: 0.95rem;
-    background: #F1F5F9;
-    /* Light filled background */
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    color: var(--text-main);
-    font-family: inherit;
+    padding: 11.5px 14px 11.5px 42px;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 11px;
+    font-size: 0.94rem;
+    color: #0f172a;
     font-weight: 500;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
 }
 
 .input:focus {
     outline: none;
-    background: #FFFFFF;
-    border-color: var(--primary);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    /* Soft float effect */
+    border-color: #0284c7;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.14);
+}
+
+.input:disabled {
+    background: #f8fafc;
+    color: #64748b;
+    cursor: not-allowed;
 }
 
 .togglePassword {
     position: absolute;
-    right: 1.2rem;
+    right: 10px;
     background: none;
     border: none;
-    color: var(--text-secondary);
+    color: #64748b;
     cursor: pointer;
+    padding: 5px;
     display: flex;
     align-items: center;
-    transition: color 0.2s;
+    justify-content: center;
+    transition: color 0.2s ease;
 }
 
 .togglePassword:hover {
-    color: var(--text-main);
+    color: #0f172a;
 }
 
 .actions {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.9rem;
+    font-size: 0.86rem;
     width: 100%;
-    margin-top: 0.5rem;
+    margin-top: 2px;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .remember {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    color: var(--text-secondary);
+    gap: 7px;
+    color: #475569;
     cursor: pointer;
     font-weight: 500;
+    user-select: none;
+}
+
+.remember input[type="checkbox"] {
+    accent-color: #0284c7;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
 }
 
 .forgotLink {
-    color: var(--primary);
+    color: #0284c7;
     font-weight: 600;
     text-decoration: none;
-    font-size: 0.9rem;
-    transition: opacity 0.2s;
+    font-size: 0.86rem;
+    transition: color 0.2s ease;
 }
 
 .forgotLink:hover {
-    text-decoration: none;
-    opacity: 0.8;
+    color: #0369a1;
+    text-decoration: underline;
 }
 
 .submitBtn {
-    background: linear-gradient(135deg, #0288D1 0%, #00B0FF 100%);
-    /* Vibrant gradient */
-    color: white;
-    padding: 1rem;
+    width: 100%;
+    padding: 12px 18px;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: #ffffff;
     border: none;
-    border-radius: 12px;
-    font-size: 1rem;
+    border-radius: 11px;
+    font-size: 0.96rem;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    margin-top: 1.5rem;
-    width: 100%;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    box-shadow: 0 4px 15px rgba(2, 136, 209, 0.3);
-    /* Colored glow */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.24);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 4px;
+    min-height: 46px;
+    box-sizing: border-box;
 }
 
 .submitBtn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(2, 136, 209, 0.4);
-    filter: brightness(1.05);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(2, 132, 199, 0.35);
 }
 
 .submitBtn:active {
@@ -247,131 +161,110 @@
 }
 
 .submitBtn:disabled {
-    opacity: 0.7;
+    opacity: 0.65;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
 }
 
 .errorBanner {
-    background: #FEF2F2;
-    color: #B91C1C;
-    padding: 0.75rem;
-    border-radius: 8px;
-    font-size: 0.9rem;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    padding: 9px 12px;
+    border-radius: 10px;
+    font-size: 0.84rem;
+    font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    border: 1px solid #FECACA;
-    text-align: left;
+    gap: 8px;
 }
 
-.footer {
+/* Role Selector for Sign Up */
+.roleSelectorGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.roleOption {
+    padding: 9px 6px;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
     text-align: center;
-    margin-top: 2rem;
-    border-top: 1px solid #F1F5F9;
-    padding-top: 1.5rem;
+    cursor: pointer;
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: #475569;
+    transition: all 0.2s ease;
+    user-select: none;
 }
 
-.links {
+.roleOption:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.roleOptionSelected {
+    background: #f0f9ff !important;
+    border-color: #bae6fd !important;
+    color: #0284c7 !important;
+    font-weight: 700;
+}
+
+/* Success Container */
+.successCard {
+    text-align: center;
+    padding: 24px 12px;
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.successIconCircle {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: #f0f9ff;
+    color: #0284c7;
+    display: flex;
+    align-items: center;
     justify-content: center;
-    gap: 1.5rem;
-    margin-top: 0.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: 4px;
 }
 
-.footerLink {
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-    cursor: pointer;
+.successTitle {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
 }
 
-.footerLink:hover {
-    color: var(--primary);
-    text-decoration: underline;
+.successText {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.5;
 }
 
-/* Custom Select styling */
-.customSelectWrapper {
-    position: relative;
-    width: 100%;
-}
-
-.customSelect {
-    position: relative;
-    width: 100%;
-}
-
-.selectedValue {
-    width: 100%;
-    padding: 0.95rem 1rem 0.95rem 2.85rem;
-    border: 1px solid transparent;
-    border-radius: 12px;
-    font-size: 0.95rem;
-    background: #F1F5F9;
-    cursor: pointer;
-    color: var(--text-main);
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    font-weight: 500;
-}
-
-.selectedValue:hover {
-    background: #E2E8F0;
-}
-
-.dropdownMenu {
-    position: absolute;
-    top: calc(100% + 4px);
-    left: 0;
-    right: 0;
-    background: white;
-    border: 1px solid #CBD5E1;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    z-index: 50;
-}
-
-.dropdownItem {
-    padding: 0.75rem 1rem;
-    cursor: pointer;
-    color: var(--text-main);
-}
-
-.dropdownItem:hover,
-.dropdownItem.selected {
-    background: #F8FAFC;
-    color: var(--primary);
-}
-
-.selectArrow {
-    position: absolute;
-    right: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-secondary);
-    pointer-events: none;
-}
-
-@media (max-width: 900px) {
-    .container {
-        flex-direction: column;
-        overflow-y: auto;
+/* Mobile responsive font & tap sizing */
+@media (max-width: 640px) {
+    .input {
+        font-size: 16px; /* Prevents auto-zoom on iOS Safari */
+        padding: 12px 14px 12px 42px;
     }
 
-    .imageSection {
-        display: none;
-        /* Hide image on mobile for cleaner look, or set min-height */
+    .submitBtn {
+        min-height: 48px;
+        font-size: 0.96rem;
     }
 
-    .formSection {
-        padding: 2rem 1.5rem;
-        max-width: 100%;
-        width: 100%;
-        justify-content: flex-start;
-    }
-
-    .formContainer {
-        max-width: 100%;
+    .roleOption {
+        padding: 10px 4px;
+        font-size: 0.84rem;
     }
 }

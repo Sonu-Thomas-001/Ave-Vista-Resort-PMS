@@ -1,343 +1,531 @@
-.container {
-    background-color: #fff;
-    border-radius: 20px;
-    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
-    position: relative;
-    overflow: hidden;
-    width: 100vw;
-    max-width: 100%;
-    min-height: 100vh;
-    font-family: var(--font-geist-sans);
-}
+/* ==========================================================================
+   Ave Vista PMS - Executive Luxury Authentication Portal Stylesheet
+   Ocean Sky Blue Logo Palette (#0284C7 / #0369A1 / #F0F9FF)
+   Fully Responsive & Fluid (Mobile, Tablet, Laptop, Desktop)
+   ========================================================================== */
 
-.formContainer {
-    position: absolute;
-    top: 0;
-    height: 100%;
-    transition: all 0.6s ease-in-out;
-    background-color: #ffffff;
+.pageContainer {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 0 50px;
-    /* text-align: center; Removed to improve form flow */
-}
-
-.signInContainer {
-    left: 0;
-    width: 50%;
-    z-index: 2;
-}
-
-.container.rightPanelActive .signInContainer {
-    transform: translateX(100%);
-    opacity: 0;
-    /* Fade out when moving */
-}
-
-.signUpContainer {
-    left: 0;
-    width: 50%;
-    opacity: 0;
-    z-index: 1;
-}
-
-.container.rightPanelActive .signUpContainer {
-    transform: translateX(100%);
-    opacity: 1;
-    z-index: 5;
-    animation: show 0.6s;
-}
-
-@keyframes show {
-
-    0%,
-    49.99% {
-        opacity: 0;
-        z-index: 1;
-    }
-
-    50%,
-    100% {
-        opacity: 1;
-        z-index: 5;
-    }
-}
-
-.overlayContainer {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    width: 50%;
-    height: 100%;
-    overflow: hidden;
-    transition: transform 0.6s ease-in-out;
-    z-index: 100;
-}
-
-.container.rightPanelActive .overlayContainer {
-    transform: translateX(-100%);
-}
-
-.overlay {
-    background: #0277BD;
-    background: -webkit-linear-gradient(to right, #0288D1, #0277BD);
-    background: linear-gradient(to right, #0288D1, #0277BD);
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: 0 0;
-    color: #ffffff;
-    position: relative;
-    left: -100%;
-    height: 100%;
-    width: 200%;
-    transform: translateX(0);
-    transition: transform 0.6s ease-in-out;
-}
-
-/* Background Image styling for overlay */
-.overlayBg {
-    position: absolute;
-    top: 0;
-    left: 0;
+    min-height: 100vh;
     width: 100%;
-    height: 100%;
+    max-width: 100%;
+    background: #f8fafc;
+    font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #0f172a;
+    overflow-x: hidden;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   LEFT SHOWCASE HERO PANEL
+   ───────────────────────────────────────────────────────────── */
+.showcasePanel {
+    flex: 1.1;
+    position: relative;
     background-image: url('/auth-bg.jpg');
     background-size: cover;
     background-position: center;
-    filter: brightness(0.7);
-    /* Darken for text readability */
-    z-index: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: clamp(20px, 2.5vh, 40px) clamp(20px, 2.8vw, 40px);
+    color: #ffffff;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
-.container.rightPanelActive .overlay {
-    transform: translateX(50%);
-}
-
-.overlayPanel {
+/* Luxury ocean blue overlay matching the Ave Vista brand logo */
+.showcasePanel::before {
+    content: '';
     position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(15, 23, 42, 0.70) 0%,
+        rgba(2, 132, 199, 0.40) 50%,
+        rgba(15, 23, 42, 0.78) 100%
+    );
+    z-index: 1;
+}
+
+.showcaseContent {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
+}
+
+.brandHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.brandBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.pulseDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #38bdf8;
+    box-shadow: 0 0 10px #38bdf8;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(0.85);
+    }
+}
+
+.showcaseMiddle {
+    margin: 14px 0;
+    max-width: 520px;
+}
+
+.showcaseTagline {
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #7dd3fc;
+    margin-bottom: 6px;
+}
+
+.showcaseHeadline {
+    font-size: clamp(1.45rem, 2vw, 2.1rem);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+    margin-bottom: 10px;
+    color: #ffffff;
+}
+
+.showcaseDescription {
+    font-size: clamp(0.82rem, 0.95vw, 0.94rem);
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 16px;
+    font-weight: 400;
+}
+
+/* Feature Badges Grid */
+.featureList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.featureItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 12px;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.featureItem:hover {
+    transform: translateX(4px);
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.featureIconBox {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-direction: column;
-    padding: 0 40px;
-    text-align: center;
-    top: 0;
-    height: 100%;
-    width: 50%;
-    transform: translateX(0);
-    transition: transform 0.6s ease-in-out;
-    z-index: 1;
-    /* Above bg */
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
 }
 
-.overlayLeft {
-    transform: translateX(-20%);
-}
-
-.container.rightPanelActive .overlayLeft {
-    transform: translateX(0);
-}
-
-.overlayRight {
-    right: 0;
-    transform: translateX(0);
-}
-
-.container.rightPanelActive .overlayRight {
-    transform: translateX(20%);
-}
-
-.ghost {
-    background-color: transparent;
-    border-color: #ffffff;
+.featureText {
+    font-size: 0.82rem;
+    font-weight: 600;
     color: #ffffff;
-    border: 1px solid white;
-    padding: 12px 45px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: bold;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    transition: transform 80ms ease-in;
-    cursor: pointer;
-    margin-top: 1.5rem;
 }
 
-.ghost:active {
-    transform: scale(0.95);
-}
-
-.ghost:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Responsive */
-/* Previous media query removed to consolidate mobile styles below */
-
-/* Content Styling */
-.title {
-    font-weight: bold;
-    margin: 0;
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-    color: white;
-}
-
-.description {
-    font-size: 1rem;
-    font-weight: 300;
-    line-height: 1.5;
-    letter-spacing: 0.5px;
-    margin: 20px 0 30px;
-    color: rgba(255, 255, 255, 0.9);
-}
-
-/* Internal Form Styles (to match previous design) */
-.formHeader {
-    margin-bottom: 1.5rem;
-    text-align: center;
-}
-
-.formTitle {
-    font-size: 2rem;
-    font-weight: bold;
-    color: var(--text-main);
-    margin-bottom: 0.5rem;
-}
-
-.formSubtitle {
-    color: var(--text-secondary);
-}
-
-.mobileToggle {
-    display: none;
-    margin-top: 1.5rem;
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-}
-
-.mobileToggle span {
-    color: var(--primary);
-    font-weight: bold;
-    cursor: pointer;
-}
-
-@media (max-width: 900px) {
-    .container {
-        min-height: 100vh;
-        height: auto;
-        padding: 2rem 1rem;
-        overflow-y: auto;
-        /* Mobile Background - Animated Gradient */
-        background: linear-gradient(-45deg, #0277BD, #0091EA, #00B0FF, #40C4FF);
-        background-size: 400% 400%;
-        animation: gradientBG 15s ease infinite;
-        display: flex;
-        /* Flex to center the card */
-        align-items: center;
-        justify-content: center;
-    }
-
-    /* Remove dark overlay references if they exist, or just don't include them */
-    .container::before {
-        display: none;
-    }
-
-    .formContainer {
-        position: relative;
-        width: 100%;
-        max-width: 400px;
-        /* Card width */
-        height: auto;
-        padding: 2.5rem 2rem;
-        opacity: 1 !important;
-        transform: none !important;
-        z-index: 10 !important;
-        /* Card Styling */
-        background: #ffffff;
-        border-radius: 20px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        margin: auto;
-        /* Ensure centering if flex fails */
-    }
-
-    @keyframes gradientBG {
-        0% {
-            background-position: 0% 50%;
-        }
-
-        50% {
-            background-position: 100% 50%;
-        }
-
-        100% {
-            background-position: 0% 50%;
-        }
-    }
-
-    .signInContainer {
-        display: flex;
-        /* Default show login */
-    }
-
-    .signUpContainer {
-        display: none;
-        /* Hide signup initially */
-    }
-
-    .container.rightPanelActive .signInContainer {
-        display: none;
-    }
-
-    .container.rightPanelActive .signUpContainer {
-        display: flex;
-        animation: fadeIn 0.4s ease;
-    }
-
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .overlayContainer {
-        display: none;
-        /* Hide overlay on mobile */
-    }
-
-    .mobileToggle {
-        display: block;
-        margin-top: 1.5rem;
-        color: var(--text-secondary);
-        font-size: 0.9rem;
-    }
-}
-
-.overlayFooter {
-    position: absolute;
-    bottom: 30px;
+/* Showcase Bottom Row */
+.showcaseFooter {
     display: flex;
-    gap: 20px;
-    z-index: 10;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
-.footerLink {
-    color: rgba(255, 255, 255, 0.7);
-    text-decoration: none;
-    font-size: 0.85rem;
+.resortLocation {
+    font-size: 0.76rem;
+    color: rgba(255, 255, 255, 0.8);
     font-weight: 500;
+}
+
+.showcaseLinks {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.showcaseLink {
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    font-size: 0.76rem;
+    font-weight: 600;
     transition: color 0.2s;
 }
 
-.footerLink:hover {
+.showcaseLink:hover {
     color: #ffffff;
     text-decoration: underline;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   RIGHT AUTH PORTAL PANEL
+   ───────────────────────────────────────────────────────────── */
+.portalPanel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: clamp(20px, 3vh, 36px) clamp(20px, 3vw, 44px);
+    background: #f8fafc;
+    min-height: 100vh;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+.portalCard {
+    width: 100%;
+    max-width: 480px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 22px;
+    padding: clamp(24px, 3.2vh, 36px) clamp(24px, 2.8vw, 36px);
+    box-shadow: 0 10px 35px rgba(15, 23, 42, 0.05);
+    margin: auto 0;
+    box-sizing: border-box;
+}
+
+/* Mobile Brand Logo Header (shown on mobile/tablet) */
+.mobileBrandLogo {
+    display: none;
+}
+
+/* Portal Brand Header */
+.portalHeader {
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+.portalEmblemRow {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.portalEmblem {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    color: #0284c7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.15);
+}
+
+.portalTitle {
+    font-size: clamp(1.45rem, 1.9vw, 1.65rem);
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.025em;
+    margin: 0 0 6px 0;
+}
+
+.portalSubtitle {
+    font-size: 0.88rem;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.45;
+}
+
+/* Mode Segmented Tab Switcher */
+.modeSwitcher {
+    display: flex;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 13px;
+    margin-bottom: 18px;
+    border: 1px solid #e2e8f0;
+    gap: 4px;
+    box-sizing: border-box;
+}
+
+.modeBtn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 9px 14px;
+    border: none;
+    background: transparent;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    touch-action: manipulation;
+    min-height: 40px;
+}
+
+.modeBtn:hover {
+    color: #0f172a;
+}
+
+.modeBtnActive {
+    background: #ffffff !important;
+    color: #0284c7 !important;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+.modeBtnActive svg {
+    color: #0284c7;
+}
+
+/* Form Container Animation */
+.formWrapper {
+    width: 100%;
+    animation: fadeIn 0.2s ease;
+    box-sizing: border-box;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(3px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   RESPONSIVE DESIGN BREAKPOINTS
+   ───────────────────────────────────────────────────────────── */
+
+/* Desktop / Laptops (>= 960px): Lock page container to 100vh without page-level scrollbars */
+@media (min-width: 960px) {
+    .pageContainer {
+        height: 100vh;
+        max-height: 100vh;
+        overflow: hidden;
+    }
+
+    .showcasePanel {
+        height: 100vh;
+        max-height: 100vh;
+    }
+
+    .portalPanel {
+        height: 100vh;
+        max-height: 100vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+    }
+
+    .portalPanel::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .portalPanel::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .portalPanel::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1;
+        border-radius: 9999px;
+    }
+}
+
+/* Viewport height adjustments only for extreme small displays (<= 560px height) */
+@media (min-width: 960px) and (max-height: 560px) {
+    .portalPanel {
+        padding: 12px 20px;
+    }
+
+    .portalCard {
+        padding: 18px 24px;
+        border-radius: 18px;
+    }
+
+    .portalHeader {
+        margin-bottom: 10px;
+    }
+
+    .portalEmblemRow {
+        display: none;
+    }
+}
+
+/* Tablets & Small Laptops (769px to 1024px) */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .showcasePanel {
+        padding: 20px 16px;
+        flex: 1;
+    }
+
+    .showcaseMiddle {
+        margin: 10px 0;
+    }
+
+    .showcaseHeadline {
+        font-size: 1.55rem;
+        margin-bottom: 8px;
+    }
+
+    .showcaseDescription {
+        font-size: 0.82rem;
+        margin-bottom: 12px;
+    }
+
+    .featureList {
+        gap: 6px;
+    }
+
+    .featureItem {
+        padding: 7px 10px;
+    }
+
+    .portalPanel {
+        padding: 14px 12px;
+        flex: 1.1;
+    }
+
+    .portalCard {
+        padding: 18px 16px;
+        max-width: 400px;
+    }
+}
+
+/* Mobile & Small Tablets (<= 768px) */
+@media (max-width: 768px) {
+    .pageContainer {
+        flex-direction: column;
+        min-height: 100vh;
+        height: auto;
+        width: 100%;
+        overflow-x: hidden;
+    }
+
+    /* Hide heavy image showcase on mobile for speed and focus */
+    .showcasePanel {
+        display: none;
+    }
+
+    .portalPanel {
+        width: 100%;
+        min-height: 100vh;
+        height: auto;
+        padding: 20px 16px 24px 16px;
+        justify-content: flex-start;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .portalCard {
+        max-width: 440px;
+        width: 100%;
+        padding: 22px 18px;
+        border-radius: 18px;
+        box-shadow: 0 4px 24px rgba(15, 23, 42, 0.05);
+        background: #ffffff;
+        margin: auto auto;
+    }
+
+    /* Show official Ave Vista logo on mobile */
+    .mobileBrandLogo {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .portalEmblemRow {
+        display: none;
+    }
+
+    .portalTitle {
+        font-size: 1.35rem;
+    }
+
+    .portalSubtitle {
+        font-size: 0.8rem;
+    }
+}
+
+/* Small mobile devices (<= 380px) */
+@media (max-width: 380px) {
+    .portalPanel {
+        padding: 12px 8px 18px 8px;
+    }
+
+    .portalCard {
+        padding: 16px 12px;
+        border-radius: 14px;
+    }
+
+    .modeBtn {
+        font-size: 0.78rem;
+        padding: 6px 6px;
+        gap: 4px;
+    }
+
+    .portalTitle {
+        font-size: 1.2rem;
+    }
 }

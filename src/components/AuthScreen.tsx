@@ -2,132 +2,187 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import styles from './AuthScreen.module.css';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import {
+    Building2,
+    CalendarDays,
+    UtensilsCrossed,
+    BarChart3,
+    Shield,
+    LogIn,
+    UserPlus,
+    Lock
+} from 'lucide-react';
 import LoginForm from './auth/LoginForm';
 import SignupForm from './auth/SignupForm';
 import AuthFooter from './AuthFooter';
+import styles from './AuthScreen.module.css';
 
 interface AuthScreenProps {
     initialMode: 'login' | 'signup';
 }
 
 export default function AuthScreen({ initialMode }: AuthScreenProps) {
-    const [isRightPanelActive, setIsRightPanelActive] = useState(initialMode === 'signup');
+    const pathname = usePathname();
     const router = useRouter();
+    const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
 
-    const [isMounted, setIsMounted] = useState(false);
-
+    // Keep mode synchronized with current route if back/forward button is pressed
     useEffect(() => {
-        setIsMounted(true);
-        setIsRightPanelActive(initialMode === 'signup');
-    }, [initialMode]);
-
-    if (!isMounted) {
-        return null; // Prevent hydration mismatch
-    }
-
-    const handleSignUpClick = () => {
-        setIsRightPanelActive(true);
-        window.history.pushState(null, '', '/signup');
-    };
-
-    const handleSignInClick = () => {
-        setIsRightPanelActive(false);
-        window.history.pushState(null, '', '/login');
-    };
-
-    // Mobile specific toggle handles
-    const toggleMobileMode = () => {
-        if (isRightPanelActive) {
-            handleSignInClick();
-        } else {
-            handleSignUpClick();
+        if (pathname.includes('signup')) {
+            setMode('signup');
+        } else if (pathname.includes('login')) {
+            setMode('login');
         }
+    }, [pathname]);
+
+    const switchMode = (newMode: 'login' | 'signup') => {
+        if (newMode === mode) return;
+        setMode(newMode);
+        router.replace(newMode === 'signup' ? '/signup' : '/login', { scroll: false });
     };
 
     return (
-        <div className={`${styles.container} ${isRightPanelActive ? styles.rightPanelActive : ''}`}>
-            {/* Sign Up Container (Left, but moves to Right/Visible when Active) */}
-            <div className={`${styles.formContainer} ${styles.signUpContainer}`}>
-                <div className={styles.formHeader}>
-                    <h1 className={styles.formTitle}><span>Create Account</span></h1>
-                    <p className={styles.formSubtitle}><span>Join Ave Vista PMS</span></p>
-                </div>
-                <SignupForm />
-                <div className={styles.mobileToggle}>
-                    <span>Already have an account?</span> <span onClick={toggleMobileMode}>Sign In</span>
-                </div>
-                <div style={{ marginTop: '2rem' }}>
-                    <AuthFooter />
-                </div>
-            </div>
-
-            {/* Sign In Container (Right, but moves to Left/Hidden when Active) */}
-            <div className={`${styles.formContainer} ${styles.signInContainer}`}>
-                <div className={styles.formHeader}>
-                    <h1 className={styles.formTitle}><span>Welcome Back</span></h1>
-                    <p className={styles.formSubtitle}><span>Sign in to your dashboard</span></p>
-                </div>
-                <LoginForm />
-                <div className={styles.mobileToggle}>
-                    <span>Don't have an account?</span> <span onClick={toggleMobileMode}>Sign Up</span>
-                </div>
-                <div style={{ marginTop: '2rem' }}>
-                    <AuthFooter />
-                </div>
-            </div>
-
-            {/* Overlay Container (The Sliding Image Part) */}
-            <div className={styles.overlayContainer}>
-                <div className={styles.overlay}>
-                    <div className={styles.overlayBg} />
-
-                    {/* Left Overlay Panel (Visible when Right Panel is Active / Signup Mode) */}
-                    <div className={`${styles.overlayPanel} ${styles.overlayLeft}`}>
+        <div className={styles.pageContainer}>
+            {/* Left Showcase Hero Panel */}
+            <div className={styles.showcasePanel}>
+                <div className={styles.showcaseContent}>
+                    {/* Top Brand & Status */}
+                    <div className={styles.brandHeader}>
                         <Image
                             src="/logo-white.png"
-                            alt="Ave Vista"
-                            width={140}
-                            height={60}
-                            style={{ objectFit: 'contain', opacity: 0.9, marginBottom: '20px' }}
+                            alt="Ave Vista Resort & Spa"
+                            width={160}
+                            height={54}
+                            style={{ objectFit: 'contain' }}
+                            priority
                         />
-                        <h1 className={styles.title}><span>Welcome Back!</span></h1>
-                        <p className={styles.description}>
-                            <span>To keep connected with us please login with your personal info</span>
-                        </p>
-                        <button className={styles.ghost} onClick={handleSignInClick}>
-                            <span>Sign In</span>
-                        </button>
-                        <div className={styles.overlayFooter}>
-                            <a href="/help" className={styles.footerLink}>Help</a>
-                            <a href="/privacy" className={styles.footerLink}>Privacy</a>
-                            <a href="/terms" className={styles.footerLink}>Terms</a>
+                        <div className={styles.brandBadge}>
+                            <span className={styles.pulseDot} />
+                            Enterprise PMS
                         </div>
                     </div>
 
-                    {/* Right Overlay Panel (Visible when Right Panel is INACTIVE / Login Mode) */}
-                    <div className={`${styles.overlayPanel} ${styles.overlayRight}`}>
-                        <Image
-                            src="/logo-white.png"
-                            alt="Ave Vista"
-                            width={140}
-                            height={60}
-                            style={{ objectFit: 'contain', opacity: 0.9, marginBottom: '20px' }}
-                        />
-                        <h1 className={styles.title}><span>Hello, Friend!</span></h1>
-                        <p className={styles.description}>
-                            <span>Enter your personal details and start your journey with us</span>
+                    {/* Middle Highlights */}
+                    <div className={styles.showcaseMiddle}>
+                        <p className={styles.showcaseTagline}>Hospitality Intelligence Suite</p>
+                        <h1 className={styles.showcaseHeadline}>
+                            Elevating Luxury Resort Operations & Guest Folios
+                        </h1>
+                        <p className={styles.showcaseDescription}>
+                            Comprehensive workstation for reservations, instant room inventory control,
+                            restaurant POS dining, and executive financial auditing.
                         </p>
-                        <button className={styles.ghost} onClick={handleSignUpClick}>
-                            <span>Sign Up</span>
-                        </button>
-                        <div className={styles.overlayFooter}>
-                            <a href="/help" className={styles.footerLink}>Help</a>
-                            <a href="/privacy" className={styles.footerLink}>Privacy</a>
-                            <a href="/terms" className={styles.footerLink}>Terms</a>
+
+                        <div className={styles.featureList}>
+                            <div className={styles.featureItem}>
+                                <div className={styles.featureIconBox}>
+                                    <CalendarDays size={18} />
+                                </div>
+                                <span className={styles.featureText}>
+                                    Unified Reservations & Front Desk Operations
+                                </span>
+                            </div>
+
+                            <div className={styles.featureItem}>
+                                <div className={styles.featureIconBox}>
+                                    <UtensilsCrossed size={18} />
+                                </div>
+                                <span className={styles.featureText}>
+                                    Kitchen POS Orders & In-Room Dining Billing
+                                </span>
+                            </div>
+
+                            <div className={styles.featureItem}>
+                                <div className={styles.featureIconBox}>
+                                    <BarChart3 size={18} />
+                                </div>
+                                <span className={styles.featureText}>
+                                    Executive Night Audits, Occupancy & Tax Intelligence
+                                </span>
+                            </div>
                         </div>
                     </div>
+
+                    {/* Bottom Legal & Property Info */}
+                    <div className={styles.showcaseFooter}>
+                        <span className={styles.resortLocation}>
+                            Ave Vista Resort & Spa • Calicut, India
+                        </span>
+                        <div className={styles.showcaseLinks}>
+                            <Link href="/help" className={styles.showcaseLink}>Help Desk</Link>
+                            <Link href="/privacy" className={styles.showcaseLink}>Privacy Policy</Link>
+                            <Link href="/terms" className={styles.showcaseLink}>Terms of Service</Link>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Right Auth Portal Panel */}
+            <div className={styles.portalPanel}>
+                <div className={styles.portalCard}>
+                    {/* Portal Header */}
+                    <div className={styles.portalHeader}>
+                        <div className={styles.mobileBrandLogo}>
+                            <Image
+                                src="/logo.png"
+                                alt="Ave Vista Resort & Spa"
+                                width={160}
+                                height={50}
+                                style={{ objectFit: 'contain' }}
+                                priority
+                            />
+                        </div>
+
+                        <div className={styles.portalEmblemRow}>
+                            <div className={styles.portalEmblem}>
+                                <Building2 size={26} />
+                            </div>
+                        </div>
+                        <h2 className={styles.portalTitle}>
+                            {mode === 'login' ? 'Staff Sign In' : 'Create Staff Account'}
+                        </h2>
+                        <p className={styles.portalSubtitle}>
+                            {mode === 'login'
+                                ? 'Enter your institutional credentials to access the PMS workspace'
+                                : 'Join the Ave Vista Resort & Spa hospitality operations team'}
+                        </p>
+                    </div>
+
+                    {/* Mode Segmented Tab Switcher */}
+                    <div className={styles.modeSwitcher}>
+                        <button
+                            type="button"
+                            className={`${styles.modeBtn} ${mode === 'login' ? styles.modeBtnActive : ''}`}
+                            onClick={() => switchMode('login')}
+                        >
+                            <LogIn size={18} />
+                            Sign In
+                        </button>
+                        <button
+                            type="button"
+                            className={`${styles.modeBtn} ${mode === 'signup' ? styles.modeBtnActive : ''}`}
+                            onClick={() => switchMode('signup')}
+                        >
+                            <UserPlus size={18} />
+                            Create Account
+                        </button>
+                    </div>
+
+                    {/* Active Form */}
+                    <div className={styles.formWrapper} key={mode}>
+                        {mode === 'login' ? (
+                            <LoginForm onSwitchToSignup={() => switchMode('signup')} />
+                        ) : (
+                            <SignupForm onSwitchToLogin={() => switchMode('login')} />
+                        )}
+                    </div>
+                </div>
+
+                {/* Bottom Copyright Notice */}
+                <div style={{ width: '100%', maxWidth: '480px', marginTop: 'auto', flexShrink: 0 }}>
+                    <AuthFooter />
                 </div>
             </div>
         </div>

@@ -106,6 +106,9 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     }
 
     if (!user) {
+        if (isAuthPage) {
+            return <main style={{ minHeight: '100vh', width: '100%', maxWidth: '100vw', overflowX: 'hidden', backgroundColor: 'var(--background)' }}>{children}</main>;
+        }
         return (
             <main style={{ minHeight: '100vh', backgroundColor: 'var(--background)', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ flex: 1 }}>{children}</div>

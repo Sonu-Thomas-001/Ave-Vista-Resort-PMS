@@ -1,88 +1,154 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
-import styles from '../login/page.module.css';
+import { Mail, ArrowLeft, CheckCircle2, Shield, KeyRound, AlertCircle, ArrowRight } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import AuthFooter from '@/components/AuthFooter';
+import styles from './page.module.css';
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState('');
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Mock API call
-        setTimeout(() => {
+        setError('');
+
+        if (!email.trim()) {
+            setError('Please enter your institutional email address.');
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const redirectTo = typeof window !== 'undefined'
+                ? `${window.location.origin}/reset-password`
+                : undefined;
+
+            const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo
+            });
+
+            if (resetError) {
+                throw resetError;
+            }
+
             setIsSubmitted(true);
-        }, 1000);
+        } catch (err: any) {
+            console.error('Password reset request error:', err);
+            setError(err.message || 'Unable to send recovery email. Please check the address and try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
-        <div className={styles.container}>
-            <div className={styles.card}>
-                <div className={styles.brandHeader}>
-                    <Image
-                        src="/logo.png"
-                        alt="Ave Vista Resort"
-                        width={180}
-                        height={80}
-                        style={{ objectFit: 'contain' }}
-                        priority
-                    />
-                    <p className={styles.subtitle}>Password Recovery</p>
+        <div className={styles.pageWrapper}>
+            <div className={styles.recoveryCard}>
+                {/* Security Emblem */}
+                <div className={styles.emblemWrapper}>
+                    <div className={styles.emblemSquircle}>
+                        <KeyRound size={28} />
+                    </div>
                 </div>
+
+                <h1 className={styles.title}>Passkey Recovery</h1>
+                <p className={styles.subtitle}>
+                    Enter your registered institutional email to receive a verified access link to reset your Ave Vista PMS passkey.
+                </p>
 
                 {!isSubmitted ? (
                     <form onSubmit={handleSubmit} className={styles.form}>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1rem' }}>
-                            Enter your email address and we'll send you a link to reset your password.
-                        </p>
-
                         <div className={styles.inputGroup}>
-                            <label htmlFor="email" className={styles.label}>Email Address</label>
+                            <label htmlFor="recovery-email" className={styles.label}>
+                                Institutional Email Address
+                            </label>
                             <div className={styles.inputWrapper}>
-                                <Mail className={styles.icon} size={20} />
+                                <Mail className={styles.inputIcon} size={18} />
                                 <input
-                                    id="email"
+                                    id="recovery-email"
                                     type="email"
                                     className={styles.input}
-                                    placeholder="Enter your registered email"
+                                    placeholder="officer@avevistaresort.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
+                                    disabled={loading}
                                     required
+                                    autoComplete="email"
                                 />
                             </div>
                         </div>
 
-                        <button type="submit" className={styles.submitBtn}>
-                            Send Reset Link
+                        {error && (
+                            <div className={styles.errorBanner}>
+                                <AlertCircle size={18} />
+                                <span>{error}</span>
+                            </div>
+                        )}
+
+                        <button
+                            type="submit"
+                            className={styles.submitBtn}
+                            disabled={loading}
+                        >
+                            {loading ? (
+                                'Sending Recovery Link...'
+                            ) : (
+                                <>
+                                    Send Recovery Link
+                                    <ArrowRight size={16} />
+                                </>
+                            )}
                         </button>
 
-                        <div className={styles.actions} style={{ justifyContent: 'center', marginTop: '1rem' }}>
-                            <Link href="/login" className={styles.forgotLink} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <ArrowLeft size={16} /> Back to Login
+                        <div className={styles.backRow}>
+                            <Link href="/login" className={styles.backLink}>
+                                <ArrowLeft size={16} />
+                                Return to Sign In
                             </Link>
+                        </div>
+
+                        <div className={styles.securityNote}>
+                            <Shield size={14} color="#0284c7" />
+                            <span>256-Bit Encrypted Institutional Recovery</span>
                         </div>
                     </form>
                 ) : (
-                    <div style={{ textAlign: 'center', animation: 'fadeIn 0.5s' }}>
-                        <div style={{ display: 'inline-flex', padding: '1rem', background: '#DCFCE7', borderRadius: '50%', color: '#166534', marginBottom: '1.5rem' }}>
-                            <CheckCircle size={48} />
+                    <div className={styles.successCard}>
+                        <div className={styles.successIcon}>
+                            <CheckCircle2 size={36} />
                         </div>
-                        <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: 'var(--text-main)' }}>Check your email</h3>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
-                            We've sent a password reset link to <strong>{email}</strong>.
+                        <h2 className={styles.title} style={{ fontSize: '1.4rem' }}>Recovery Email Dispatched</h2>
+                        <p className={styles.successText}>
+                            We&apos;ve sent recovery instructions to <strong>{email}</strong>.
+                            Please check your inbox or spam folder and follow the secure link to set your new passkey.
                         </p>
-                        <Link href="/login" className={styles.submitBtn} style={{ display: 'block', textDecoration: 'none' }}>
-                            Back to Login
+
+                        <Link href="/login" className={styles.submitBtn} style={{ textDecoration: 'none' }}>
+                            <ArrowLeft size={16} />
+                            Return to Sign In
                         </Link>
+
+                        <button
+                            type="button"
+                            className={styles.resendBtn}
+                            onClick={() => {
+                                setIsSubmitted(false);
+                            }}
+                        >
+                            Send to a Different Email
+                        </button>
                     </div>
                 )}
+            </div>
 
-                <div className={styles.footer}>
-                    <p>Protected by Ave Vista Secure Auth</p>
-                </div>
+            {/* Global Copyright Footer */}
+            <div className={styles.footerWrapper}>
+                <AuthFooter />
             </div>
         </div>
     );

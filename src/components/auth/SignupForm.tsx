@@ -1,12 +1,15 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Mail, Lock, User, Briefcase, AlertCircle, Eye, EyeOff, ChevronDown, CheckCircle } from 'lucide-react';
-import styles from '@/app/(auth)/login/page.module.css'; // Reuse existing form styles
+import { Mail, Lock, User, Shield, AlertCircle, Eye, EyeOff, CheckCircle2, ArrowRight } from 'lucide-react';
+import styles from '@/app/(auth)/login/page.module.css';
 
-export default function SignupForm() {
+interface SignupFormProps {
+    onSwitchToLogin?: () => void;
+}
+
+export default function SignupForm({ onSwitchToLogin }: SignupFormProps) {
     const { signup } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -16,23 +19,12 @@ export default function SignupForm() {
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-    const roles = ['Admin', 'Manager', 'Reception'];
-
-    useEffect(() => {
-        const handleClickOutside = () => {
-            if (isDropdownOpen) {
-                setIsDropdownOpen(false);
-            }
-        };
-        if (isDropdownOpen) {
-            document.addEventListener('click', handleClickOutside);
-        }
-        return () => {
-            document.removeEventListener('click', handleClickOutside);
-        };
-    }, [isDropdownOpen]);
+    const roles = [
+        { id: 'Manager', title: 'Manager' },
+        { id: 'Admin', title: 'Admin' },
+        { id: 'Reception', title: 'Reception' }
+    ];
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -40,7 +32,13 @@ export default function SignupForm() {
         setIsSubmitting(true);
 
         if (!email || !password || !fullName) {
-            setError('Please fill in all fields.');
+            setError('Please complete all required fields.');
+            setIsSubmitting(false);
+            return;
+        }
+
+        if (password.length < 6) {
+            setError('Password must be at least 6 characters long.');
             setIsSubmitting(false);
             return;
         }
@@ -52,8 +50,8 @@ export default function SignupForm() {
             } else {
                 setSuccess(true);
             }
-        } catch (err) {
-            setError('An error occurred during sign up.');
+        } catch (err: any) {
+            setError(err?.message || 'An unexpected error occurred during account creation.');
         } finally {
             setIsSubmitting(false);
         }
@@ -61,106 +59,108 @@ export default function SignupForm() {
 
     if (success) {
         return (
-            <div style={{ textAlign: 'center', width: '100%', maxWidth: '400px' }}>
-                <div style={{ marginBottom: '2rem' }}>
-                    <CheckCircle size={64} color="var(--primary)" style={{ margin: '0 auto' }} />
+            <div className={styles.successCard}>
+                <div className={styles.successIconCircle}>
+                    <CheckCircle2 size={36} />
                 </div>
-                <h3 style={{ fontSize: '1.8rem', marginBottom: '1rem', fontWeight: 700 }}>Account Created!</h3>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', fontSize: '1.1rem' }}>
-                    Please check your email to confirm your account, then login.
+                <h3 className={styles.successTitle}>Account Created!</h3>
+                <p className={styles.successText}>
+                    Welcome to Ave Vista PMS. Your staff account for <strong>{email}</strong> has been registered.
                 </p>
-                {/* Note: In sliding auth, "Go to Login" just means switch mode. Handled by parent or just text. */}
+                <button
+                    type="button"
+                    className={styles.submitBtn}
+                    onClick={onSwitchToLogin}
+                >
+                    Proceed to Sign In
+                    <ArrowRight size={16} />
+                </button>
             </div>
         );
     }
 
     return (
-        <form onSubmit={handleSubmit} className={styles.form} style={{ width: '100%', maxWidth: '400px' }}>
+        <form onSubmit={handleSubmit} className={styles.form}>
             <div className={styles.inputGroup}>
-                <label htmlFor="fullname" className={styles.label}>Full Name</label>
+                <label htmlFor="signup-name" className={styles.label}>
+                    Staff Full Name
+                </label>
                 <div className={styles.inputWrapper}>
                     <User className={styles.icon} size={18} />
                     <input
-                        id="fullname"
+                        id="signup-name"
                         type="text"
                         className={styles.input}
                         placeholder="John Doe"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
+                        required
+                        autoComplete="name"
                     />
                 </div>
             </div>
 
             <div className={styles.inputGroup}>
-                <label htmlFor="email" className={styles.label}>Email Address</label>
+                <label htmlFor="signup-email" className={styles.label}>
+                    Institutional Email
+                </label>
                 <div className={styles.inputWrapper}>
                     <Mail className={styles.icon} size={18} />
                     <input
-                        id="email"
+                        id="signup-email"
                         type="email"
                         className={styles.input}
-                        placeholder="name@company.com"
+                        placeholder="staff@avevistaresort.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        required
+                        autoComplete="email"
                     />
                 </div>
             </div>
 
             <div className={styles.inputGroup}>
-                <label htmlFor="password" className={styles.label}>Password</label>
+                <label htmlFor="signup-password" className={styles.label}>
+                    Create Passkey
+                </label>
                 <div className={styles.inputWrapper}>
                     <Lock className={styles.icon} size={18} />
                     <input
-                        id="password"
+                        id="signup-password"
                         type={showPassword ? 'text' : 'password'}
                         className={styles.input}
-                        placeholder="Create strong password"
+                        placeholder="Min. 6 characters"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        required
+                        autoComplete="new-password"
                     />
                     <button
                         type="button"
                         className={styles.togglePassword}
                         onClick={() => setShowPassword(!showPassword)}
+                        title={showPassword ? 'Hide password' : 'Show password'}
+                        tabIndex={-1}
                     >
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                     </button>
                 </div>
             </div>
 
             <div className={styles.inputGroup}>
-                <label htmlFor="role" className={styles.label}>Role</label>
-                <div className={styles.customSelectWrapper}>
-                    <div className={styles.inputWrapper}>
-                        <Briefcase className={styles.icon} size={18} />
+                <label className={styles.label}>
+                    Assigned Property Role
+                </label>
+                <div className={styles.roleSelectorGrid}>
+                    {roles.map((r) => (
                         <div
-                            className={styles.customSelect}
-                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                            key={r.id}
+                            className={`${styles.roleOption} ${role === r.id ? styles.roleOptionSelected : ''}`}
+                            onClick={() => setRole(r.id)}
                         >
-                            <div className={styles.selectedValue}>
-                                {role}
-                            </div>
-                            {isDropdownOpen && (
-                                <div className={styles.dropdownMenu}>
-                                    {roles.map((r) => (
-                                        <div
-                                            key={r}
-                                            className={`${styles.dropdownItem} ${role === r ? styles.selected : ''}`}
-                                            onClick={() => {
-                                                setRole(r);
-                                                setIsDropdownOpen(false);
-                                            }}
-                                        >
-                                            {r}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                            {r.title}
                         </div>
-                        <div className={styles.selectArrow}>
-                            <ChevronDown size={18} />
-                        </div>
-                    </div>
+                    ))}
                 </div>
             </div>
 
@@ -172,8 +172,36 @@ export default function SignupForm() {
             )}
 
             <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
-                {isSubmitting ? 'Creating Account...' : 'Sign Up'}
+                {isSubmitting ? (
+                    'Registering Account...'
+                ) : (
+                    <>
+                        Create Staff Account
+                        <ArrowRight size={16} />
+                    </>
+                )}
             </button>
+
+            {onSwitchToLogin && (
+                <div style={{ textAlign: 'center', marginTop: '14px', fontSize: '0.9rem', color: '#64748b' }}>
+                    Already have an account?{' '}
+                    <button
+                        type="button"
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#0284c7',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            padding: 0,
+                            fontSize: '0.9rem'
+                        }}
+                        onClick={onSwitchToLogin}
+                    >
+                        Sign In
+                    </button>
+                </div>
+            )}
         </form>
     );
 }
