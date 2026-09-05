@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
+import Footer from './Footer';
 import { useAuth } from '@/contexts/AuthContext';
 import { hasAccess } from '@/lib/permissions';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
@@ -105,7 +106,12 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     }
 
     if (!user) {
-        return <main style={{ minHeight: '100vh', backgroundColor: 'var(--background)' }}>{children}</main>;
+        return (
+            <main style={{ minHeight: '100vh', backgroundColor: 'var(--background)', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ flex: 1 }}>{children}</div>
+                <Footer />
+            </main>
+        );
     }
 
     // Calculate Main Content style
@@ -146,7 +152,12 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             )}
 
             <main style={mainStyle}>
-                {children}
+                <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ flex: 1 }}>
+                        {children}
+                    </div>
+                    <Footer />
+                </div>
             </main>
         </div>
     );

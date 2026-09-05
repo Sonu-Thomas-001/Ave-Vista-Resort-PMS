@@ -1,37 +1,28 @@
 import React from 'react';
 
 const AuthFooter = () => {
-    const year = new Date().getFullYear();
+    const currentYear = new Date().getFullYear();
 
     return (
         <div style={{
-            fontSize: '0.9rem',
-            color: 'var(--text-secondary)',
+            fontSize: '0.82rem',
+            color: '#64748b',
             textAlign: 'center',
-            marginTop: '1rem',
-            paddingBottom: '0',
+            marginTop: '1.5rem',
+            paddingBottom: '0.5rem',
             fontWeight: 500,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '0.25rem',
-            flexWrap: 'wrap'
+            gap: '0.5rem',
+            flexWrap: 'wrap',
+            lineHeight: 1.5
         }}>
-            <span>Copyright &copy; {year}</span>
-            <span style={{
-                fontWeight: 600,
-                color: 'var(--text-main)'
-            }}>
-                Ave Vista Resort PMS
-            </span>
-            <span>. All Rights Reserved By</span>
-            <span style={{
-                fontWeight: 800,
-                color: 'var(--text-main)',
-                letterSpacing: '-0.5px'
-            }}>
-                Qubi<span style={{ color: 'var(--primary)' }}>Q</span>ode
-            </span>
+            <span>&copy; {currentYear} <strong style={{ color: '#0f172a' }}>Ave Vista Resorts PMS</strong>.</span>
+            <span style={{ color: '#cbd5e1' }}>&bull;</span>
+            <span>A product of <strong style={{ color: '#0f172a' }}>MidCell Studios</strong>.</span>
+            <span style={{ color: '#cbd5e1' }}>&bull;</span>
+            <span>Proprietary Software. All Rights Reserved</span>
         </div>
     );
 };
