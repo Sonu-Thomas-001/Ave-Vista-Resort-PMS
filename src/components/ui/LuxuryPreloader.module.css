@@ -1,0 +1,172 @@
+/* ==========================================================================
+   Ave Vista PMS - Luxury Preloader Stylesheet
+   Ocean Sky Blue Logo Palette (#0284C7 / #0369A1 / #F0F9FF)
+   ========================================================================== */
+
+.preloaderOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 50% 40%, #ffffff 0%, #f0f9ff 50%, #e2e8f0 100%);
+    overflow: hidden;
+}
+
+.ambientGlow {
+    position: absolute;
+    width: 380px;
+    height: 380px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(2, 132, 199, 0.15) 0%, rgba(56, 189, 248, 0.05) 50%, transparent 70%);
+    filter: blur(40px);
+    animation: pulseGlow 3s ease-in-out infinite alternate;
+    pointer-events: none;
+}
+
+@keyframes pulseGlow {
+    0% {
+        transform: scale(0.85);
+        opacity: 0.6;
+    }
+    100% {
+        transform: scale(1.15);
+        opacity: 1;
+    }
+}
+
+.contentWrapper {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 24px;
+}
+
+/* Logo & Rotating Orbit Ring */
+.logoContainer {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.orbitRing {
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-top-color: #0284c7;
+    border-right-color: #38bdf8;
+    animation: rotateRing 1.4s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+.orbitRingInner {
+    position: absolute;
+    inset: 2px;
+    border-radius: 50%;
+    border: 1.5px dashed rgba(2, 132, 199, 0.25);
+    animation: rotateReverse 6s linear infinite;
+}
+
+@keyframes rotateRing {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes rotateReverse {
+    0% {
+        transform: rotate(360deg);
+    }
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+.logoBox {
+    width: 120px;
+    height: 120px;
+    border-radius: 28px;
+    background: #ffffff;
+    border: 1px solid rgba(186, 230, 253, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+    box-shadow: 0 10px 30px rgba(2, 132, 199, 0.12), 0 2px 8px rgba(15, 23, 42, 0.04);
+    box-sizing: border-box;
+}
+
+/* Typography */
+.brandTitle {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    margin: 0 0 6px 0;
+}
+
+.brandTagline {
+    font-size: 0.84rem;
+    color: #64748b;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    margin: 0 0 28px 0;
+}
+
+/* Sleek Progress Track */
+.progressTrack {
+    width: 220px;
+    height: 4px;
+    background: rgba(226, 232, 240, 0.8);
+    border-radius: 9999px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progressBar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -50%;
+    width: 50%;
+    background: linear-gradient(90deg, transparent 0%, #0284c7 50%, #38bdf8 100%);
+    border-radius: 9999px;
+    animation: fluidProgress 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    box-shadow: 0 0 8px #38bdf8;
+}
+
+@keyframes fluidProgress {
+    0% {
+        left: -50%;
+        width: 30%;
+    }
+    50% {
+        left: 30%;
+        width: 60%;
+    }
+    100% {
+        left: 100%;
+        width: 30%;
+    }
+}
+
+.statusLabel {
+    margin-top: 14px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #0284c7;
+}

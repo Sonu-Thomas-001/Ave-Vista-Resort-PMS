@@ -11,6 +11,8 @@ import { Menu } from 'lucide-react';
 import sidebarStyles from './Sidebar.module.css'; // Find where to import styles for button, or inline styles
 import OfflineBanner from './ui/OfflineBanner';
 import CookieConsentBanner from './ui/CookieConsentBanner';
+import LuxuryPreloader from './ui/LuxuryPreloader';
+import TopProgressBar from './ui/TopProgressBar';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -79,23 +81,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     }, [user, loading, isAuthPage, isPublicPage, router, pathname]);
 
     if (loading) {
-        return (
-            <div style={{
-                height: '100vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'var(--background)'
-            }}>
-                <div className="flex-center" style={{ flexDirection: 'column', gap: '1rem', color: 'var(--primary)' }}>
-                    <div style={{ width: 40, height: 40, border: '3px solid var(--primary-light)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-                    <p>Loading Ave Vista PMS...</p>
-                    <style jsx>{`
-                    @keyframes spin { to { transform: rotate(360deg); } }
-                `}</style>
-                </div>
-            </div>
-        );
+        return <LuxuryPreloader statusText="Loading Ave Vista PMS Workspace..." />;
     }
 
     // Render logic:
@@ -111,6 +97,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         if (isAuthPage) {
             return (
                 <>
+                    <TopProgressBar />
                     <OfflineBanner />
                     <main style={{ minHeight: '100vh', width: '100%', maxWidth: '100vw', overflowX: 'hidden', backgroundColor: 'var(--background)' }}>{children}</main>
                     <CookieConsentBanner />
@@ -119,6 +106,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         }
         return (
             <>
+                <TopProgressBar />
                 <OfflineBanner />
                 <main style={{ minHeight: '100vh', backgroundColor: 'var(--background)', display: 'flex', flexDirection: 'column' }}>
                     <div style={{ flex: 1 }}>{children}</div>
@@ -147,6 +135,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
     return (
         <div style={{ display: 'flex', minHeight: '100vh' }}>
+            <TopProgressBar />
             <OfflineBanner />
             <Sidebar
                 isMobile={isMobile}
