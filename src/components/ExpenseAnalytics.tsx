@@ -14,6 +14,7 @@ import {
     ResponsiveContainer,
     Cell,
 } from 'recharts';
+import { PieChart as PieIcon, BarChart3, Calendar, FileText } from 'lucide-react';
 import styles from './ExpenseAnalytics.module.css';
 
 export interface Expense {
@@ -35,12 +36,24 @@ interface CategoryData {
     name: string;
     value: number;
     color: string;
+    [key: string]: any;
 }
 
 interface DailyData {
     date: string;
     amount: number;
 }
+
+const LUXURY_PALETTE = [
+    '#0284c7',
+    '#10b981',
+    '#8b5cf6',
+    '#f59e0b',
+    '#ec4899',
+    '#06b6d4',
+    '#f97316',
+    '#6366f1',
+];
 
 export default function ExpenseAnalytics({
     expenses,
@@ -53,7 +66,6 @@ export default function ExpenseAnalytics({
             return { categoryData: [], dailyData: [] };
         }
 
-        // Filter by date range
         const now = new Date();
         let filteredExpenses = expenses;
 
@@ -71,252 +83,197 @@ export default function ExpenseAnalytics({
             );
         }
 
-        // Category-wise data for pie chart
+        // Category-wise aggregation
         const categoryMap = new Map<string, { name: string; amount: number; color: string }>();
 
         filteredExpenses.forEach((expense) => {
-            const categoryName = expense.expense_categories?.name || 'Unknown';
-            const categoryId = expense.expense_categories?.id || 'unknown';
+            const categoryName = expense.expense_categories?.name || 'General Operations';
+            const categoryId = expense.expense_categories?.id || 'general';
 
             if (!categoryMap.has(categoryId)) {
+                const color = expense.expense_categories?.color || LUXURY_PALETTE[categoryMap.size % LUXURY_PALETTE.length];
                 categoryMap.set(categoryId, {
                     name: categoryName,
                     amount: 0,
-                    color: expense.expense_categories?.color || '#6B7280',
+                    color,
                 });
             }
 
-            const category = categoryMap.get(categoryId)!;
-            category.amount += expense.amount;
+            const item = categoryMap.get(categoryId)!;
+            item.amount += Number(expense.amount) || 0;
         });
 
         const categoryData: CategoryData[] = Array.from(categoryMap.values())
-            .map(c => ({ name: c.name, value: c.amount, color: c.color }))
+            .map((item, idx) => ({
+                name: item.name,
+                value: Math.round(item.amount),
+                color: item.color || LUXURY_PALETTE[idx % LUXURY_PALETTE.length],
+            }))
             .sort((a, b) => b.value - a.value);
 
-        // Daily trend data for bar chart
+        // Daily aggregation
         const dailyMap = new Map<string, number>();
 
         filteredExpenses.forEach((expense) => {
-            const date = new Date(expense.date).toLocaleDateString('en-IN', {
-                month: 'short',
-                day: 'numeric',
-            });
-
-            dailyMap.set(date, (dailyMap.get(date) || 0) + expense.amount);
+            const dateStr = expense.date;
+            dailyMap.set(dateStr, (dailyMap.get(dateStr) || 0) + (Number(expense.amount) || 0));
         });
 
-        // Sort by date
         const dailyData: DailyData[] = Array.from(dailyMap.entries())
-            .map(([date, amount]) => ({ date, amount }))
-            .sort(
-                (a, b) =>
-                    new Date(a.date).getTime() - new Date(b.date).getTime()
-            );
+            .map(([date, amount]) => ({
+                date: new Date(date).toLocaleDateString('en-IN', {
+                    month: 'short',
+                    day: 'numeric',
+                }),
+                amount: Math.round(amount),
+            }))
+            .slice(-14); // Keep last 14 data points
 
         return { categoryData, dailyData };
     }, [expenses, dateRange]);
 
-    if (isLoading) {
-        return (
-            <div className={styles.container}>
-                <div className={styles.loadingState}>Loading analytics...</div>
-            </div>
-        );
-    }
-
-    if (!expenses || expenses.length === 0) {
-        return (
-            <div className={styles.container}>
-                <div className={styles.emptyState}>
-                    <p>No data to display</p>
-                    <p className={styles.subtext}>
-                        Add expenses to see analytics
-                    </p>
+    const CustomTooltip = ({ active, payload, label }: any) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className={styles.customTooltip}>
+                    <span className={styles.tooltipLabel}>{label || payload[0].name}</span>
+                    <span className={styles.tooltipVal}>
+                        ₹{Number(payload[0].value).toLocaleString('en-IN')}
+                    </span>
                 </div>
-            </div>
-        );
-    }
-
-    const totalAmount = chartData.categoryData.reduce((sum, cat) => sum + cat.value, 0);
+            );
+        }
+        return null;
+    };
 
     return (
         <div className={styles.container}>
-            {/* Date Range Selector */}
-            <div className={styles.header}>
-                <h2 className={styles.title}>Expense Analytics</h2>
+            {/* Top Bar with Date Range Selector */}
+            <div className={styles.headerCard}>
+                <div className={styles.titleGroup}>
+                    <BarChart3 size={18} color="#0284c7" />
+                    <h3 className={styles.title}>Expense Breakdown & Trajectory</h3>
+                </div>
+
                 <div className={styles.dateRangeSelector}>
-                    {(['week', 'month', 'all'] as const).map((range) => (
-                        <button
-                            key={range}
-                            className={`${styles.rangeBtn} ${
-                                dateRange === range ? styles.active : ''
-                            }`}
-                            onClick={() => setDateRange(range)}
-                        >
-                            {range === 'week'
-                                ? 'Last 7 Days'
-                                : range === 'month'
-                                ? 'Last 30 Days'
-                                : 'All Time'}
-                        </button>
-                    ))}
+                    <button
+                        className={`${styles.rangeBtn} ${dateRange === 'week' ? styles.active : ''}`}
+                        onClick={() => setDateRange('week')}
+                    >
+                        Last 7 Days
+                    </button>
+                    <button
+                        className={`${styles.rangeBtn} ${dateRange === 'month' ? styles.active : ''}`}
+                        onClick={() => setDateRange('month')}
+                    >
+                        Last 30 Days
+                    </button>
+                    <button
+                        className={`${styles.rangeBtn} ${dateRange === 'all' ? styles.active : ''}`}
+                        onClick={() => setDateRange('all')}
+                    >
+                        All Time
+                    </button>
                 </div>
             </div>
 
-            {/* Charts Grid */}
+            {/* 2 Charts Grid */}
             <div className={styles.chartsGrid}>
-                {/* Category-wise Pie Chart */}
+                {/* 1. Category Distribution Donut Chart */}
                 <div className={styles.chartCard}>
-                    <h3 className={styles.chartTitle}>Expenses by Category</h3>
-                    {chartData.categoryData.length > 0 ? (
-                        <div className={styles.chartContainer}>
-                            <ResponsiveContainer width="100%" height={300}>
+                    <div className={styles.chartHeader}>
+                        <h4 className={styles.chartTitle}>
+                            <PieIcon size={15} color="#0284c7" />
+                            Category Distribution
+                        </h4>
+                        <span style={{ fontSize: '0.74rem', color: '#94a3b8', fontWeight: 600 }}>
+                            {chartData.categoryData.length} categories active
+                        </span>
+                    </div>
+
+                    <div className={styles.chartContainer}>
+                        {chartData.categoryData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
                                         data={chartData.categoryData}
                                         cx="50%"
                                         cy="50%"
-                                        labelLine={false}
-                                        label={({ name, value }) => {
-                                            const percent = (
-                                                (value / totalAmount) *
-                                                100
-                                            ).toFixed(0);
-                                            return `${name} (${percent}%)`;
-                                        }}
-                                        outerRadius={100}
-                                        fill="#8884d8"
+                                        innerRadius={65}
+                                        outerRadius={95}
+                                        paddingAngle={3}
                                         dataKey="value"
                                     >
-                                        {chartData.categoryData.map(
-                                            (entry, index) => (
-                                                <Cell
-                                                    key={`cell-${index}`}
-                                                    fill={entry.color}
-                                                />
-                                            )
-                                        )}
+                                        {chartData.categoryData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
                                     </Pie>
-                                    <Tooltip
-                                        formatter={(value) =>
-                                            `₹${Number(value || 0).toLocaleString('en-IN', {
-                                                minimumFractionDigits: 2,
-                                            })}`
-                                        }
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <Legend
+                                        verticalAlign="bottom"
+                                        height={36}
+                                        iconType="circle"
+                                        wrapperStyle={{ fontSize: '0.75rem', fontWeight: 600 }}
                                     />
                                 </PieChart>
                             </ResponsiveContainer>
-                        </div>
-                    ) : (
-                        <div className={styles.noData}>No category data</div>
-                    )}
-
-                    {/* Category Legend */}
-                    <div className={styles.categoryLegend}>
-                        {chartData.categoryData.map((category, idx) => (
-                            <div key={idx} className={styles.legendItem}>
-                                <div
-                                    className={styles.legendColor}
-                                    style={{ backgroundColor: category.color }}
-                                />
-                                <div className={styles.legendInfo}>
-                                    <span className={styles.legendName}>
-                                        {category.name}
-                                    </span>
-                                    <span className={styles.legendAmount}>
-                                        ₹
-                                        {category.value.toLocaleString('en-IN', {
-                                            minimumFractionDigits: 2,
-                                        })}
-                                    </span>
+                        ) : (
+                            <div className={styles.emptyState}>
+                                <div className={styles.emptyIconBox}>
+                                    <FileText size={22} />
                                 </div>
+                                <p className={styles.emptyText}>No category expenses recorded for this timeframe</p>
                             </div>
-                        ))}
+                        )}
                     </div>
                 </div>
 
-                {/* Daily Trend Bar Chart */}
+                {/* 2. Daily Outflow Trajectory Bar Chart */}
                 <div className={styles.chartCard}>
-                    <h3 className={styles.chartTitle}>Daily Expense Trend</h3>
-                    {chartData.dailyData.length > 0 ? (
-                        <div className={styles.chartContainer}>
-                            <ResponsiveContainer width="100%" height={300}>
+                    <div className={styles.chartHeader}>
+                        <h4 className={styles.chartTitle}>
+                            <BarChart3 size={15} color="#10b981" />
+                            Daily Spending Trajectory
+                        </h4>
+                        <span style={{ fontSize: '0.74rem', color: '#94a3b8', fontWeight: 600 }}>
+                            Outflow per day (₹)
+                        </span>
+                    </div>
+
+                    <div className={styles.chartContainer}>
+                        {chartData.dailyData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={chartData.dailyData}>
-                                    <CartesianGrid
-                                        strokeDasharray="3 3"
-                                        stroke="#e5e7eb"
-                                    />
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                     <XAxis
                                         dataKey="date"
-                                        tick={{ fill: '#9ca3af', fontSize: 12 }}
+                                        tick={{ fontSize: 11, fill: '#64748b' }}
+                                        axisLine={false}
+                                        tickLine={false}
                                     />
                                     <YAxis
-                                        tick={{ fill: '#9ca3af', fontSize: 12 }}
-                                        tickFormatter={(value) =>
-                                            `₹${(value / 1000).toFixed(0)}K`
-                                        }
+                                        tick={{ fontSize: 11, fill: '#64748b' }}
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tickFormatter={(v) => `₹${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`}
                                     />
-                                    <Tooltip
-                                        contentStyle={{
-                                            background: '#fff',
-                                            border: '1px solid #e5e7eb',
-                                            borderRadius: '8px',
-                                        }}
-                                        formatter={(value) =>
-                                            `₹${Number(value || 0).toLocaleString('en-IN', {
-                                                minimumFractionDigits: 2,
-                                            })}`
-                                        }
-                                        labelStyle={{ color: '#1f2937' }}
-                                    />
+                                    <Tooltip content={<CustomTooltip />} />
                                     <Bar
                                         dataKey="amount"
-                                        fill="#10b981"
-                                        radius={[8, 8, 0, 0]}
-                                        animationDuration={800}
+                                        fill="#0284c7"
+                                        radius={[6, 6, 0, 0]}
                                     />
                                 </BarChart>
                             </ResponsiveContainer>
-                        </div>
-                    ) : (
-                        <div className={styles.noData}>No daily data</div>
-                    )}
-                </div>
-            </div>
-
-            {/* Summary Statistics */}
-            <div className={styles.statistics}>
-                <div className={styles.stat}>
-                    <span className={styles.statLabel}>Total Expenses</span>
-                    <span className={styles.statValue}>
-                        ₹{totalAmount.toLocaleString('en-IN', {
-                            minimumFractionDigits: 2,
-                        })}
-                    </span>
-                </div>
-
-                <div className={styles.stat}>
-                    <span className={styles.statLabel}>Categories</span>
-                    <span className={styles.statValue}>
-                        {chartData.categoryData.length}
-                    </span>
-                </div>
-
-                <div className={styles.stat}>
-                    <span className={styles.statLabel}>Highest Category</span>
-                    <span className={styles.statValue}>
-                        {chartData.categoryData[0]?.name || 'N/A'}
-                    </span>
-                </div>
-
-                <div className={styles.stat}>
-                    <span className={styles.statLabel}>Average Daily</span>
-                    <span className={styles.statValue}>
-                        ₹{(totalAmount / (chartData.dailyData.length || 1)).toLocaleString('en-IN', {
-                            minimumFractionDigits: 2,
-                        })}
-                    </span>
+                        ) : (
+                            <div className={styles.emptyState}>
+                                <div className={styles.emptyIconBox}>
+                                    <Calendar size={22} />
+                                </div>
+                                <p className={styles.emptyText}>No daily data available for selected period</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

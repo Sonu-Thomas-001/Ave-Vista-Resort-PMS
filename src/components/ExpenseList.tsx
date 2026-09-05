@@ -8,6 +8,18 @@ import {
     ChevronDown,
     Eye,
     Download,
+    FileSpreadsheet,
+    FileText,
+    Paperclip,
+    Filter,
+    X,
+    ArrowUpDown,
+    Banknote,
+    CreditCard,
+    QrCode,
+    Building2,
+    User,
+    RefreshCw
 } from 'lucide-react';
 import { exportToPDF, exportToExcel } from '@/lib/expenseExport';
 import styles from './ExpenseList.module.css';
@@ -67,7 +79,8 @@ export default function ExpenseList({
     const [sortBy, setSortBy] = useState<'date' | 'amount'>('date');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     const [deletingId, setDeletingId] = useState<string | null>(null);
-    const [exporting, setExporting] = useState(false);
+    const [previewAttachment, setPreviewAttachment] = useState<string | null>(null);
+    const [exportingType, setExportingType] = useState<'excel' | 'pdf' | null>(null);
 
     const handleSearchChange = (query: string) => {
         setSearchQuery(query);
@@ -79,10 +92,18 @@ export default function ExpenseList({
         onFilterChange(newFilters);
     };
 
+    const handleClearFilters = () => {
+        const cleared = {};
+        setFilters(cleared);
+        setSearchQuery('');
+        onSearch('');
+        onFilterChange(cleared);
+    };
+
     const handleDeleteClick = async (expenseId: string) => {
         if (
             confirm(
-                'Are you sure you want to delete this expense? This action cannot be undone.'
+                'Are you sure you want to delete this expense record? This action cannot be undone.'
             )
         ) {
             try {
@@ -98,93 +119,182 @@ export default function ExpenseList({
     };
 
     const sortedExpenses = [...expenses].sort((a, b) => {
-        let comparison = 0;
         if (sortBy === 'date') {
-            comparison = new Date(b.date).getTime() - new Date(a.date).getTime();
+            const timeA = new Date(a.date).getTime();
+            const timeB = new Date(b.date).getTime();
+            return sortOrder === 'desc' ? timeB - timeA : timeA - timeB;
         } else {
-            comparison = b.amount - a.amount;
+            return sortOrder === 'desc' ? b.amount - a.amount : a.amount - b.amount;
         }
-        return sortOrder === 'desc' ? comparison : -comparison;
     });
 
-    const handleExportPDF = async () => {
-        try {
-            setExporting(true);
-            await exportToPDF(sortedExpenses, `expenses-${new Date().toISOString().split('T')[0]}`);
-        } catch (error: any) {
-            alert(error.message || 'Failed to export PDF');
-        } finally {
-            setExporting(false);
+    const handleSort = (type: 'date' | 'amount') => {
+        if (sortBy === type) {
+            setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+        } else {
+            setSortBy(type);
+            setSortOrder('desc');
         }
     };
 
-    const handleExportExcel = async () => {
+    const handleExport = async (type: 'excel' | 'pdf') => {
         try {
-            setExporting(true);
-            await exportToExcel(sortedExpenses, `expenses-${new Date().toISOString().split('T')[0]}`);
-        } catch (error: any) {
-            alert(error.message || 'Failed to export Excel');
+            setExportingType(type);
+            if (type === 'excel') {
+                await exportToExcel(sortedExpenses);
+            } else {
+                await exportToPDF(sortedExpenses);
+            }
+        } catch (error) {
+            console.error('Export error:', error);
+            alert(`Failed to export to ${type.toUpperCase()}`);
         } finally {
-            setExporting(false);
+            setExportingType(null);
         }
     };
+
+    const getPaymentModeIcon = (mode: string) => {
+        switch (mode) {
+            case 'Card':
+                return <CreditCard size={13} />;
+            case 'UPI':
+                return <QrCode size={13} />;
+            case 'Bank':
+                return <Building2 size={13} />;
+            case 'Cash':
+            default:
+                return <Banknote size={13} />;
+        }
+    };
+
+    const isFilterActive = !!(
+        searchQuery ||
+        filters.categoryId ||
+        filters.paymentMode ||
+        filters.startDate ||
+        filters.endDate
+    );
 
     return (
         <div className={styles.container}>
-            {/* Search & Filter & Export Bar */}
-            <div className={styles.toolbar}>
-                <div className={styles.searchBox}>
-                    <Search size={18} />
-                    <input
-                        type="text"
-                        placeholder="Search by title..."
-                        value={searchQuery}
-                        onChange={(e) => handleSearchChange(e.target.value)}
-                    />
+            {/* Toolbar Card */}
+            <div className={styles.toolbarCard}>
+                <div className={styles.toolbarTop}>
+                    {/* Search Bar */}
+                    <div className={styles.searchBox}>
+                        <Search size={16} className={styles.searchIcon} />
+                        <input
+                            type="text"
+                            placeholder="Search expenses by title or description..."
+                            value={searchQuery}
+                            onChange={(e) => handleSearchChange(e.target.value)}
+                            className={styles.searchInput}
+                        />
+                        {searchQuery && (
+                            <button
+                                className={styles.clearSearchBtn}
+                                onClick={() => handleSearchChange('')}
+                                title="Clear search"
+                            >
+                                <X size={14} />
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Action & Filter Buttons */}
+                    <div className={styles.actionButtons}>
+                        <button
+                            className={`${styles.filterToggleBtn} ${showFilters || isFilterActive ? styles.active : ''}`}
+                            onClick={() => setShowFilters(!showFilters)}
+                        >
+                            <Filter size={14} />
+                            Filters
+                            {isFilterActive && (
+                                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#0284c7' }} />
+                            )}
+                        </button>
+
+                        <button
+                            className={styles.exportBtn}
+                            onClick={() => handleExport('excel')}
+                            disabled={sortedExpenses.length === 0 || exportingType !== null}
+                            title="Export to Excel Spreadsheet"
+                        >
+                            <FileSpreadsheet size={14} color="#10b981" />
+                            {exportingType === 'excel' ? 'Exporting...' : 'Excel'}
+                        </button>
+
+                        <button
+                            className={styles.exportBtn}
+                            onClick={() => handleExport('pdf')}
+                            disabled={sortedExpenses.length === 0 || exportingType !== null}
+                            title="Export to PDF Document"
+                        >
+                            <Download size={14} color="#0284c7" />
+                            {exportingType === 'pdf' ? 'Exporting...' : 'PDF'}
+                        </button>
+
+                        {isFilterActive && (
+                            <button
+                                className={styles.resetBtn}
+                                onClick={handleClearFilters}
+                                title="Reset all search and filter settings"
+                            >
+                                <X size={13} /> Reset
+                            </button>
+                        )}
+                    </div>
                 </div>
 
-                <button
-                    className={`${styles.filterBtn} ${
-                        showFilters ? styles.active : ''
-                    }`}
-                    onClick={() => setShowFilters(!showFilters)}
-                >
-                    <ChevronDown size={18} />
-                    Filters
-                </button>
+                {/* Expanded Filter Panel */}
+                {showFilters && (
+                    <div className={styles.filterPanel}>
+                        <div className={styles.filterGroup}>
+                            <span className={styles.filterLabel}>Category:</span>
+                            <select
+                                className={styles.filterSelect}
+                                value={filters.categoryId || ''}
+                                onChange={(e) =>
+                                    handleFilterChange({
+                                        ...filters,
+                                        categoryId: e.target.value || undefined,
+                                    })
+                                }
+                            >
+                                <option value="">All Categories</option>
+                                {categories.map((c) => (
+                                    <option key={c.id} value={c.id}>
+                                        {c.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
 
-                {sortedExpenses.length > 0 && (
-                    <div className={styles.exportBtns}>
-                        <button
-                            className={styles.exportBtn}
-                            onClick={handleExportPDF}
-                            disabled={exporting}
-                            title="Export as PDF"
-                        >
-                            <Download size={16} />
-                            PDF
-                        </button>
-                        <button
-                            className={styles.exportBtn}
-                            onClick={handleExportExcel}
-                            disabled={exporting}
-                            title="Export as Excel"
-                        >
-                            <Download size={16} />
-                            Excel
-                        </button>
-                    </div>
-                )}
-            </div>
+                        <div className={styles.filterGroup}>
+                            <span className={styles.filterLabel}>Payment:</span>
+                            <select
+                                className={styles.filterSelect}
+                                value={filters.paymentMode || ''}
+                                onChange={(e) =>
+                                    handleFilterChange({
+                                        ...filters,
+                                        paymentMode: e.target.value || undefined,
+                                    })
+                                }
+                            >
+                                <option value="">All Modes</option>
+                                <option value="Cash">Cash</option>
+                                <option value="UPI">UPI</option>
+                                <option value="Card">Card</option>
+                                <option value="Bank">Bank Transfer</option>
+                            </select>
+                        </div>
 
-            {/* Filters Panel */}
-            {showFilters && (
-                <div className={styles.filtersPanel}>
-                    <div className={styles.filterGroup}>
-                        <label>Date Range</label>
-                        <div className={styles.dateRange}>
+                        <div className={styles.filterGroup}>
+                            <span className={styles.filterLabel}>From:</span>
                             <input
                                 type="date"
+                                className={styles.filterDateInput}
                                 value={filters.startDate || ''}
                                 onChange={(e) =>
                                     handleFilterChange({
@@ -192,11 +302,14 @@ export default function ExpenseList({
                                         startDate: e.target.value || undefined,
                                     })
                                 }
-                                placeholder="From"
                             />
-                            <span>to</span>
+                        </div>
+
+                        <div className={styles.filterGroup}>
+                            <span className={styles.filterLabel}>To:</span>
                             <input
                                 type="date"
+                                className={styles.filterDateInput}
                                 value={filters.endDate || ''}
                                 onChange={(e) =>
                                     handleFilterChange({
@@ -204,204 +317,226 @@ export default function ExpenseList({
                                         endDate: e.target.value || undefined,
                                     })
                                 }
-                                placeholder="To"
                             />
                         </div>
                     </div>
-
-                    <div className={styles.filterGroup}>
-                        <label>Category</label>
-                        <select
-                            value={filters.categoryId || ''}
-                            onChange={(e) =>
-                                handleFilterChange({
-                                    ...filters,
-                                    categoryId: e.target.value || undefined,
-                                })
-                            }
-                        >
-                            <option value="">All Categories</option>
-                            {categories.map((cat) => (
-                                <option key={cat.id} value={cat.id}>
-                                    {cat.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className={styles.filterGroup}>
-                        <label>Payment Mode</label>
-                        <select
-                            value={filters.paymentMode || ''}
-                            onChange={(e) =>
-                                handleFilterChange({
-                                    ...filters,
-                                    paymentMode: e.target.value || undefined,
-                                })
-                            }
-                        >
-                            <option value="">All Modes</option>
-                            <option value="Cash">Cash</option>
-                            <option value="UPI">UPI</option>
-                            <option value="Card">Card</option>
-                            <option value="Bank">Bank</option>
-                        </select>
-                    </div>
-
-                    <button
-                        className={styles.clearBtn}
-                        onClick={() => {
-                            setFilters({});
-                            onFilterChange({});
-                        }}
-                    >
-                        Clear Filters
-                    </button>
-                </div>
-            )}
-
-            {/* Sort Controls */}
-            <div className={styles.sortControls}>
-                <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as 'date' | 'amount')}
-                >
-                    <option value="date">Sort by Date</option>
-                    <option value="amount">Sort by Amount</option>
-                </select>
-
-                <button
-                    className={styles.sortOrderBtn}
-                    onClick={() =>
-                        setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
-                    }
-                >
-                    {sortOrder === 'desc' ? 'Newest' : 'Oldest'}
-                </button>
+                )}
             </div>
 
-            {/* Expenses Table/List */}
-            {isLoading ? (
-                <div className={styles.loading}>
-                    <div className={styles.skeleton} />
-                    <div className={styles.skeleton} />
-                    <div className={styles.skeleton} />
-                </div>
-            ) : sortedExpenses.length === 0 ? (
-                <div className={styles.emptyState}>
-                    <p>No expenses found</p>
-                    <p className={styles.subtext}>
-                        Start tracking expenses to see them here
-                    </p>
-                </div>
-            ) : (
-                <div className={styles.tableWrapper}>
+            {/* Expenses Table */}
+            <div className={styles.tableWrapper}>
+                <div className={styles.tableContainer}>
                     <table className={styles.table}>
                         <thead>
                             <tr>
-                                <th>Date</th>
-                                <th>Title</th>
+                                <th
+                                    className={styles.sortableTh}
+                                    onClick={() => handleSort('date')}
+                                    title="Click to sort by Date"
+                                >
+                                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                                        Date & Voucher
+                                        <ArrowUpDown size={13} color="#94a3b8" />
+                                    </div>
+                                </th>
+                                <th>Expense Title & Notes</th>
                                 <th>Category</th>
-                                <th>Amount</th>
                                 <th>Payment Mode</th>
-                                <th>Added By</th>
-                                <th>Actions</th>
+                                <th
+                                    className={styles.sortableTh}
+                                    onClick={() => handleSort('amount')}
+                                    title="Click to sort by Amount"
+                                >
+                                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                                        Amount (₹)
+                                        <ArrowUpDown size={13} color="#94a3b8" />
+                                    </div>
+                                </th>
+                                <th>Recorded By</th>
+                                <th style={{ textAlign: 'right' }}>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {sortedExpenses.map((expense) => (
-                                <tr key={expense.id} className={styles.row}>
-                                    <td className={styles.date}>
-                                        {new Date(
-                                            expense.date
-                                        ).toLocaleDateString('en-IN')}
-                                    </td>
-                                    <td className={styles.title}>
-                                        {expense.title}
-                                        {expense.notes && (
-                                            <div className={styles.notes}>
-                                                {expense.notes}
+                            {sortedExpenses.map((expense) => {
+                                const catColor = expense.expense_categories?.color || '#0284c7';
+                                return (
+                                    <tr key={expense.id}>
+                                        {/* Date */}
+                                        <td>
+                                            <div className={styles.dateCell}>
+                                                <span className={styles.dateVal}>
+                                                    {new Date(expense.date).toLocaleDateString('en-IN', {
+                                                        day: '2-digit',
+                                                        month: 'short',
+                                                        year: 'numeric',
+                                                    })}
+                                                </span>
+                                                <span className={styles.voucherTag}>
+                                                    #{expense.id.slice(0, 8).toUpperCase()}
+                                                </span>
                                             </div>
-                                        )}
-                                    </td>
-                                    <td>
-                                        <div className={styles.categoryBadge}>
-                                            <div
-                                                className={styles.colorDot}
+                                        </td>
+
+                                        {/* Title & Notes */}
+                                        <td>
+                                            <div className={styles.titleCell}>
+                                                <span className={styles.expenseTitle}>
+                                                    {expense.title}
+                                                    {expense.attachment_url && (
+                                                        <button
+                                                            className={styles.attachmentBadge}
+                                                            onClick={() => setPreviewAttachment(expense.attachment_url!)}
+                                                            title="View Receipt Attachment"
+                                                        >
+                                                            <Paperclip size={11} /> Receipt
+                                                        </button>
+                                                    )}
+                                                </span>
+                                                {expense.notes && (
+                                                    <span className={styles.expenseNotes} title={expense.notes}>
+                                                        {expense.notes}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
+
+                                        {/* Category Badge */}
+                                        <td>
+                                            <span
+                                                className={styles.categoryBadge}
                                                 style={{
-                                                    backgroundColor:
-                                                        expense
-                                                            .expense_categories
-                                                            ?.color || '#6B7280',
+                                                    backgroundColor: `${catColor}15`,
+                                                    color: catColor,
                                                 }}
-                                            />
-                                            <span>
-                                                {expense.expense_categories
-                                                    ?.name || 'Unknown'}
+                                            >
+                                                <span
+                                                    className={styles.categoryDot}
+                                                    style={{ backgroundColor: catColor }}
+                                                />
+                                                {expense.expense_categories?.name || 'General Operations'}
                                             </span>
-                                        </div>
-                                    </td>
-                                    <td className={styles.amount}>
-                                        ₹
-                                        {expense.amount.toLocaleString('en-IN', {
-                                            minimumFractionDigits: 2,
-                                            maximumFractionDigits: 2,
-                                        })}
-                                    </td>
-                                    <td>
-                                        <span className={styles.paymentMode}>
-                                            {expense.payment_mode}
-                                        </span>
-                                    </td>
-                                    <td className={styles.addedBy}>
-                                        {expense.profiles?.full_name ||
-                                            'System'}
-                                    </td>
-                                    <td>
-                                        <div className={styles.actions}>
-                                            {expense.attachment_url && (
+                                        </td>
+
+                                        {/* Payment Mode */}
+                                        <td>
+                                            <span className={styles.modeChip}>
+                                                {getPaymentModeIcon(expense.payment_mode)}
+                                                {expense.payment_mode}
+                                            </span>
+                                        </td>
+
+                                        {/* Amount */}
+                                        <td>
+                                            <span className={styles.amountVal}>
+                                                ₹{Number(expense.amount).toLocaleString('en-IN', {
+                                                    minimumFractionDigits: 0,
+                                                })}
+                                            </span>
+                                        </td>
+
+                                        {/* Staff */}
+                                        <td>
+                                            <span className={styles.staffChip}>
+                                                {expense.profiles?.full_name || 'Staff'}
+                                            </span>
+                                        </td>
+
+                                        {/* Actions */}
+                                        <td>
+                                            <div className={styles.actionCell} style={{ justifyContent: 'flex-end' }}>
+                                                {expense.attachment_url && (
+                                                    <button
+                                                        className={styles.actionBtn}
+                                                        title="View Receipt"
+                                                        onClick={() => setPreviewAttachment(expense.attachment_url!)}
+                                                    >
+                                                        <Eye size={15} />
+                                                    </button>
+                                                )}
                                                 <button
-                                                    className={
-                                                        styles.iconBtn
-                                                    }
-                                                    title="View attachment"
+                                                    className={styles.actionBtn}
+                                                    title="Edit Expense"
+                                                    onClick={() => onEdit(expense)}
                                                 >
-                                                    <Eye size={16} />
+                                                    <Edit2 size={15} />
                                                 </button>
-                                            )}
-                                            <button
-                                                className={styles.iconBtn}
-                                                onClick={() => onEdit(expense)}
-                                                title="Edit expense"
-                                            >
-                                                <Edit2 size={16} />
-                                            </button>
-                                            <button
-                                                className={`${styles.iconBtn} ${styles.deleteBtn}`}
-                                                onClick={() =>
-                                                    handleDeleteClick(
-                                                        expense.id
-                                                    )
-                                                }
-                                                disabled={deletingId === expense.id}
-                                                title="Delete expense"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                                                <button
+                                                    className={`${styles.actionBtn} ${styles.actionBtnDanger}`}
+                                                    title="Delete Expense"
+                                                    onClick={() => handleDeleteClick(expense.id)}
+                                                    disabled={deletingId === expense.id}
+                                                >
+                                                    <Trash2 size={15} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
-            )}
 
-            {/* Result Count */}
-            {!isLoading && sortedExpenses.length > 0 && (
-                <div className={styles.resultCount}>
-                    Showing {sortedExpenses.length} expense
-                    {sortedExpenses.length !== 1 ? 's' : ''}
+                {/* Empty State */}
+                {!isLoading && sortedExpenses.length === 0 && (
+                    <div className={styles.emptyState}>
+                        <div className={styles.emptyIconBox}>
+                            <FileText size={28} />
+                        </div>
+                        <h3 className={styles.emptyTitle}>No Expenses Found</h3>
+                        <p className={styles.emptySubtitle}>
+                            {isFilterActive
+                                ? 'No expense records match your active search or filter criteria.'
+                                : 'No operational expenses recorded yet. Click "Add Expense" to log your first voucher.'}
+                        </p>
+                        {isFilterActive && (
+                            <button className={styles.resetBtn} onClick={handleClearFilters}>
+                                <RefreshCw size={12} /> Clear Filter Settings
+                            </button>
+                        )}
+                    </div>
+                )}
+
+                {/* Table Footer */}
+                <div className={styles.tableFooter}>
+                    <span>
+                        Showing <strong>{sortedExpenses.length}</strong> of <strong>{expenses.length}</strong> total expense vouchers
+                    </span>
+                    <span>
+                        Total Filtered Sum: <strong>₹{sortedExpenses.reduce((s, e) => s + (Number(e.amount) || 0), 0).toLocaleString('en-IN')}</strong>
+                    </span>
+                </div>
+            </div>
+
+            {/* Receipt Attachment Preview Modal */}
+            {previewAttachment && (
+                <div
+                    className={styles.previewOverlay}
+                    onClick={() => setPreviewAttachment(null)}
+                >
+                    <div
+                        className={styles.previewModal}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className={styles.previewHeader}>
+                            <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>
+                                Expense Receipt Document
+                            </span>
+                            <button
+                                className={styles.closeBtn}
+                                onClick={() => setPreviewAttachment(null)}
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+                        <div style={{ padding: '16px', overflow: 'auto' }}>
+                            <img
+                                src={previewAttachment}
+                                alt="Expense Receipt Attachment"
+                                className={styles.previewImg}
+                            />
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

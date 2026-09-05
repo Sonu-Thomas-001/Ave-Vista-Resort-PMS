@@ -2,280 +2,169 @@
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 1.25rem;
 }
 
-.header {
+.headerCard {
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 18px;
+    padding: 1rem 1.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 16px;
     flex-wrap: wrap;
+    gap: 1rem;
+    box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04);
+}
+
+.titleGroup {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .title {
     margin: 0;
-    font-size: 20px;
-    font-weight: 700;
-    color: #1f2937;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
 }
 
 .dateRangeSelector {
-    display: flex;
-    gap: 8px;
-    background: #f9fafb;
-    padding: 4px;
-    border-radius: 8px;
+    display: inline-flex;
+    background: #f1f5f9;
+    padding: 3px;
+    border-radius: 10px;
+    gap: 3px;
 }
 
 .rangeBtn {
-    padding: 8px 14px;
+    padding: 6px 14px;
     border: none;
     background: transparent;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 500;
+    border-radius: 7px;
+    font-size: 0.78rem;
+    font-weight: 700;
     cursor: pointer;
-    color: #6b7280;
+    color: #64748b;
     transition: all 0.2s ease;
 }
 
-.rangeBtn:hover {
-    color: #10b981;
-    background: rgba(16, 185, 129, 0.1);
+.rangeBtn:hover:not(.active) {
+    color: #0f172a;
+    background: rgba(255, 255, 255, 0.5);
 }
 
 .rangeBtn.active {
-    background: white;
-    color: #10b981;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background: #ffffff;
+    color: #0284c7;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .chartsGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
 }
 
 .chartCard {
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 18px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
-.chartCard:hover {
-    border-color: #d1d5db;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+.chartHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f1f5f9;
 }
 
 .chartTitle {
-    margin: 0 0 16px 0;
-    font-size: 15px;
-    font-weight: 600;
-    color: #1f2937;
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #334155;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .chartContainer {
     width: 100%;
-    height: 300px;
-    margin-bottom: 16px;
+    height: 310px;
 }
 
-.loadingState,
-.emptyState,
-.noData {
+.customTooltip {
+    background: #0f172a;
+    color: #ffffff;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.3);
+    border: 1px solid #334155;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.tooltipLabel {
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+}
+
+.tooltipVal {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #38bdf8;
+}
+
+.emptyState {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 60px 20px;
     text-align: center;
-    color: #6b7280;
-    min-height: 300px;
-}
-
-.emptyState,
-.noData {
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    margin: 20px 0;
-}
-
-.emptyState p,
-.noData {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 500;
-    color: #374151;
-}
-
-.subtext {
-    margin-top: 8px !important;
-    font-size: 14px;
-    color: #9ca3af;
-}
-
-.categoryLegend {
-    display: flex;
-    flex-direction: column;
+    color: #94a3b8;
+    min-height: 280px;
     gap: 10px;
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid #e5e7eb;
 }
 
-.legendItem {
+.emptyIconBox {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    background: #f1f5f9;
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 8px;
-    border-radius: 6px;
-    transition: all 0.2s ease;
+    justify-content: center;
+    color: #94a3b8;
 }
 
-.legendItem:hover {
-    background: #f9fafb;
-}
-
-.legendColor {
-    width: 12px;
-    height: 12px;
-    border-radius: 3px;
-    flex-shrink: 0;
-}
-
-.legendInfo {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex: 1;
-    gap: 12px;
-}
-
-.legendName {
-    font-size: 13px;
-    color: #374151;
-    font-weight: 500;
-}
-
-.legendAmount {
-    font-size: 13px;
-    color: #6b7280;
+.emptyText {
+    font-size: 0.88rem;
     font-weight: 600;
-    white-space: nowrap;
-}
-
-.statistics {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 12px;
-    padding: 20px;
-    background: linear-gradient(135deg, #f0fdf4 0%, #f3f4f6 100%);
-    border-radius: 12px;
-    border: 1px solid #dcfce7;
-}
-
-.stat {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 12px;
-    background: white;
-    border-radius: 8px;
-    border: 1px solid #e5e7eb;
-}
-
-.statLabel {
-    font-size: 11px;
-    font-weight: 600;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.statValue {
-    font-size: 18px;
-    font-weight: 700;
-    color: #10b981;
-    line-height: 1;
+    color: #64748b;
+    margin: 0;
 }
 
 @media (max-width: 1024px) {
     .chartsGrid {
         grid-template-columns: 1fr;
-    }
-
-    .header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .dateRangeSelector {
-        width: 100%;
-        justify-content: center;
-    }
-}
-
-@media (max-width: 768px) {
-    .container {
-        gap: 16px;
-    }
-
-    .chartCard {
-        padding: 16px;
-    }
-
-    .chartContainer {
-        height: 250px;
-        margin-bottom: 12px;
-    }
-
-    .statistics {
-        grid-template-columns: repeat(2, 1fr);
-        padding: 16px;
-        gap: 8px;
-    }
-
-    .stat {
-        padding: 8px;
-    }
-
-    .statValue {
-        font-size: 14px;
-    }
-}
-
-@media (max-width: 480px) {
-    .title {
-        font-size: 18px;
-    }
-
-    .dateRangeSelector {
-        flex-wrap: wrap;
-    }
-
-    .rangeBtn {
-        padding: 6px 12px;
-        font-size: 12px;
-    }
-
-    .chartContainer {
-        height: 200px;
-    }
-
-    .statistics {
-        grid-template-columns: 1fr;
-    }
-
-    .legendItem {
-        gap: 8px;
-    }
-
-    .legendName,
-    .legendAmount {
-        font-size: 12px;
     }
 }

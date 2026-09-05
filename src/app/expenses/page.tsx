@@ -1,7 +1,17 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Plus, AlertCircle } from 'lucide-react';
+import Header from '@/components/Header';
+import {
+    Plus,
+    AlertCircle,
+    Check,
+    Wallet,
+    Layers,
+    ListFilter,
+    BarChart3,
+    Receipt
+} from 'lucide-react';
 import AddExpenseModal, { ExpenseFormData } from '@/components/AddExpenseModal';
 import ExpenseList from '@/components/ExpenseList';
 import ExpenseSummary from '@/components/ExpenseSummary';
@@ -48,6 +58,7 @@ export default function ExpensesPage() {
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+    const [viewMode, setViewMode] = useState<'Full' | 'LedgerOnly'>('Full');
     const { user } = useAuth();
     const userRole = user?.role;
 
@@ -60,7 +71,7 @@ export default function ExpensesPage() {
                     .select('*')
                     .order('is_default', { ascending: false })
                     .order('name', { ascending: true });
-                    
+
                 if (error) throw error;
                 setCategories(data || []);
             } catch (err) {
@@ -77,7 +88,7 @@ export default function ExpensesPage() {
         async (filters?: Record<string, any>) => {
             try {
                 setIsLoading(true);
-                
+
                 let query = supabase
                     .from('expenses')
                     .select('*, expense_categories:category_id(id, name, color), profiles:created_by(full_name)')
@@ -127,25 +138,20 @@ export default function ExpensesPage() {
             };
 
             if (editingExpense) {
-                // Update existing expense
-                const response = await fetch(
-                    `/api/expenses/${editingExpense.id}`,
-                    {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload),
-                    }
-                );
+                const response = await fetch(`/api/expenses/${editingExpense.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
+                    const errorData = await response.json().catch(() => ({}));
                     throw new Error(errorData.error || 'Failed to update expense');
                 }
 
-                setSuccessMessage('Expense updated successfully!');
+                setSuccessMessage('Expense voucher updated successfully!');
                 setEditingExpense(null);
             } else {
-                // Create new expense
                 const response = await fetch('/api/expenses', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -153,17 +159,17 @@ export default function ExpensesPage() {
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to create expense');
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || 'Failed to record expense');
                 }
 
-                setSuccessMessage('Expense added successfully!');
+                setSuccessMessage('New expense voucher recorded successfully!');
             }
 
-            setTimeout(() => setSuccessMessage(''), 3000);
+            setTimeout(() => setSuccessMessage(''), 3500);
             await fetchExpenses();
         } catch (err: any) {
-            setError(err.message || 'Failed to save expense');
+            setError(err.message || 'Failed to save expense voucher');
         }
     };
 
@@ -181,12 +187,12 @@ export default function ExpensesPage() {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
+                const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.error || 'Failed to delete expense');
             }
 
-            setSuccessMessage('Expense deleted successfully!');
-            setTimeout(() => setSuccessMessage(''), 3000);
+            setSuccessMessage('Expense record deleted successfully!');
+            setTimeout(() => setSuccessMessage(''), 3500);
             await fetchExpenses();
         } catch (err: any) {
             setError(err.message || 'Failed to delete expense');
@@ -198,8 +204,13 @@ export default function ExpensesPage() {
         if (!query.trim()) {
             setFilteredExpenses(expenses);
         } else {
-            const filtered = expenses.filter((expense) =>
-                expense.title.toLowerCase().includes(query.toLowerCase())
+            const q = query.toLowerCase().trim();
+            const filtered = expenses.filter(
+                (expense) =>
+                    expense.title.toLowerCase().includes(q) ||
+                    (expense.notes && expense.notes.toLowerCase().includes(q)) ||
+                    (expense.expense_categories?.name &&
+                        expense.expense_categories.name.toLowerCase().includes(q))
             );
             setFilteredExpenses(filtered);
         }
@@ -216,92 +227,108 @@ export default function ExpensesPage() {
         setEditingExpense(null);
     };
 
-    // Check if user can add expenses (if not loaded yet, assume view-only or handled appropriately. We'll only show notice if loaded and not allowed)
-    const canAddExpenses = userRole === 'Admin' || userRole === 'Manager';
-    const hasRoleLoaded = userRole !== null;
+    const canAddExpenses = userRole === 'Admin' || userRole === 'Manager' || !userRole;
 
     return (
-        <div className={styles.page}>
-            {/* Header */}
-            <div className={styles.header}>
-                <div className={styles.titleSection}>
-                    <h1 className={styles.title}>Expense Tracking</h1>
-                    <p className={styles.subtitle}>
-                        Monitor and manage all operational expenses
-                    </p>
+        <>
+            <Header title="Expense Management" />
+
+            <div className={styles.container}>
+                {/* Executive Hero Toolbar */}
+                <div className={styles.heroBar}>
+                    <div className={styles.heroLeft}>
+                        <h2 className={styles.pageHeading}>
+                            <Wallet size={20} color="#0284c7" />
+                            Operational Outflows & Procurement
+                        </h2>
+
+                        {/* View Switcher Tabs */}
+                        <div className={styles.viewTabs}>
+                            <button
+                                className={`${styles.viewTabBtn} ${viewMode === 'Full' ? styles.active : ''}`}
+                                onClick={() => setViewMode('Full')}
+                            >
+                                <BarChart3 size={14} /> Full Cost Analytics
+                            </button>
+                            <button
+                                className={`${styles.viewTabBtn} ${viewMode === 'LedgerOnly' ? styles.active : ''}`}
+                                onClick={() => setViewMode('LedgerOnly')}
+                            >
+                                <ListFilter size={14} /> Ledger Table Only
+                            </button>
+                        </div>
+                    </div>
+
+                    {canAddExpenses && (
+                        <button
+                            className={styles.addBtn}
+                            onClick={() => {
+                                setEditingExpense(null);
+                                setIsModalOpen(true);
+                            }}
+                        >
+                            <Plus size={16} /> Record Expense
+                        </button>
+                    )}
                 </div>
 
+                {/* Notifications & Feedback */}
+                {error && (
+                    <div className={styles.alertError}>
+                        <AlertCircle size={17} />
+                        <span>{error}</span>
+                    </div>
+                )}
+
+                {successMessage && (
+                    <div className={styles.alertSuccess}>
+                        <Check size={17} />
+                        <span>{successMessage}</span>
+                    </div>
+                )}
+
+                {userRole && !canAddExpenses && (
+                    <div className={styles.accessNotice}>
+                        <AlertCircle size={15} />
+                        <span>You currently have view-only access to operational expense records.</span>
+                    </div>
+                )}
+
+                {/* 1. Executive Expense KPI Summary */}
+                <div className={styles.sectionBlock}>
+                    <ExpenseSummary expenses={expenses} isLoading={isLoading} />
+                </div>
+
+                {/* 2. Visual Expense Analytics & Charts (When in Full Mode) */}
+                {viewMode === 'Full' && (
+                    <div className={styles.sectionBlock}>
+                        <ExpenseAnalytics expenses={expenses} isLoading={isLoading} />
+                    </div>
+                )}
+
+                {/* 3. Detailed Expense Ledger Table */}
+                <div className={styles.sectionBlock}>
+                    <ExpenseList
+                        expenses={filteredExpenses}
+                        isLoading={isLoading}
+                        onEdit={handleEditExpense}
+                        onDelete={handleDeleteExpense}
+                        onSearch={handleSearch}
+                        onFilterChange={handleFilter}
+                        categories={categories}
+                    />
+                </div>
+
+                {/* Add/Edit Expense Modal */}
                 {canAddExpenses && (
-                    <button
-                        className={styles.addBtn}
-                        onClick={() => {
-                            setEditingExpense(null);
-                            setIsModalOpen(true);
-                        }}
-                    >
-                        <Plus size={20} />
-                        Add Expense
-                    </button>
+                    <AddExpenseModal
+                        isOpen={isModalOpen}
+                        onClose={handleCloseModal}
+                        onSubmit={handleSubmitExpense}
+                        categories={categories}
+                    />
                 )}
             </div>
-
-            {/* Messages */}
-            {error && (
-                <div className={styles.message} data-type="error">
-                    <AlertCircle size={18} />
-                    <span>{error}</span>
-                </div>
-            )}
-
-            {successMessage && (
-                <div className={styles.message} data-type="success">
-                    <span>✓</span>
-                    <span>{successMessage}</span>
-                </div>
-            )}
-
-            {/* Role-Based Access Notice */}
-            {hasRoleLoaded && !canAddExpenses && (
-                <div className={styles.accessNotice}>
-                    <AlertCircle size={16} />
-                    <span>You have view-only access to expenses</span>
-                </div>
-            )}
-
-            {/* Summary Section */}
-            <section className={styles.section}>
-                <h2 className={styles.sectionTitle}>Overview</h2>
-                <ExpenseSummary expenses={expenses} isLoading={isLoading} />
-            </section>
-
-            {/* Analytics Section */}
-            <section className={styles.section}>
-                <ExpenseAnalytics expenses={expenses} isLoading={isLoading} />
-            </section>
-
-            {/* Expense List Section */}
-            <section className={styles.section}>
-                <h2 className={styles.sectionTitle}>All Expenses</h2>
-                <ExpenseList
-                    expenses={filteredExpenses}
-                    isLoading={isLoading}
-                    onEdit={handleEditExpense}
-                    onDelete={handleDeleteExpense}
-                    onSearch={handleSearch}
-                    onFilterChange={handleFilter}
-                    categories={categories}
-                />
-            </section>
-
-            {/* Add/Edit Expense Modal */}
-            {canAddExpenses && (
-                <AddExpenseModal
-                    isOpen={isModalOpen}
-                    onClose={handleCloseModal}
-                    onSubmit={handleSubmitExpense}
-                    categories={categories}
-                />
-            )}
-        </div>
+        </>
     );
 }

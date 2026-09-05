@@ -1,7 +1,22 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { X, Plus, AlertCircle, FileText, UploadCloud, Tag, CreditCard, Receipt, ChevronDown, Check } from 'lucide-react';
+import {
+    X,
+    Plus,
+    AlertCircle,
+    FileText,
+    UploadCloud,
+    CreditCard,
+    Receipt,
+    Banknote,
+    QrCode,
+    Building2,
+    Calendar,
+    IndianRupee,
+    RefreshCw,
+    Check
+} from 'lucide-react';
 import styles from './AddExpenseModal.module.css';
 
 interface ExpenseCategory {
@@ -46,51 +61,13 @@ export default function AddExpenseModal({
     const [error, setError] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-    const [isClosing, setIsClosing] = useState(false);
-    const [isCatOpen, setIsCatOpen] = useState(false);
-    const [isPayOpen, setIsPayOpen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const catRef = useRef<HTMLDivElement>(null);
-    const payRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        if (isOpen) {
-            setIsClosing(false);
-            setIsCatOpen(false);
-            setIsPayOpen(false);
+        if (isOpen && categories.length > 0 && !formData.categoryId) {
+            setFormData((prev) => ({ ...prev, categoryId: categories[0].id }));
         }
-    }, [isOpen]);
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (catRef.current && !catRef.current.contains(event.target as Node)) {
-                setIsCatOpen(false);
-            }
-            if (payRef.current && !payRef.current.contains(event.target as Node)) {
-                setIsPayOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    const handleClose = () => {
-        setIsClosing(true);
-        setTimeout(() => {
-            onClose();
-            setIsClosing(false);
-        }, 300);
-    };
-
-    const handleChange = (
-        e: React.ChangeEvent<
-            HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-        >
-    ) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
-        setError(''); // Clear error when user starts typing
-    };
+    }, [isOpen, categories, formData.categoryId]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files?.[0]) {
@@ -104,44 +81,35 @@ export default function AddExpenseModal({
         }
     };
 
-    const triggerFilePicker = () => {
-        fileInputRef.current?.click();
+    const handleRemoveFile = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setSelectedFile(null);
+        setPreviewUrl(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
 
-        // Validation
         if (!formData.title.trim()) {
-            setError('Description is required');
-            return;
-        }
-
-        if (formData.title.trim().length < 3) {
-            setError('Description must be at least 3 characters');
+            setError('Expense description / title is required');
             return;
         }
 
         if (!formData.categoryId) {
-            setError('Please select a category');
+            setError('Please select an expense category');
             return;
         }
 
-        if (!formData.amount || isNaN(parseFloat(formData.amount))) {
-            setError('Please enter a valid amount');
-            return;
-        }
-
-        if (parseFloat(formData.amount) <= 0) {
-            setError('Amount must be greater than 0');
+        if (!formData.amount || isNaN(parseFloat(formData.amount)) || parseFloat(formData.amount) <= 0) {
+            setError('Please enter a valid positive amount');
             return;
         }
 
         try {
             setLoading(true);
 
-            // Upload file to Supabase Storage if selected
             let attachmentUrl = '';
             if (selectedFile) {
                 const uploadFormData = new FormData();
@@ -153,8 +121,8 @@ export default function AddExpenseModal({
                 });
 
                 if (!uploadResponse.ok) {
-                    const uploadError = await uploadResponse.json();
-                    throw new Error(uploadError.error || 'Failed to upload file');
+                    const uploadError = await uploadResponse.json().catch(() => ({}));
+                    throw new Error(uploadError.error || 'Failed to upload receipt attachment');
                 }
 
                 const uploadData = await uploadResponse.json();
@@ -169,7 +137,7 @@ export default function AddExpenseModal({
             // Reset form
             setFormData({
                 title: '',
-                categoryId: '',
+                categoryId: categories[0]?.id || '',
                 amount: '',
                 date: new Date().toISOString().split('T')[0],
                 paymentMode: 'Cash',
@@ -177,211 +145,203 @@ export default function AddExpenseModal({
             });
             setSelectedFile(null);
             setPreviewUrl(null);
-            handleClose();
+            onClose();
         } catch (err: any) {
-            setError(err.message || 'Failed to add expense');
+            setError(err.message || 'Failed to record expense');
         } finally {
             setLoading(false);
         }
     };
 
-    if (!isOpen && !isClosing) return null;
-
-    const selectedCategory = categories.find(
-        (cat) => cat.id === formData.categoryId
-    );
+    if (!isOpen) return null;
 
     return (
-        <div className={`${styles.overlay} ${isClosing ? styles.closing : ''}`} onClick={handleClose}>
-            <div className={`${styles.modal} ${isClosing ? styles.closing : ''}`} onClick={(e) => e.stopPropagation()}>
-                <div className={styles.modalBody}>
-                    <div className={styles.header}>
-                        <div className={styles.headerIcon}>
-                            <Receipt size={24} />
+        <div className={styles.overlay} onClick={onClose}>
+            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+                {/* Header */}
+                <div className={styles.header}>
+                    <div className={styles.titleGroup}>
+                        <Receipt size={20} color="#0284c7" />
+                        <h3 className={styles.title}>Record New Expense</h3>
+                    </div>
+                    <button
+                        className={styles.closeBtn}
+                        onClick={onClose}
+                        type="button"
+                        title="Close Modal"
+                    >
+                        <X size={18} />
+                    </button>
+                </div>
+
+                {/* Form Body */}
+                <form onSubmit={handleSubmit} className={styles.form}>
+                    {error && (
+                        <div className={styles.errorBanner}>
+                            <AlertCircle size={16} />
+                            <span>{error}</span>
                         </div>
-                        <div className={styles.headerText}>
-                            <h2 className={styles.title}>New Expense</h2>
-                            <p className={styles.subtitle}>Enter the details of your recent expenditure</p>
-                        </div>
-                        <button className={styles.closeBtn} onClick={handleClose} type="button" aria-label="Close modal">
-                            <X size={20} />
-                        </button>
+                    )}
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>Expense Title / Description *</label>
+                        <input
+                            type="text"
+                            className={styles.input}
+                            placeholder="e.g. Organic vegetables procurement, Diesel for generator..."
+                            value={formData.title}
+                            onChange={(e) => {
+                                setFormData({ ...formData, title: e.target.value });
+                                setError('');
+                            }}
+                            autoFocus
+                        />
                     </div>
 
-                    <form onSubmit={handleSubmit} className={styles.form}>
-                        {error && (
-                            <div className={styles.error}>
-                                <AlertCircle size={18} />
-                                <span>{error}</span>
+                    <div className={styles.formGrid2}>
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Amount (₹) *</label>
+                            <div className={styles.inputWrapper}>
+                                <span className={styles.currencyPrefix}>₹</span>
+                                <input
+                                    type="number"
+                                    step="any"
+                                    className={styles.input}
+                                    placeholder="0.00"
+                                    value={formData.amount}
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, amount: e.target.value });
+                                        setError('');
+                                    }}
+                                />
+                            </div>
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Expense Date *</label>
+                            <input
+                                type="date"
+                                className={styles.input}
+                                value={formData.date}
+                                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                            />
+                        </div>
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>Expense Category *</label>
+                        <select
+                            className={styles.select}
+                            value={formData.categoryId}
+                            onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                        >
+                            {categories.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                    {c.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>Payment Instrument / Mode *</label>
+                        <div className={styles.paymentModeGrid}>
+                            {(['Cash', 'UPI', 'Card', 'Bank'] as const).map((mode) => (
+                                <div
+                                    key={mode}
+                                    className={`${styles.modeOption} ${
+                                        formData.paymentMode === mode ? styles.modeOptionActive : ''
+                                    }`}
+                                    onClick={() => setFormData({ ...formData, paymentMode: mode })}
+                                >
+                                    {mode === 'Cash' && <Banknote size={14} />}
+                                    {mode === 'UPI' && <QrCode size={14} />}
+                                    {mode === 'Card' && <CreditCard size={14} />}
+                                    {mode === 'Bank' && <Building2 size={14} />}
+                                    {mode === 'Bank' ? 'Bank Wire' : mode}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Receipt Upload Dropzone */}
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>Receipt Bill / Invoice Attachment (Optional)</label>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*,.pdf"
+                            onChange={handleFileChange}
+                            style={{ display: 'none' }}
+                        />
+
+                        {previewUrl ? (
+                            <div className={styles.previewBox}>
+                                <img src={previewUrl} alt="Receipt Preview" className={styles.previewThumb} />
+                                <button
+                                    type="button"
+                                    className={styles.removeThumbBtn}
+                                    onClick={handleRemoveFile}
+                                    title="Remove attachment"
+                                >
+                                    <X size={14} />
+                                </button>
+                            </div>
+                        ) : selectedFile ? (
+                            <div className={styles.previewBox} style={{ padding: '16px' }}>
+                                <FileText size={28} color="#0284c7" />
+                                <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>
+                                    {selectedFile.name} ({(selectedFile.size / 1024).toFixed(0)} KB)
+                                </span>
+                                <button
+                                    type="button"
+                                    className={styles.removeThumbBtn}
+                                    onClick={handleRemoveFile}
+                                >
+                                    <X size={14} />
+                                </button>
+                            </div>
+                        ) : (
+                            <div
+                                className={styles.dropzone}
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                <UploadCloud size={28} className={styles.dropzoneIcon} />
+                                <p className={styles.dropzoneText}>Click to upload receipt, invoice or voucher</p>
+                                <p className={styles.dropzoneSub}>Supports JPG, PNG, PDF up to 10MB</p>
                             </div>
                         )}
+                    </div>
 
-                        <div className={styles.formSection}>
-                            <div className={styles.formGrid}>
-                                {/* Expense Title */}
-                                <div className={styles.formGroup + ' ' + styles.fullWidth}>
-                                    <label htmlFor="title">Description *</label>
-                                    <div className={styles.inputWrapper}>
-                                        <div className={styles.iconWrapper}><Receipt size={16} /></div>
-                                        <input id="title" type="text" name="title" placeholder="e.g., Office Supplies, Electricity Bill" value={formData.title} onChange={handleChange} disabled={loading} autoFocus={!error} />
-                                    </div>
-                                </div>
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>Additional Remarks / Supplier Notes (Optional)</label>
+                        <textarea
+                            className={styles.textarea}
+                            rows={2}
+                            placeholder="Supplier name, bill reference number, or justification..."
+                            value={formData.notes || ''}
+                            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                        />
+                    </div>
 
-                                {/* Category */}
-                                <div className={styles.formGroup} ref={catRef}>
-                                    <label>Category *</label>
-                                    <div className={styles.customSelectContainer}>
-                                        <div 
-                                            className={`${styles.customSelectHeader} ${isCatOpen ? styles.active : ''} ${loading ? styles.disabled : ''}`} 
-                                            onClick={() => !loading && setIsCatOpen(!isCatOpen)}
-                                        >
-                                            <div className={styles.iconWrapper}>
-                                                {selectedCategory ? (
-                                                    <div className={styles.categoryColorDot} style={{ backgroundColor: selectedCategory.color }} />
-                                                ) : (
-                                                    <Tag size={16} />
-                                                )}
-                                            </div>
-                                            <span className={styles.customSelectValue}>
-                                                {selectedCategory ? selectedCategory.name : 'Select a category'}
-                                            </span>
-                                            <ChevronDown size={16} className={styles.chevron} />
-                                        </div>
-                                        {isCatOpen && !loading && (
-                                            <div className={styles.customSelectOptions}>
-                                                {categories.map((cat) => (
-                                                    <div 
-                                                        key={cat.id} 
-                                                        className={`${styles.customSelectOption} ${formData.categoryId === cat.id ? styles.selected : ''}`}
-                                                        onClick={() => {
-                                                            setFormData(p => ({ ...p, categoryId: cat.id }));
-                                                            setError('');
-                                                            setIsCatOpen(false);
-                                                        }}
-                                                    >
-                                                        <div className={styles.categoryColorDot} style={{ backgroundColor: cat.color }} />
-                                                        {cat.name}
-                                                        {formData.categoryId === cat.id && <Check size={16} className={styles.checkIcon} />}
-                                                    </div>
-                                                ))}
-                                                {categories.length === 0 && (
-                                                    <div className={styles.customSelectOption} style={{ color: '#9ca3af', cursor: 'default' }}>
-                                                        No categories available
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Amount */}
-                                <div className={styles.formGroup}>
-                                    <label htmlFor="amount">Amount *</label>
-                                    <div className={styles.inputWrapper}>
-                                        <div className={styles.iconWrapper}><span className={styles.currencySymbol}>₹</span></div>
-                                        <input id="amount" type="number" name="amount" placeholder="0.00" value={formData.amount} onChange={handleChange} disabled={loading} step="0.01" min="0" className={styles.inputWithIcon} />
-                                    </div>
-                                </div>
-
-                                {/* Date */}
-                                <div className={styles.formGroup}>
-                                    <label htmlFor="date">Date</label>
-                                    <div className={styles.inputWrapper}>
-                                        <input id="date" type="date" name="date" value={formData.date} onChange={handleChange} disabled={loading} className={styles.dateInput} />
-                                    </div>
-                                </div>
-
-                                {/* Payment Mode */}
-                                <div className={styles.formGroup} ref={payRef}>
-                                    <label>Payment Mode</label>
-                                    <div className={styles.customSelectContainer}>
-                                        <div 
-                                            className={`${styles.customSelectHeader} ${isPayOpen ? styles.active : ''} ${loading ? styles.disabled : ''}`} 
-                                            onClick={() => !loading && setIsPayOpen(!isPayOpen)}
-                                        >
-                                            <div className={styles.iconWrapper}><CreditCard size={16} /></div>
-                                            <span className={styles.customSelectValue}>{formData.paymentMode}</span>
-                                            <ChevronDown size={16} className={styles.chevron} />
-                                        </div>
-                                        {isPayOpen && !loading && (
-                                            <div className={styles.customSelectOptions}>
-                                                {['Cash', 'UPI', 'Bank', 'Card'].map((mode) => (
-                                                    <div 
-                                                        key={mode} 
-                                                        className={`${styles.customSelectOption} ${formData.paymentMode === mode ? styles.selected : ''}`}
-                                                        onClick={() => {
-                                                            setFormData(p => ({ ...p, paymentMode: mode as any }));
-                                                            setIsPayOpen(false);
-                                                        }}
-                                                    >
-                                                        {mode}
-                                                        {formData.paymentMode === mode && <Check size={16} className={styles.checkIcon} />}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className={styles.divider} />
-
-                        <div className={styles.formSection}>
-                            <div className={styles.twoColumnGrid}>
-                                {/* Notes */}
-                                <div className={styles.formGroup}>
-                                    <label htmlFor="notes">Notes</label>
-                                    <div className={styles.textareaWrapper}>
-                                        <textarea id="notes" name="notes" placeholder="Add any additional context..." value={formData.notes || ''} onChange={handleChange} disabled={loading} maxLength={200} />
-                                        <div className={styles.charCount}>{(formData.notes || '').length}/200</div>
-                                    </div>
-                                </div>
-
-                                {/* Attachment */}
-                                <div className={styles.formGroup}>
-                                    <label>Bill/Receipt</label>
-                                    <div 
-                                        className={`${styles.uploadZone} ${previewUrl ? styles.hasPreview : ''}`} 
-                                        onClick={triggerFilePicker}
-                                    >
-                                        <input id="attachment" type="file" ref={fileInputRef} onChange={handleFileChange} disabled={loading} accept="image/*,application/pdf" className={styles.hiddenInput} />
-                                        
-                                        {previewUrl ? (
-                                            <div className={styles.previewContainer}>
-                                                <img src={previewUrl} alt="Receipt preview" className={styles.imagePreview} />
-                                                <div className={styles.previewOverlay}>
-                                                    <span className={styles.changeText}>Click to change</span>
-                                                </div>
-                                            </div>
-                                        ) : selectedFile ? (
-                                            <div className={styles.fileIconContainer}>
-                                                <FileText size={32} className={styles.fileIcon} />
-                                                <span className={styles.fileNameLarge}>{selectedFile.name}</span>
-                                                <span className={styles.changeText}>Click to change</span>
-                                            </div>
-                                        ) : (
-                                            <div className={styles.uploadPrompt}>
-                                                <div className={styles.uploadIconBackground}>
-                                                    <UploadCloud size={24} className={styles.uploadIcon} />
-                                                </div>
-                                                <span className={styles.uploadTitle}>Click to upload</span>
-                                                <span className={styles.uploadSubtitle}>PNG, JPG or PDF (max. 10MB)</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className={styles.footer}>
-                            <button type="button" onClick={handleClose} disabled={loading} className={styles.cancelBtn}>Cancel</button>
-                            <button type="submit" disabled={loading} className={styles.submitBtn}>
-                                {loading ? 'Saving...' : 'Save Expense'}
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    {/* Footer */}
+                    <div className={styles.footer}>
+                        <button type="button" className={styles.cancelBtn} onClick={onClose}>
+                            Cancel
+                        </button>
+                        <button type="submit" className={styles.submitBtn} disabled={loading}>
+                            {loading ? (
+                                <>
+                                    <RefreshCw size={14} className="spin" /> Saving Expense...
+                                </>
+                            ) : (
+                                <>
+                                    <Check size={15} /> Save Expense Voucher
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     );
