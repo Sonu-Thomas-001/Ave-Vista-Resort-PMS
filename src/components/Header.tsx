@@ -2,7 +2,20 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Search, Settings, ChevronDown, Calendar, Clock, Users, BedDouble, LogOut, User, X } from 'lucide-react';
+import {
+    Search,
+    Settings,
+    ChevronDown,
+    Calendar,
+    Clock,
+    Users,
+    BedDouble,
+    LogOut,
+    User,
+    X,
+    Sparkles,
+    Shield
+} from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import styles from './Header.module.css';
@@ -37,6 +50,7 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
 
     const profileRef = useRef<HTMLDivElement>(null);
     const searchRef = useRef<HTMLDivElement>(null);
+    const searchInputRef = useRef<HTMLInputElement>(null);
 
     // Mounted state to prevent hydration mismatch
     const [mounted, setMounted] = useState(false);
@@ -85,12 +99,10 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
     };
 
     const fetchRoomStats = async () => {
-        // Get total rooms
         const { count: total, error: totalError } = await supabase
             .from('rooms')
             .select('*', { count: 'exact', head: true });
 
-        // Get occupied rooms
         const { count: occupied, error: occupiedError } = await supabase
             .from('rooms')
             .select('*', { count: 'exact', head: true })
@@ -101,10 +113,22 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
         }
     };
 
-    // Update time every second for real-time feel
+    // Update time every second for real-time live clock
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
+    }, []);
+
+    // Global shortcut (Ctrl+K / Cmd+K) to focus search
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                searchInputRef.current?.focus();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
 
     // Click outside to close dropdowns
@@ -161,7 +185,6 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
     };
 
     const performSearch = async (query: string) => {
-        const lowerQuery = query.toLowerCase();
         const results: SearchResult[] = [];
 
         try {
@@ -184,7 +207,7 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
                 });
             }
 
-            // Search bookings with guest and room info
+            // Search bookings
             const { data: bookings, error: bookingsError } = await supabase
                 .from('bookings')
                 .select(`
@@ -213,38 +236,6 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
                 });
             }
 
-            // Also search bookings by guest name
-            const { data: bookingsByGuest, error: bookingsByGuestError } = await supabase
-                .from('bookings')
-                .select(`
-                    id,
-                    status,
-                    guests!inner (first_name, last_name),
-                    rooms (room_number)
-                `)
-                .or(`guests.first_name.ilike.%${query}%,guests.last_name.ilike.%${query}%`)
-                .limit(3);
-
-            if (!bookingsByGuestError && bookingsByGuest) {
-                bookingsByGuest.forEach((booking: any) => {
-                    const guestName = booking.guests
-                        ? `${booking.guests.first_name} ${booking.guests.last_name}`
-                        : 'Unknown Guest';
-                    const roomNumber = booking.rooms?.room_number || 'N/A';
-
-                    // Avoid duplicates
-                    if (!results.find(r => r.id === booking.id && r.type === 'booking')) {
-                        results.push({
-                            id: booking.id,
-                            type: 'booking',
-                            title: `Booking #${booking.id.slice(0, 8)}`,
-                            subtitle: `${guestName} • Room ${roomNumber}`,
-                            path: '/bookings'
-                        });
-                    }
-                });
-            }
-
             // Search rooms
             const { data: rooms, error: roomsError } = await supabase
                 .from('rooms')
@@ -264,7 +255,7 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
                 });
             }
 
-            setSearchResults(results.slice(0, 8)); // Limit to 8 results
+            setSearchResults(results.slice(0, 8));
             setShowSearchResults(true);
         } catch (error) {
             console.error('Search error:', error);
@@ -282,90 +273,123 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
     const getResultIcon = (type: string) => {
         switch (type) {
             case 'guest':
-                return <User size={18} />;
+                return <User size={16} />;
             case 'booking':
-                return <Calendar size={18} />;
+                return <Calendar size={16} />;
             case 'room':
-                return <BedDouble size={18} />;
+                return <BedDouble size={16} />;
             default:
-                return <Search size={18} />;
+                return <Search size={16} />;
         }
     };
 
     return (
         <header className={styles.header}>
+            {/* Left Section: Title & Luxury Breadcrumbs */}
             <div className={styles.leftSection}>
                 <div className={styles.titleSection}>
                     <h1 className={styles.title}>{title}</h1>
                     <div className={styles.breadcrumbs}>
+                        <span className={styles.breadcrumbDot} />
                         {breadcrumbs.map((crumb, index) => (
                             <span key={crumb.path} className={styles.breadcrumb}>
                                 {index > 0 && <span className={styles.separator}>/</span>}
-                                {crumb.label}
+                                <span>{crumb.label}</span>
                             </span>
                         ))}
                     </div>
                 </div>
             </div>
 
+            {/* Right Section: Live Metrics & Controls */}
             <div className={styles.rightSection}>
-                {/* Date & Time */}
+                {/* Real-time Clock Capsule */}
                 {mounted && (
-                    <div className={styles.dateTime}>
-                        <div className={styles.dateTimeItem}>
-                            <Calendar size={14} />
-                            <span>{currentTime.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                    <div className={styles.dateTimeCapsule}>
+                        <div className={styles.dateSegment}>
+                            <Calendar size={14} className={styles.calendarIcon} />
+                            <span>
+                                {currentTime.toLocaleDateString('en-IN', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                    year: 'numeric'
+                                })}
+                            </span>
                         </div>
-                        <div className={styles.dateTimeItem}>
-                            <Clock size={14} />
-                            <span>{currentTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                        <span className={styles.timeDivider} />
+                        <div className={styles.timeSegment}>
+                            <span className={styles.pulseDot} />
+                            <Clock size={13} className={styles.clockIcon} />
+                            <span className={styles.timeValue}>
+                                {currentTime.toLocaleTimeString('en-IN', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit',
+                                    hour12: true
+                                })}
+                            </span>
                         </div>
                     </div>
                 )}
 
-                {/* Search */}
-                <div className={`${styles.searchWrapper} ${showMobileSearch ? styles.mobileSearchOpen : ''}`} ref={searchRef}>
+                {/* Spotlight / Command Search */}
+                <div
+                    className={`${styles.searchWrapper} ${showMobileSearch ? styles.mobileSearchOpen : ''}`}
+                    ref={searchRef}
+                >
                     {/* Mobile Search Toggle */}
                     <button
                         className={styles.mobileSearchToggle}
                         onClick={() => setShowMobileSearch(!showMobileSearch)}
+                        aria-label="Open search"
                     >
-                        <Search size={20} />
+                        <Search size={18} />
                     </button>
 
                     <div className={styles.search}>
-                        <Search size={18} className={styles.searchIcon} />
+                        <Search size={16} className={styles.searchIcon} />
                         <input
+                            ref={searchInputRef}
                             type="text"
-                            placeholder="Search guests, bookings..."
+                            placeholder="Search guests, rooms, bookings..."
                             className={styles.searchInput}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onFocus={() => searchQuery.length >= 2 && setShowSearchResults(true)}
                         />
-                        {/* Close button for mobile search */}
+                        <div className={styles.searchKeycap}>
+                            <kbd>Ctrl</kbd>
+                            <span>K</span>
+                        </div>
+
+                        {/* Mobile close button */}
                         <button
                             className={styles.mobileSearchClose}
                             onClick={() => {
                                 setShowMobileSearch(false);
                                 setSearchQuery('');
                             }}
+                            aria-label="Close search"
                         >
-                            <X size={18} />
+                            <X size={16} />
                         </button>
                     </div>
 
+                    {/* Search Results Dropdown */}
                     {showSearchResults && (
                         <div className={styles.searchResults}>
                             {searchResults.length === 0 ? (
                                 <div className={styles.emptySearchState}>
-                                    <Search size={32} />
-                                    <p>No results found for "{searchQuery}"</p>
+                                    <Search size={28} />
+                                    <p>No results found for &ldquo;{searchQuery}&rdquo;</p>
                                 </div>
                             ) : (
                                 <>
                                     <div className={styles.searchResultsHeader}>
-                                        <span>{searchResults.length} result{searchResults.length !== 1 ? 's' : ''}</span>
+                                        <span>Quick Results</span>
+                                        <span className={styles.resultsCountBadge}>
+                                            {searchResults.length} match{searchResults.length !== 1 ? 'es' : ''}
+                                        </span>
                                     </div>
                                     <div className={styles.searchResultsList}>
                                         {searchResults.map(result => (
@@ -390,56 +414,88 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
                     )}
                 </div>
 
-                {/* Quick Stats */}
+                {/* Live Operations Stat Chips */}
                 <div className={styles.quickStats}>
-                    <div className={styles.statItem} title="Today's Bookings">
-                        <Users size={16} />
-                        <span className={styles.statValue}>{todaysBookings}</span>
+                    <div className={styles.statChipGreen} title="Bookings created today">
+                        <div className={styles.statIconWrapperGreen}>
+                            <Users size={14} />
+                        </div>
+                        <span className={styles.statChipLabel}>Bookings</span>
+                        <span className={styles.statChipValueGreen}>{todaysBookings}</span>
                     </div>
-                    <div className={styles.statItem} title="Room Occupancy">
-                        <BedDouble size={16} />
-                        <span className={styles.statValue}>{roomStats.occupied}/{roomStats.total}</span>
+
+                    <div className={styles.statChipBlue} title="Occupied rooms / Total rooms">
+                        <div className={styles.statIconWrapperBlue}>
+                            <BedDouble size={14} />
+                        </div>
+                        <span className={styles.statChipLabel}>Rooms</span>
+                        <span className={styles.statChipValueBlue}>
+                            {roomStats.occupied}/{roomStats.total}
+                        </span>
                     </div>
                 </div>
 
-                {/* Action Icons */}
-                <div className={styles.icons}>
-                    <button
-                        className={styles.iconBtn}
-                        onClick={navigateToSettings}
-                    >
-                        <Settings size={20} />
-                    </button>
-                </div>
+                {/* Quick Action: Settings */}
+                <button
+                    className={styles.iconBtn}
+                    onClick={navigateToSettings}
+                    aria-label="Settings"
+                    title="System Settings"
+                >
+                    <Settings size={18} />
+                </button>
 
-                {/* Profile Dropdown */}
+                {/* Executive User Profile Capsule */}
                 <div className={styles.profileWrapper} ref={profileRef}>
                     <div
                         className={styles.profile}
                         onClick={() => setShowProfileMenu(!showProfileMenu)}
                     >
-                        <div className={styles.avatar}>{user?.name ? user.name[0] : 'U'}</div>
-                        <div className={styles.userInfo}>
-                            <span className={styles.userName}>{user?.name || 'Guest'}</span>
-                            <span className={styles.userRole}>{user?.role || 'User'}</span>
+                        <div className={styles.avatarWrapper}>
+                            <div className={styles.avatar}>
+                                {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
+                            </div>
+                            <span className={styles.userStatusDot} />
                         </div>
-                        <ChevronDown size={16} className={styles.chevron} />
+
+                        <div className={styles.userInfo}>
+                            <span className={styles.userName}>{user?.name || 'Guest User'}</span>
+                            <div className={styles.roleContainer}>
+                                <span className={`${styles.roleBadge} ${styles[user?.role?.toLowerCase() || 'admin']}`}>
+                                    {user?.role || 'Admin'}
+                                </span>
+                            </div>
+                        </div>
+
+                        <ChevronDown
+                            size={14}
+                            className={`${styles.chevron} ${showProfileMenu ? styles.chevronOpen : ''}`}
+                        />
                     </div>
 
+                    {/* Profile Menu Dropdown */}
                     {showProfileMenu && (
                         <div className={styles.profileMenu}>
+                            <div className={styles.profileMenuHeader}>
+                                <div className={styles.menuHeaderName}>{user?.name || 'User'}</div>
+                                <div className={styles.menuHeaderEmail}>{user?.email}</div>
+                            </div>
+                            <div className={styles.menuDivider} />
+
                             <button className={styles.menuItem} onClick={navigateToProfile}>
-                                <User size={16} />
+                                <div className={styles.menuItemIcon}><User size={15} /></div>
                                 <span>My Profile</span>
                             </button>
                             <button className={styles.menuItem} onClick={navigateToSettings}>
-                                <Settings size={16} />
+                                <div className={styles.menuItemIcon}><Settings size={15} /></div>
                                 <span>Settings</span>
                             </button>
-                            <div className={styles.menuDivider}></div>
-                            <button className={styles.menuItem} onClick={logout}>
-                                <LogOut size={16} />
-                                <span>Logout</span>
+
+                            <div className={styles.menuDivider} />
+
+                            <button className={`${styles.menuItem} ${styles.logoutMenuItem}`} onClick={logout}>
+                                <div className={styles.menuItemIcon}><LogOut size={15} /></div>
+                                <span>Sign Out</span>
                             </button>
                         </div>
                     )}
