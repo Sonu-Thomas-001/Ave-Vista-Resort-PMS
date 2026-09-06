@@ -6,7 +6,7 @@ import {
     Plus, X, Eye, Pencil, Trash2, Printer, Search,
     UtensilsCrossed, FileText, CheckCircle2,
     DollarSign, Clock, Download,
-    ShoppingBag, Bed, Coffee
+    ShoppingBag, Bed, Coffee, Check, RotateCcw
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './page.module.css';
@@ -17,6 +17,7 @@ interface BillItem {
     name: string;
     qty: number;
     price: number;
+    original_price?: number;
 }
 
 interface RestaurantBill {
@@ -86,6 +87,8 @@ export default function RestaurantBillPage() {
     const [customItemPrice, setCustomItemPrice] = useState('');
     const [isCustomRoom, setIsCustomRoom] = useState(false);
     const [showCustomItemRow, setShowCustomItemRow] = useState(false);
+    const [editingPriceIndex, setEditingPriceIndex] = useState<number | null>(null);
+    const [tempItemPrice, setTempItemPrice] = useState<string>('');
 
     const billRef = useRef<HTMLDivElement>(null);
 
@@ -188,6 +191,8 @@ export default function RestaurantBillPage() {
         setCustomItemPrice('');
         setIsCustomRoom(false);
         setShowCustomItemRow(false);
+        setEditingPriceIndex(null);
+        setTempItemPrice('');
     };
 
     const openCreateModal = () => {
@@ -210,6 +215,8 @@ export default function RestaurantBillPage() {
             setIsCustomRoom(false);
         }
         setShowCustomItemRow(false);
+        setEditingPriceIndex(null);
+        setTempItemPrice('');
         setEditingBill(bill);
         setShowCreateModal(true);
     };
@@ -230,7 +237,7 @@ export default function RestaurantBillPage() {
                 updated[existingIdx].qty += 1;
                 return updated;
             } else {
-                return [...clean, { name: menuItem.name, qty: 1, price: menuItem.price }];
+                return [...clean, { name: menuItem.name, qty: 1, price: menuItem.price, original_price: menuItem.price }];
             }
         });
     };
@@ -242,10 +249,46 @@ export default function RestaurantBillPage() {
         }
         setItems(prev => {
             const clean = prev.filter(i => i.name.trim() !== '');
-            return [...clean, { name: customItemName.trim(), qty: 1, price: Number(customItemPrice) }];
+            return [...clean, { name: customItemName.trim(), qty: 1, price: Number(customItemPrice), original_price: Number(customItemPrice) }];
         });
         setCustomItemName('');
         setCustomItemPrice('');
+    };
+
+    const handleApplyPriceOverride = (index: number) => {
+        const parsed = parseFloat(tempItemPrice);
+        if (isNaN(parsed) || parsed < 0) {
+            alert('Please enter a valid price');
+            return;
+        }
+        setItems(prev => {
+            const updated = [...prev];
+            if (updated[index]) {
+                const orig = updated[index].original_price ?? updated[index].price;
+                updated[index] = {
+                    ...updated[index],
+                    price: parsed,
+                    original_price: orig
+                };
+            }
+            return updated;
+        });
+        setEditingPriceIndex(null);
+        setTempItemPrice('');
+    };
+
+    const handleResetToOriginalPrice = (index: number) => {
+        setItems(prev => {
+            const updated = [...prev];
+            if (updated[index] && updated[index].original_price !== undefined) {
+                updated[index] = {
+                    ...updated[index],
+                    price: updated[index].original_price!
+                };
+            }
+            return updated;
+        });
+        setEditingPriceIndex(null);
     };
 
     const incrementItemQty = (index: number) => {
@@ -1235,7 +1278,76 @@ export default function RestaurantBillPage() {
                                             <div key={idx} className={styles.cartItemRow}>
                                                 <div className={styles.cartItemDetails}>
                                                     <span className={styles.cartItemName}>{item.name}</span>
-                                                    <span className={styles.cartItemRate}>₹{item.price} each</span>
+                                                    {editingPriceIndex === idx ? (
+                                                        <div className={styles.rateEditRow}>
+                                                            <span className={styles.currencySign}>₹</span>
+                                                            <input
+                                                                type="number"
+                                                                min="0"
+                                                                step="any"
+                                                                className={styles.rateOverrideInput}
+                                                                value={tempItemPrice}
+                                                                onChange={(e) => setTempItemPrice(e.target.value)}
+                                                                onKeyDown={(e) => {
+                                                                    if (e.key === 'Enter') handleApplyPriceOverride(idx);
+                                                                    if (e.key === 'Escape') setEditingPriceIndex(null);
+                                                                }}
+                                                                autoFocus
+                                                                placeholder="Rate"
+                                                                title="Press Enter to apply price override"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                className={styles.rateApplyBtn}
+                                                                onClick={() => handleApplyPriceOverride(idx)}
+                                                                title="Save overridden price"
+                                                            >
+                                                                <Check size={12} />
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                className={styles.rateCancelBtn}
+                                                                onClick={() => setEditingPriceIndex(null)}
+                                                                title="Cancel"
+                                                            >
+                                                                <X size={12} />
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className={styles.rateDisplayRow}>
+                                                            <span className={styles.cartItemRate}>
+                                                                ₹{item.price} each
+                                                                {item.original_price !== undefined && item.original_price !== item.price && (
+                                                                    <span className={styles.originalPriceStrikethrough}>
+                                                                        ₹{item.original_price}
+                                                                    </span>
+                                                                )}
+                                                            </span>
+                                                            <button
+                                                                type="button"
+                                                                className={styles.editRateBtn}
+                                                                onClick={() => {
+                                                                    setEditingPriceIndex(idx);
+                                                                    setTempItemPrice(String(item.price));
+                                                                }}
+                                                                title="Override unit price / give special discount"
+                                                            >
+                                                                <Pencil size={10} />
+                                                                <span>Edit Price</span>
+                                                            </button>
+                                                            {item.original_price !== undefined && item.original_price !== item.price && (
+                                                                <button
+                                                                    type="button"
+                                                                    className={styles.resetRateBtn}
+                                                                    onClick={() => handleResetToOriginalPrice(idx)}
+                                                                    title={`Reset back to menu price (₹${item.original_price})`}
+                                                                >
+                                                                    <RotateCcw size={10} />
+                                                                    <span>Reset</span>
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 <div className={styles.stepper}>

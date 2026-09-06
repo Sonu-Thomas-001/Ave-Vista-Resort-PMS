@@ -1054,10 +1054,136 @@
     text-overflow: ellipsis;
 }
 
+.rateDisplayRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+}
+
 .cartItemRate {
     font-size: 0.75rem;
     color: #64748B;
     font-family: 'Courier New', monospace;
+    font-weight: 600;
+}
+
+.originalPriceStrikethrough {
+    text-decoration: line-through;
+    color: #94A3B8;
+    margin-left: 3px;
+    font-size: 0.72rem;
+}
+
+.editRateBtn {
+    background: transparent;
+    border: none;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #0284c7;
+    font-size: 0.7rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    transition: all 0.15s ease;
+    opacity: 0.85;
+}
+
+.editRateBtn:hover {
+    background: #e0f2fe;
+    opacity: 1;
+    transform: translateY(-1px);
+}
+
+.resetRateBtn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    transition: all 0.15s ease;
+}
+
+.resetRateBtn:hover {
+    color: #ef4444;
+    background: #fee2e2;
+}
+
+.rateEditRow {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 3px;
+    background: #ffffff;
+    border: 1.5px solid #0284c7;
+    border-radius: 6px;
+    padding: 2px 4px 2px 6px;
+    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+}
+
+.currencySign {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #0284c7;
+}
+
+.rateOverrideInput {
+    width: 65px;
+    padding: 2px 4px;
+    border: none;
+    outline: none;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #0f172a;
+    font-family: inherit;
+    background: transparent;
+}
+
+.rateApplyBtn {
+    background: #16a34a;
+    border: none;
+    color: #ffffff;
+    border-radius: 4px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.rateApplyBtn:hover {
+    background: #15803d;
+    transform: scale(1.08);
+}
+
+.rateCancelBtn {
+    background: #f1f5f9;
+    border: none;
+    color: #64748b;
+    border-radius: 4px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.rateCancelBtn:hover {
+    background: #e2e8f0;
+    color: #0f172a;
 }
 
 /* Stepper (- qty +) */
