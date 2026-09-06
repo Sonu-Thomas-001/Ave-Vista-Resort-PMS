@@ -3,7 +3,9 @@ const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
 const path = require('path');
 
-const envPath = path.join(__dirname, '.env.local');
+const envPath = fs.existsSync(path.join(__dirname, '.env.local'))
+    ? path.join(__dirname, '.env.local')
+    : path.join(__dirname, '..', '.env.local');
 
 let supabaseUrl = '';
 let supabaseKey = '';

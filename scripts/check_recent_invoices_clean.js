@@ -3,7 +3,9 @@ const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
 const path = require('path');
 
-const envPath = path.join(__dirname, '.env.local');
+const envPath = fs.existsSync(path.join(__dirname, '.env.local'))
+    ? path.join(__dirname, '.env.local')
+    : path.join(__dirname, '..', '.env.local');
 
 let supabaseUrl = '';
 let supabaseKey = '';
@@ -20,27 +22,30 @@ if (fs.existsSync(envPath)) {
     });
 }
 
-if (!supabaseUrl || !supabaseKey) {
-    console.error('Missing Supabase URL or Key');
-    process.exit(1);
-}
-
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function checkInvoices() {
+async function checkRecentInvoices() {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const dateStr = sevenDaysAgo.toISOString();
+
+    console.log(`Checking invoices since: ${dateStr}`);
+
     const { data, error } = await supabase
         .from('invoices')
         .select('id, created_at, status, paid_amount')
-        .order('created_at', { ascending: false })
-        .limit(10);
+        .gte('created_at', dateStr)
+        .order('created_at', { ascending: false });
 
     if (error) {
         console.error('Error fetching invoices:', error);
         return;
     }
 
-    console.log('Last 10 invoices:');
-    console.log(JSON.stringify(data, null, 2));
+    console.log(`Found ${data.length} invoices in the last 7 days.`);
+    data.forEach((inv, index) => {
+        console.log(`${index + 1}. ID: ${inv.id.substring(0, 8)}..., Created: ${inv.created_at}, Status: ${inv.status}, Amount: ${inv.paid_amount}`);
+    });
 }
 
-checkInvoices();
+checkRecentInvoices();

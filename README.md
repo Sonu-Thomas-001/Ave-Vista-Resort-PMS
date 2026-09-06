@@ -22,6 +22,14 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Project Structure
 
-- `/src/app`: Application pages and routing.
-- `/src/components`: Reusable UI components.
-- `/src/app/globals.css`: Global theme variables.
+- `/src`: Application source code (pages, components, lib, hooks, services).
+- `/supabase`: Database assets
+  - `/schemas`: Base table schemas, RLS policies, and RPC definitions.
+  - `/migrations`: Incremental migration and alter scripts.
+  - `/seeds`: Room and expense seed/dummy data.
+  - `/queries`: Diagnostic and test SQL queries.
+  - `/functions`: Supabase Edge Functions.
+- `/scripts`: Verification, test, and utility scripts.
+- `/docs`: Technical specifications and feature documentation.
+- `/public`: Static web assets and icons.
+

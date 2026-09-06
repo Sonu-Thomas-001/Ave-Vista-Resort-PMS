@@ -3,7 +3,9 @@ const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
 const path = require('path');
 
-const envPath = path.join(__dirname, '.env.local');
+const envPath = fs.existsSync(path.join(__dirname, '.env.local'))
+    ? path.join(__dirname, '.env.local')
+    : path.join(__dirname, '..', '.env.local');
 
 let supabaseUrl = '';
 let supabaseKey = '';
@@ -41,9 +43,7 @@ async function checkRecentInvoices() {
     }
 
     console.log(`Found ${data.length} invoices in the last 7 days.`);
-    data.forEach((inv, index) => {
-        console.log(`${index + 1}. ID: ${inv.id.substring(0, 8)}..., Created: ${inv.created_at}, Status: ${inv.status}, Amount: ${inv.paid_amount}`);
-    });
+    console.log(JSON.stringify(data, null, 2));
 }
 
 checkRecentInvoices();

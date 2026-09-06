@@ -3,7 +3,9 @@ const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
 const path = require('path');
 
-const envPath = path.join(__dirname, '.env.local');
+const envPath = fs.existsSync(path.join(__dirname, '.env.local'))
+    ? path.join(__dirname, '.env.local')
+    : path.join(__dirname, '..', '.env.local');
 
 let supabaseUrl = '';
 let supabaseKey = '';
@@ -22,26 +24,28 @@ if (fs.existsSync(envPath)) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function checkRecentInvoices() {
+async function checkRecentBookings() {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const dateStr = sevenDaysAgo.toISOString();
 
-    console.log(`Checking invoices since: ${dateStr}`);
+    console.log(`Checking bookings since: ${dateStr}`);
 
     const { data, error } = await supabase
-        .from('invoices')
-        .select('id, created_at, status, paid_amount')
+        .from('bookings')
+        .select('id, created_at, status, total_amount, advance_amount')
         .gte('created_at', dateStr)
         .order('created_at', { ascending: false });
 
     if (error) {
-        console.error('Error fetching invoices:', error);
+        console.error('Error fetching bookings:', error);
         return;
     }
 
-    console.log(`Found ${data.length} invoices in the last 7 days.`);
-    console.log(JSON.stringify(data, null, 2));
+    console.log(`Found ${data.length} bookings in the last 7 days.`);
+    data.forEach((b, index) => {
+        console.log(`${index + 1}. ID: ${b.id.substring(0, 8)}..., Created: ${b.created_at}, Status: ${b.status}, Total: ${b.total_amount}, Advance: ${b.advance_amount}`);
+    });
 }
 
-checkRecentInvoices();
+checkRecentBookings();
