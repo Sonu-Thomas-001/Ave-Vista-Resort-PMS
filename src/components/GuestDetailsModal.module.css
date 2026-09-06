@@ -638,8 +638,32 @@
 
 /* Responsive */
 @media (max-width: 640px) {
+    .overlay {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .modal {
+        max-width: 100%;
+        max-height: 94vh;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        border-top-left-radius: 22px;
+        border-top-right-radius: 22px;
+        padding-bottom: env(safe-area-inset-bottom, 12px);
+    }
+
+    .header {
+        padding: 18px 20px;
+    }
+
+    .body {
+        padding: 16px 18px;
+    }
+
     .metricsGrid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
     }
     
     .cardsGrid {
@@ -673,14 +697,21 @@
     .footer {
         flex-direction: column-reverse;
         gap: 10px;
+        padding: 12px 18px;
     }
 
     .footerActions {
         width: 100%;
-        justify-content: stretch;
+        display: flex;
+        gap: 8px;
     }
 
     .footerActions button {
         flex: 1;
+        min-height: 48px;
+    }
+
+    .closeActionBtn {
+        min-height: 48px;
     }
 }

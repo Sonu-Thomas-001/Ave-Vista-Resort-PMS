@@ -54,6 +54,7 @@ export default function BookingList() {
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
     const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
     const [emailSuccessToast, setEmailSuccessToast] = useState<string | null>(null);
+    const [expandedBookingId, setExpandedBookingId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchBookings();
@@ -345,7 +346,8 @@ export default function BookingList() {
                         <p>Try switching filter tabs or clearing your search term.</p>
                     </div>
                 ) : (
-                    <div className={styles.tableResponsive}>
+                    <>
+                        <div className={styles.tableResponsive}>
                         <table className={styles.table}>
                             <thead>
                                 <tr>
@@ -506,6 +508,134 @@ export default function BookingList() {
                             </tbody>
                         </table>
                     </div>
+
+                    {/* Mobile Cards Container (Shown on <= 768px viewports) */}
+                    <div className={styles.mobileCardsContainer}>
+                        {sortedBookings.map((booking) => {
+                            const advance = Number(booking.advance_amount) || 0;
+                            const total = Number(booking.total_amount) || 0;
+                            const balance = total - advance;
+                            const guestName = booking.guests ? `${booking.guests.first_name} ${booking.guests.last_name}` : 'Unknown Guest';
+
+                            return (
+                                <div key={booking.id} className={styles.mobileBookingCard}>
+                                    <div className={styles.mobileCardTop}>
+                                        <div className={styles.mobileCardRef}>
+                                            <span className={styles.mobileRefNumber}>
+                                                {booking.booking_number || `BK-${booking.id.split('-')[0].toUpperCase()}`}
+                                            </span>
+                                            <span
+                                                className={`${styles.statusPill} ${
+                                                    styles[booking.status.toLowerCase().replace(/\s+/g, '')] || styles.confirmed
+                                                }`}
+                                            >
+                                                <span className={styles.statusDot} />
+                                                <span>{booking.status}</span>
+                                            </span>
+                                        </div>
+                                        <span className={styles.mobileSourceBadge}>
+                                            {booking.source || 'Direct'}
+                                        </span>
+                                    </div>
+
+                                    <div className={styles.mobileGuestSection}>
+                                        <div className={styles.guestAvatar}>
+                                            {booking.guests?.first_name?.[0]?.toUpperCase() || 'G'}
+                                        </div>
+                                        <div className={styles.mobileGuestMeta}>
+                                            <div className={styles.mobileGuestName}>
+                                                {guestName}
+                                                {(booking.guests as any)?.is_vip && (
+                                                    <span className={styles.vipBadge}>VIP</span>
+                                                )}
+                                            </div>
+                                            {booking.guests?.phone && (
+                                                <a href={`tel:${booking.guests.phone}`} className={styles.mobilePhoneLink}>
+                                                    <Phone size={12} />
+                                                    <span>{booking.guests.phone}</span>
+                                                </a>
+                                            )}
+                                        </div>
+                                        <div className={styles.mobileRoomTag}>
+                                            <BedDouble size={14} />
+                                            <span>{booking.rooms?.room_number ? `Rm ${booking.rooms.room_number}` : 'Unassigned'}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.mobileDatesSection}>
+                                        <div className={styles.mobileDateBlock}>
+                                            <span className={styles.mobileDateSub}>Check In</span>
+                                            <span className={styles.mobileDateText}>
+                                                {new Date(booking.check_in_date).toLocaleDateString('en-IN', {
+                                                    day: '2-digit',
+                                                    month: 'short'
+                                                })}
+                                            </span>
+                                        </div>
+                                        <div className={styles.mobileDurationBlock}>
+                                            <span>{calculateNights(booking.check_in_date, booking.check_out_date)}</span>
+                                            <ArrowRight size={13} />
+                                        </div>
+                                        <div className={styles.mobileDateBlock}>
+                                            <span className={styles.mobileDateSub}>Check Out</span>
+                                            <span className={styles.mobileDateText}>
+                                                {new Date(booking.check_out_date).toLocaleDateString('en-IN', {
+                                                    day: '2-digit',
+                                                    month: 'short'
+                                                })}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.mobileFinancialRow}>
+                                        <div className={styles.mobileAmountGroup}>
+                                            <span className={styles.mobileAmountSub}>Total Bill</span>
+                                            <span className={styles.mobileTotalAmount}>₹{total.toLocaleString('en-IN')}</span>
+                                        </div>
+                                        <div className={styles.mobileAmountGroup} style={{ textAlign: 'right' }}>
+                                            <span className={styles.mobileAmountSub}>Folio Balance</span>
+                                            <span className={balance > 0 ? styles.mobileBalanceDue : styles.mobileBalanceSettled}>
+                                                {balance > 0 ? `Due ₹${balance.toLocaleString('en-IN')}` : 'Settled'}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.mobileCardActions}>
+                                        <button
+                                            type="button"
+                                            className={styles.mobilePrimaryBtn}
+                                            onClick={() => setSelectedBooking(booking)}
+                                        >
+                                            <Eye size={16} />
+                                            <span>Folio & Details</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={styles.mobileSecondaryBtn}
+                                            onClick={() => setEditingBooking(booking)}
+                                        >
+                                            <Pencil size={15} />
+                                            <span>Edit</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={styles.mobileEmailBtn}
+                                            title="Send Confirmation Email"
+                                            onClick={() => handleSendEmail(booking)}
+                                            disabled={sendingEmailId === booking.id}
+                                        >
+                                            {sendingEmailId === booking.id ? (
+                                                <div className={styles.miniSpinner} />
+                                            ) : (
+                                                <Mail size={16} />
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    </>
                 )}
             </div>
 

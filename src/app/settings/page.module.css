@@ -1220,19 +1220,44 @@
 
 @media (max-width: 768px) {
     .container {
-        padding: 16px;
+        padding: 12px;
     }
 
     .section {
-        padding: 20px;
+        padding: 16px;
+        border-radius: 16px;
     }
 
     .heroBanner {
         flex-direction: column;
         align-items: flex-start;
+        padding: 18px 16px;
+        gap: 14px;
+    }
+
+    .sidebar {
+        padding: 4px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .sidebar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .categoryCardBtn {
+        min-width: 130px;
+        padding: 10px 12px;
+        min-height: 44px;
     }
 
     .roomCardsGrid {
         grid-template-columns: 1fr;
+    }
+
+    .saveBtn {
+        width: 100%;
+        justify-content: center;
+        min-height: 48px;
     }
 }

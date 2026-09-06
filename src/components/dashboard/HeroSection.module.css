@@ -185,15 +185,33 @@
 
 @media (max-width: 768px) {
     .grid {
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-        gap: 12px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-bottom: 16px;
     }
 
     .kpiCard {
-        padding: 16px;
+        padding: 14px 16px;
+        border-radius: 14px;
+    }
+
+    .cardHeader {
+        margin-bottom: 10px;
+    }
+
+    .iconBox {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
     }
 
     .kpiValue {
-        font-size: 1.45rem;
+        font-size: 1.35rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .grid {
+        grid-template-columns: 1fr;
     }
 }

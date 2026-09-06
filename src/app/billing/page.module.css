@@ -1490,7 +1490,11 @@
     gap: 1rem;
 }
 
-/* Responsive Media Queries */
+/* Mobile Invoice Cards Container (Default hidden on desktop/tablet) */
+.mobileInvoiceCardsContainer {
+    display: none;
+}
+
 @media (max-width: 1200px) {
     .statsRow {
         grid-template-columns: repeat(2, 1fr);
@@ -1508,11 +1512,183 @@
 
 @media (max-width: 768px) {
     .container {
-        padding: 1rem;
+        padding: 0.85rem;
+        gap: 1rem;
     }
+    
     .statsRow {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
     }
+
+    .statCard {
+        padding: 1rem;
+        border-radius: 14px;
+    }
+
+    .statValue {
+        font-size: 1.4rem;
+    }
+
+    .statIconBox {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+    }
+
+    .tableWrapper {
+        display: none !important;
+    }
+
+    .mobileInvoiceCardsContainer {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 4px 0 12px;
+    }
+
+    .mobileInvoiceCard {
+        background: #ffffff;
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        border-radius: 14px;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+
+    .mobileInvCardHeader {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .mobileInvNumberCol {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .mobileInvNumber {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #0284c7;
+        font-family: monospace;
+    }
+
+    .mobileInvDate {
+        font-size: 0.72rem;
+        color: #64748b;
+    }
+
+    .mobileInvGuestRow {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .mobileInvGuestInfo {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .mobileInvFinancialRow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+        border-radius: 10px;
+        padding: 8px 12px;
+    }
+
+    .mobileInvAmounts {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .mobileAmountLabel {
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+    }
+
+    .mobileAmountValues {
+        font-size: 0.88rem;
+        color: #0f172a;
+    }
+
+    .mobileInvDueCol {
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .settledText {
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: #16a34a;
+    }
+
+    .mobileInvActionsRow {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-top: 4px;
+        border-top: 1px dashed #e2e8f0;
+    }
+
+    .mobileInvActionBtn {
+        flex: 1;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        background: #0284c7;
+        color: #ffffff;
+        border: none;
+        border-radius: 9px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .mobileInvActionBtnOutline {
+        min-height: 44px;
+        padding: 0 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        background: #ffffff;
+        color: #334155;
+        border: 1px solid #cbd5e1;
+        border-radius: 9px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .mobileInvIconBtn {
+        width: 44px;
+        min-width: 44px;
+        height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8fafc;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+        border-radius: 9px;
+        cursor: pointer;
+    }
+
     .formGrid2, .formGrid3 {
         grid-template-columns: 1fr;
     }
@@ -1528,5 +1704,14 @@
     }
     .operationsGrid {
         grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 420px) {
+    .statsRow {
+        grid-template-columns: 1fr;
+    }
+    .operationsGrid {
+        grid-template-columns: 1fr;
     }
 }

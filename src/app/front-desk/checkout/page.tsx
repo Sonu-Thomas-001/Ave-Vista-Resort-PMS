@@ -293,24 +293,25 @@ export default function CheckOutPage() {
                     </span>
                 </div>
 
-                {/* Stepper Header */}
-                <div className={styles.stepper}>
+                {/* Desktop Stepper */}
+                <div className={styles.desktopStepper}>
                     {STEPS.map((s, idx) => {
                         const isActive = step === s.id;
                         const isCompleted = step > s.id;
                         const StepIcon = isCompleted ? CheckCircle2 : s.icon;
 
                         return (
-                            <div
-                                key={s.id}
-                                className={`${styles.step} ${isActive ? styles.activeStep : ''} ${
-                                    isCompleted ? styles.completedStep : ''
-                                }`}
-                            >
-                                <div className={styles.stepIcon}>
-                                    <StepIcon size={18} />
+                            <div key={s.id} style={{ display: 'contents' }}>
+                                <div
+                                    className={`${styles.step} ${isActive ? styles.activeStep : ''} ${
+                                        isCompleted ? styles.completedStep : ''
+                                    }`}
+                                >
+                                    <div className={styles.stepIcon}>
+                                        <StepIcon size={18} />
+                                    </div>
+                                    <span className={styles.stepLabel}>{s.label}</span>
                                 </div>
-                                <span className={styles.stepLabel}>{s.label}</span>
                                 {idx < STEPS.length - 1 && (
                                     <div
                                         className={`${styles.connector} ${
@@ -321,6 +322,28 @@ export default function CheckOutPage() {
                             </div>
                         );
                     })}
+                </div>
+
+                {/* Mobile Compact Progress Tracker (<768px) */}
+                <div className={styles.mobileStepperCard}>
+                    <div className={styles.mobileStepHeader}>
+                        <span className={styles.mobileStepPill}>Step {step} of 4</span>
+                        <span className={styles.mobileStepName}>{STEPS[step - 1].label}</span>
+                    </div>
+                    <div className={styles.mobileStepTrack}>
+                        {STEPS.map((s) => (
+                            <div
+                                key={s.id}
+                                className={`${styles.mobileStepSegment} ${
+                                    step === s.id
+                                        ? styles.segmentActive
+                                        : step > s.id
+                                        ? styles.segmentCompleted
+                                        : ''
+                                }`}
+                            />
+                        ))}
+                    </div>
                 </div>
 
                 {/* Main Content Card */}

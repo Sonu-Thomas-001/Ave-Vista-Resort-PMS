@@ -1768,10 +1768,15 @@ select.posInput:focus {
     .heroBanner {
         flex-direction: column;
         align-items: flex-start;
-        padding: 20px;
+        padding: 18px 16px;
+        gap: 16px;
+    }
+    .heroActions {
+        width: 100%;
     }
     .kpiGrid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
     }
     .toolbarRow {
         flex-direction: column;
@@ -1779,6 +1784,20 @@ select.posInput:focus {
     }
     .searchBox {
         max-width: 100%;
+    }
+    .catalogGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    .actionBtn,
+    .heroBtn {
+        min-height: 44px;
+    }
+}
+
+@media (max-width: 420px) {
+    .kpiGrid {
+        grid-template-columns: 1fr;
     }
     .catalogGrid {
         grid-template-columns: 1fr;

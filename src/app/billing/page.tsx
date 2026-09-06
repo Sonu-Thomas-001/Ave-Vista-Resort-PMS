@@ -849,6 +849,134 @@ export default function BillingPage() {
                             </table>
                         </div>
 
+                        {/* Mobile Invoice Cards Container (<768px viewports) */}
+                        <div className={styles.mobileInvoiceCardsContainer}>
+                            {filteredInvoices.map((inv) => {
+                                const total = Number(inv.total_amount) || 0;
+                                const paid = Number(inv.paid_amount) || 0;
+                                const balance = Math.max(0, total - paid);
+                                const pct = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 0;
+                                const src = inv.booking_source || inv.booking?.source || 'Direct';
+
+                                return (
+                                    <div key={inv.id} className={styles.mobileInvoiceCard}>
+                                        <div className={styles.mobileInvCardHeader}>
+                                            <div className={styles.mobileInvNumberCol}>
+                                                <span className={styles.mobileInvNumber}>{inv.invoice_number}</span>
+                                                <span className={styles.mobileInvDate}>
+                                                    {inv.invoice_date || (inv.created_at ? new Date(inv.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A')}
+                                                </span>
+                                            </div>
+                                            {inv.status === 'Paid' ? (
+                                                <span className={`${styles.statusCapsule} ${styles.statusPaid}`}>
+                                                    <span className={styles.statusDot} />
+                                                    Paid
+                                                </span>
+                                            ) : inv.status === 'Partial' ? (
+                                                <span className={`${styles.statusCapsule} ${styles.statusPartial}`}>
+                                                    <span className={styles.statusDot} />
+                                                    Partial ({pct}%)
+                                                </span>
+                                            ) : (
+                                                <span className={`${styles.statusCapsule} ${styles.statusPending}`}>
+                                                    <span className={styles.statusDot} />
+                                                    Pending
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        <div className={styles.mobileInvGuestRow}>
+                                            <div className={styles.guestAvatar}>
+                                                {(inv.guest_name || 'G')[0]?.toUpperCase()}
+                                            </div>
+                                            <div className={styles.mobileInvGuestInfo}>
+                                                <span className={styles.guestName}>{inv.guest_name || 'Individual Guest'}</span>
+                                                <div className={styles.stayMetaRow}>
+                                                    {inv.room_number && (
+                                                        <span className={styles.roomChip}>Room {inv.room_number}</span>
+                                                    )}
+                                                    {inv.booking?.booking_number && (
+                                                        <span className={styles.bookingIdChip}>#{inv.booking.booking_number}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <span className={`${styles.channelBadge} ${
+                                                src === 'OTA'
+                                                    ? styles.channelOTA
+                                                    : src === 'Corporate'
+                                                    ? styles.channelCorporate
+                                                    : src === 'Direct'
+                                                    ? styles.channelDirect
+                                                    : styles.channelStandard
+                                            }`}>
+                                                {src === 'Corporate' && <Building2 size={11} />}
+                                                {src}
+                                            </span>
+                                        </div>
+
+                                        <div className={styles.mobileInvFinancialRow}>
+                                            <div className={styles.mobileInvAmounts}>
+                                                <div className={styles.mobileAmountLabel}>Paid / Total</div>
+                                                <div className={styles.mobileAmountValues}>
+                                                    <strong>₹{paid.toLocaleString()}</strong>
+                                                    <span> / ₹{total.toLocaleString()}</span>
+                                                </div>
+                                            </div>
+                                            <div className={styles.mobileInvDueCol}>
+                                                <div className={styles.mobileAmountLabel}>Balance</div>
+                                                <div className={balance > 0 ? styles.dueAmount : styles.settledText}>
+                                                    {balance > 0 ? `Due ₹${balance.toLocaleString()}` : 'Settled'}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {total > 0 && (
+                                            <div className={styles.progressBarContainer} style={{ height: 6, margin: '2px 0' }}>
+                                                <div
+                                                    className={styles.progressBarFill}
+                                                    style={{
+                                                        width: `${pct}%`,
+                                                        background: pct === 100
+                                                            ? 'linear-gradient(90deg, #10b981, #059669)'
+                                                            : pct > 0
+                                                            ? 'linear-gradient(90deg, #f59e0b, #d97706)'
+                                                            : '#cbd5e1'
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
+
+                                        <div className={styles.mobileInvActionsRow}>
+                                            <button
+                                                type="button"
+                                                className={styles.mobileInvActionBtn}
+                                                onClick={() => handleViewInvoice(inv)}
+                                            >
+                                                <Eye size={15} />
+                                                <span>View Folio</span>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className={styles.mobileInvActionBtnOutline}
+                                                onClick={() => openEditInvoice(inv)}
+                                            >
+                                                <Pencil size={14} />
+                                                <span>Edit</span>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className={styles.mobileInvIconBtn}
+                                                title="Download / Print Invoice"
+                                                onClick={() => handleDownloadInvoice(inv)}
+                                            >
+                                                <Download size={15} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
                         {/* Empty Search Results */}
                         {!loading && filteredInvoices.length === 0 && (
                             <div className={styles.emptyState}>

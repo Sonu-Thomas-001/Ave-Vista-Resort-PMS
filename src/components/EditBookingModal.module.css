@@ -449,21 +449,73 @@
 
 /* Responsive */
 @media (max-width: 640px) {
+    .overlay {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .modal {
+        max-height: 94vh;
+        border-radius: 20px 20px 0 0;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .header {
+        padding: 16px 20px;
+    }
+
+    .closeBtn {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .content {
+        padding: 16px;
+        max-height: calc(94vh - 180px);
+        gap: 14px;
+    }
+
+    .sectionCard {
+        padding: 14px 16px;
+    }
+
     .grid2, .grid3 {
         grid-template-columns: 1fr;
+    }
+
+    .input {
+        min-height: 44px;
+        font-size: 16px; /* Prevents auto-zoom on iOS */
     }
 
     .calculatorStats {
         grid-template-columns: repeat(2, 1fr);
     }
 
+    .applyCalculatedBtn {
+        min-height: 38px;
+        padding: 6px 12px;
+    }
+
     .footer {
         flex-direction: column-reverse;
         gap: 10px;
+        padding: 14px 18px calc(14px + env(safe-area-inset-bottom, 0px));
     }
 
     .cancelBtn, .saveBtn {
         width: 100%;
         justify-content: center;
+        min-height: 48px;
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .calculatorStats {
+        grid-template-columns: 1fr;
     }
 }

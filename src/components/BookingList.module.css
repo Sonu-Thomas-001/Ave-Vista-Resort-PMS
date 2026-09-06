@@ -579,3 +579,295 @@
         width: 100%;
     }
 }
+
+/* Mobile Cards Container (Hidden on desktop & wide tablets) */
+.mobileCardsContainer {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .tableResponsive {
+        display: none !important;
+    }
+
+    .mobileCardsContainer {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 4px 0 12px;
+    }
+
+    .kpiRow {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .statusTabs {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding: 4px;
+    }
+
+    .statusTabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .tabBtn {
+        padding: 8px 12px;
+        font-size: 0.78rem;
+        min-height: 40px;
+    }
+
+    .mobileBookingCard {
+        background: #ffffff;
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        border-radius: 14px;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .mobileBookingCard:active {
+        background: #f8fafc;
+    }
+
+    .mobileCardTop {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .mobileCardRef {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .mobileRefNumber {
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: #0284c7;
+        font-family: monospace;
+        letter-spacing: 0.02em;
+    }
+
+    .mobileSourceBadge {
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 6px;
+        background: #f1f5f9;
+        color: #475569;
+        text-transform: capitalize;
+    }
+
+    .mobileGuestSection {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .mobileGuestMeta {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .mobileGuestName {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .mobilePhoneLink {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.78rem;
+        color: #0284c7;
+        text-decoration: none;
+        margin-top: 2px;
+        font-weight: 500;
+    }
+
+    .mobileRoomTag {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        color: #166534;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .mobileDatesSection {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+        border-radius: 10px;
+        padding: 8px 12px;
+    }
+
+    .mobileDateBlock {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+    }
+
+    .mobileDateSub {
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .mobileDateText {
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .mobileDurationBlock {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #64748b;
+        background: #ffffff;
+        padding: 3px 8px;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .mobileFinancialRow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 2px;
+    }
+
+    .mobileAmountGroup {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+    }
+
+    .mobileAmountSub {
+        font-size: 0.7rem;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .mobileTotalAmount {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .mobileBalanceDue {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #b91c1c;
+    }
+
+    .mobileBalanceSettled {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #15803d;
+    }
+
+    .mobileCardActions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-top: 4px;
+        border-top: 1px dashed #e2e8f0;
+    }
+
+    .mobilePrimaryBtn {
+        flex: 1;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        background: #0284c7;
+        color: #ffffff;
+        border: none;
+        border-radius: 9px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.15s ease;
+    }
+
+    .mobilePrimaryBtn:active {
+        background: #0369a1;
+    }
+
+    .mobileSecondaryBtn {
+        min-height: 44px;
+        padding: 0 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        background: #ffffff;
+        color: #334155;
+        border: 1px solid #cbd5e1;
+        border-radius: 9px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .mobileSecondaryBtn:active {
+        background: #f1f5f9;
+    }
+
+    .mobileEmailBtn {
+        width: 44px;
+        min-width: 44px;
+        height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8fafc;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+        border-radius: 9px;
+        cursor: pointer;
+    }
+
+    .mobileEmailBtn:active {
+        background: #e2e8f0;
+    }
+}
+
+@media (max-width: 480px) {
+    .kpiRow {
+        grid-template-columns: 1fr;
+    }
+}

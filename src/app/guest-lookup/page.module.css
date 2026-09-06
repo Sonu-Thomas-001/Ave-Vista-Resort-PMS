@@ -826,17 +826,35 @@
 @media (max-width: 768px) {
     .container {
         padding: 0 1rem 2rem;
+        gap: 1rem;
+    }
+
+    .searchSection {
+        padding: 1.25rem 1rem;
+        border-radius: 16px;
     }
 
     .searchBox {
         flex-direction: column;
     }
 
+    .searchBtn {
+        min-height: 46px;
+        justify-content: center;
+    }
+
     .statsGrid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
     }
 
     .detailsGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 420px) {
+    .statsGrid {
         grid-template-columns: 1fr;
     }
 }

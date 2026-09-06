@@ -7,24 +7,24 @@ import Footer from './Footer';
 import { useAuth } from '@/contexts/AuthContext';
 import { hasAccess } from '@/lib/permissions';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { Menu } from 'lucide-react';
-import sidebarStyles from './Sidebar.module.css'; // Find where to import styles for button, or inline styles
 import OfflineBanner from './ui/OfflineBanner';
 import CookieConsentBanner from './ui/CookieConsentBanner';
 import LuxuryPreloader from './ui/LuxuryPreloader';
 import TopProgressBar from './ui/TopProgressBar';
 import { OnboardingProvider } from '@/contexts/OnboardingContext';
+import { MobileNavProvider, useMobileNav } from '@/contexts/MobileNavContext';
 import OnboardingTour from './onboarding/OnboardingTour';
 
-export default function ClientLayout({ children }: { children: React.ReactNode }) {
+function LayoutContent({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const { user, loading } = useAuth();
     const router = useRouter();
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const { isMobileNavOpen, closeMobileNav } = useMobileNav();
 
-    // Mobile State
+    // Responsive Media Queries
     const isMobile = useMediaQuery('(max-width: 768px)');
-    const [isMobileOpen, setIsMobileOpen] = useState(false);
+    const isTablet = useMediaQuery('(min-width: 769px) and (max-width: 1023px)');
 
     const authPages = ['/login', '/signup', '/forgot-password', '/reset-password'];
     const publicPages = ['/help', '/privacy', '/terms', '/cancellation-policy', '/cookie-policy', '/maintenance', '/forbidden'];
@@ -32,27 +32,27 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     const isAuthPage = authPages.some(page => pathname.startsWith(page));
     const isPublicPage = publicPages.some(page => pathname.startsWith(page));
 
-    // Sync with sidebar collapse state (Desktop)
+    // Sync with sidebar collapse state (Desktop & Tablet)
     useEffect(() => {
         const handleStorage = () => {
             const saved = localStorage.getItem('sidebarCollapsed');
             if (saved !== null) {
                 setIsCollapsed(JSON.parse(saved));
+            } else if (isTablet) {
+                // Default to compact sidebar on tablet to maximize canvas width
+                setIsCollapsed(true);
             }
         };
 
         handleStorage();
         window.addEventListener('storage', handleStorage);
-
-        // Poll for changes (since localStorage events don't fire in same tab)
-        // Kept from original code, though strictly passing props makes this less critical within the same app session
         const interval = setInterval(handleStorage, 500);
 
         return () => {
             window.removeEventListener('storage', handleStorage);
             clearInterval(interval);
         };
-    }, []);
+    }, [isTablet]);
 
     const toggleDesktop = () => {
         const newState = !isCollapsed;
@@ -79,20 +79,18 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                 router.push('/forbidden');
             }
         }
-
     }, [user, loading, isAuthPage, isPublicPage, router, pathname]);
 
     if (loading) {
         return <LuxuryPreloader statusText="Loading Ave Vista PMS Workspace..." />;
     }
 
-    // Render logic:
     if (!user && !isAuthPage && !isPublicPage) {
-        return null; // Or a loading spinner, but null is fine for a quick redirect
+        return null;
     }
 
     if (user && isAuthPage) {
-        return null; // Prevent login page flash if already logged in
+        return null;
     }
 
     if (!user) {
@@ -101,7 +99,9 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                 <>
                     <TopProgressBar />
                     <OfflineBanner />
-                    <main style={{ minHeight: '100vh', width: '100%', maxWidth: '100vw', overflowX: 'hidden', backgroundColor: 'var(--background)' }}>{children}</main>
+                    <main style={{ minHeight: '100vh', width: '100%', maxWidth: '100vw', overflowX: 'clip', backgroundColor: 'var(--background)' }}>
+                        {children}
+                    </main>
                     <CookieConsentBanner />
                 </>
             );
@@ -110,7 +110,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             <>
                 <TopProgressBar />
                 <OfflineBanner />
-                <main style={{ minHeight: '100vh', backgroundColor: 'var(--background)', display: 'flex', flexDirection: 'column' }}>
+                <main style={{ minHeight: '100vh', backgroundColor: 'var(--background)', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', overflowX: 'clip' }}>
                     <div style={{ flex: 1 }}>{children}</div>
                     <Footer />
                 </main>
@@ -119,57 +119,58 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         );
     }
 
-    // Calculate Main Content style
-    const mainStyle = isMobile ? {
+    // Main Content Responsive style
+    const mainStyle: React.CSSProperties = isMobile ? {
         flex: 1,
         marginLeft: 0,
         width: '100%',
+        maxWidth: '100vw',
+        overflowX: 'clip',
         backgroundColor: 'var(--background)',
         transition: 'none',
-        paddingTop: '0px' // Removed padding to align header with toggle
+        paddingTop: '0px'
     } : {
         flex: 1,
         marginLeft: isCollapsed ? '80px' : '260px',
         width: isCollapsed ? 'calc(100% - 80px)' : 'calc(100% - 260px)',
+        maxWidth: isCollapsed ? 'calc(100vw - 80px)' : 'calc(100vw - 260px)',
+        overflowX: 'clip',
         backgroundColor: 'var(--background)',
-        transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+        transition: 'margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
     };
 
     return (
-        <OnboardingProvider>
-            <div style={{ display: 'flex', minHeight: '100vh' }}>
-                <TopProgressBar />
-                <OfflineBanner />
-                <Sidebar
-                    isMobile={isMobile}
-                    isOpen={isMobileOpen}
-                    isCollapsed={isCollapsed}
-                    onToggle={toggleDesktop}
-                    onCloseMobile={() => setIsMobileOpen(false)}
-                />
+        <div style={{ display: 'flex', minHeight: '100vh', width: '100%', maxWidth: '100vw', overflowX: 'clip' }}>
+            <TopProgressBar />
+            <OfflineBanner />
+            <Sidebar
+                isMobile={isMobile}
+                isOpen={isMobileNavOpen}
+                isCollapsed={isCollapsed}
+                onToggle={toggleDesktop}
+                onCloseMobile={closeMobileNav}
+            />
 
-                {/* Mobile Toggle Button (Visible when sidebar is closed) */}
-                {isMobile && !isMobileOpen && (
-                    <button
-                        className={sidebarStyles.mobileToggleBtn}
-                        onClick={() => setIsMobileOpen(true)}
-                        aria-label="Open menu"
-                    >
-                        <Menu size={20} />
-                    </button>
-                )}
-
-                <main style={mainStyle}>
-                    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ flex: 1 }}>
-                            {children}
-                        </div>
-                        <Footer />
+            <main style={mainStyle}>
+                <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ flex: 1 }}>
+                        {children}
                     </div>
-                </main>
-                <CookieConsentBanner />
-                <OnboardingTour />
-            </div>
+                    <Footer />
+                </div>
+            </main>
+            <CookieConsentBanner />
+            <OnboardingTour />
+        </div>
+    );
+}
+
+export default function ClientLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <OnboardingProvider>
+            <MobileNavProvider>
+                <LayoutContent>{children}</LayoutContent>
+            </MobileNavProvider>
         </OnboardingProvider>
     );
 }

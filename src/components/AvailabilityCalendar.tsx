@@ -34,6 +34,16 @@ export default function AvailabilityCalendar() {
     const [viewStartDate, setViewStartDate] = useState(new Date());
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
     const [loading, setLoading] = useState(true);
+    const [viewMode, setViewMode] = useState<'1day' | '3day' | '7day'>('7day');
+
+    // Auto-detect mobile on initial mount and default to 3-day view for best readability
+    useEffect(() => {
+        if (typeof window !== 'undefined' && window.innerWidth < 768) {
+            setViewMode('3day');
+        }
+    }, []);
+
+    const numDays = viewMode === '1day' ? 1 : viewMode === '3day' ? 3 : 7;
 
     useEffect(() => {
         fetchData();
@@ -49,7 +59,7 @@ export default function AvailabilityCalendar() {
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [viewStartDate]);
+    }, [viewStartDate, viewMode]);
 
     const fetchData = async () => {
         try {
@@ -62,13 +72,13 @@ export default function AvailabilityCalendar() {
                 .order('room_number');
             if (roomData) setRooms(roomData);
 
-            // Calculate start & end strings (7 days)
+            // Calculate start & end strings based on current viewMode
             const startStr = viewStartDate.toISOString().split('T')[0];
             const endData = new Date(viewStartDate);
-            endData.setDate(endData.getDate() + 7);
+            endData.setDate(endData.getDate() + numDays);
             const endStr = endData.toISOString().split('T')[0];
 
-            // Fetch Bookings overlapping the 7-day view
+            // Fetch Bookings overlapping the view range
             const { data: bookingData } = await supabase
                 .from('bookings')
                 .select('*, guests(first_name, last_name, email, phone), rooms(type)')
@@ -83,15 +93,15 @@ export default function AvailabilityCalendar() {
     };
 
     // Navigation handlers
-    const handlePrevWeek = () => {
+    const handlePrev = () => {
         const newDate = new Date(viewStartDate);
-        newDate.setDate(newDate.getDate() - 7);
+        newDate.setDate(newDate.getDate() - numDays);
         setViewStartDate(newDate);
     };
 
-    const handleNextWeek = () => {
+    const handleNext = () => {
         const newDate = new Date(viewStartDate);
-        newDate.setDate(newDate.getDate() + 7);
+        newDate.setDate(newDate.getDate() + numDays);
         setViewStartDate(newDate);
     };
 
@@ -99,8 +109,8 @@ export default function AvailabilityCalendar() {
         setViewStartDate(new Date());
     };
 
-    // Generate 7 days headers
-    const days = Array.from({ length: 7 }, (_, i) => {
+    // Generate days headers
+    const days = Array.from({ length: numDays }, (_, i) => {
         const d = new Date(viewStartDate);
         d.setDate(d.getDate() + i);
         const isToday = d.toDateString() === new Date().toDateString();
@@ -113,23 +123,52 @@ export default function AvailabilityCalendar() {
         };
     });
 
-    const rangeLabel = `${days[0].date} ${days[0].month} – ${days[6].date} ${days[6].month} ${viewStartDate.getFullYear()}`;
+    const rangeLabel = numDays === 1
+        ? `${days[0].date} ${days[0].month} ${viewStartDate.getFullYear()}`
+        : `${days[0].date} ${days[0].month} – ${days[days.length - 1].date} ${days[days.length - 1].month} ${viewStartDate.getFullYear()}`;
+
+    const gridTemplateColumns = `minmax(110px, 180px) repeat(${numDays}, minmax(${numDays === 1 ? '160px' : numDays === 3 ? '120px' : '90px'}, 1fr))`;
 
     return (
         <div className={styles.wrapper}>
             {/* Calendar Control Bar */}
             <div className={styles.calendarControls}>
                 <div className={styles.navGroup}>
-                    <button className={styles.navBtn} onClick={handlePrevWeek} title="Previous 7 Days">
+                    <button className={styles.navBtn} onClick={handlePrev} title={`Previous ${numDays} Days`}>
                         <ChevronLeft size={18} />
                     </button>
                     <button className={styles.todayBtn} onClick={handleToday}>
                         Today
                     </button>
-                    <button className={styles.navBtn} onClick={handleNextWeek} title="Next 7 Days">
+                    <button className={styles.navBtn} onClick={handleNext} title={`Next ${numDays} Days`}>
                         <ChevronRight size={18} />
                     </button>
                     <span className={styles.rangeText}>{rangeLabel}</span>
+                </div>
+
+                {/* View Mode Switcher */}
+                <div className={styles.viewModeSwitcher}>
+                    <button
+                        type="button"
+                        className={`${styles.viewModeBtn} ${viewMode === '1day' ? styles.viewModeBtnActive : ''}`}
+                        onClick={() => setViewMode('1day')}
+                    >
+                        1 Day
+                    </button>
+                    <button
+                        type="button"
+                        className={`${styles.viewModeBtn} ${viewMode === '3day' ? styles.viewModeBtnActive : ''}`}
+                        onClick={() => setViewMode('3day')}
+                    >
+                        3 Days
+                    </button>
+                    <button
+                        type="button"
+                        className={`${styles.viewModeBtn} ${viewMode === '7day' ? styles.viewModeBtnActive : ''}`}
+                        onClick={() => setViewMode('7day')}
+                    >
+                        7 Days
+                    </button>
                 </div>
 
                 {/* Status Legend */}
@@ -156,7 +195,7 @@ export default function AvailabilityCalendar() {
             {/* Calendar Grid Container */}
             <div className={styles.container}>
                 {/* Header Row */}
-                <div className={styles.header}>
+                <div className={styles.header} style={{ gridTemplateColumns }}>
                     <div className={styles.roomLabel}>Inventory / Room</div>
                     {days.map((d, i) => (
                         <div key={i} className={`${styles.dayHeader} ${d.isToday ? styles.todayHeader : ''}`}>
@@ -171,14 +210,14 @@ export default function AvailabilityCalendar() {
                 <div className={styles.grid}>
                     {rooms.map((room) => {
                         return (
-                            <div key={room.id} className={styles.row}>
+                            <div key={room.id} className={styles.row} style={{ gridTemplateColumns }}>
                                 {/* Room Label Cell */}
                                 <div className={styles.roomName}>
                                     <span className={styles.roomNumberText}>{room.room_number}</span>
                                     <span className={styles.roomTypeText}>{room.type}</span>
                                 </div>
 
-                                {/* 7 Days Columns */}
+                                {/* Dynamic Days Columns */}
                                 {days.map((day, dayIdx) => {
                                     const dayDate = day.fullDate;
 
@@ -207,7 +246,7 @@ export default function AvailabilityCalendar() {
                                             let span = Math.ceil(
                                                 (checkOutDate.getTime() - currentDayObj.getTime()) / msPerDay
                                             );
-                                            const remainingInView = 7 - dayIdx;
+                                            const remainingInView = numDays - dayIdx;
                                             if (span > remainingInView) span = remainingInView;
 
                                             const guestName = bookingToCheck.guests

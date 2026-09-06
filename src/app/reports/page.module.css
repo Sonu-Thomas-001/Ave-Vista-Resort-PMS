@@ -170,7 +170,7 @@
    ───────────────────────────────────────────────────────────── */
 .kpiGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
     gap: 20px;
     margin-bottom: 30px;
 }
@@ -649,20 +649,55 @@
 
 @media (max-width: 768px) {
     .container {
-        padding: 16px;
+        padding: 12px;
     }
 
     .controlsBar {
         flex-direction: column;
         align-items: stretch;
+        padding: 12px;
+        gap: 12px;
     }
 
     .tabNavigation {
         width: 100%;
     }
 
+    .tabBtn {
+        min-height: 40px;
+        padding: 8px 14px;
+        font-size: 0.82rem;
+    }
+
     .actionControls {
-        justify-content: space-between;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .dateFilterWrapper {
+        width: 100%;
+        justify-content: center;
+        min-height: 42px;
+    }
+
+    .iconButton,
+    .exportButton {
+        width: 100%;
+        min-height: 44px;
+        justify-content: center;
+    }
+
+    .kpiGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .kpiCard {
+        padding: 16px;
+        border-radius: 14px;
     }
 
     .equalRowGrid {
@@ -670,6 +705,12 @@
     }
 
     .kpiValue {
-        font-size: 1.6rem;
+        font-size: 1.45rem;
+    }
+}
+
+@media (max-width: 420px) {
+    .kpiGrid {
+        grid-template-columns: 1fr;
     }
 }

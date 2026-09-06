@@ -84,6 +84,13 @@ export default function GuestsPage() {
     const [sortColumn, setSortColumn] = useState<string>('first_name');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
+    // Auto-detect mobile and default to cards view
+    useEffect(() => {
+        if (typeof window !== 'undefined' && window.innerWidth < 768) {
+            setViewMode('cards');
+        }
+    }, []);
+
     // Modal State
     const [showModal, setShowModal] = useState(false);
     const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
@@ -711,13 +718,23 @@ export default function GuestsPage() {
                                     <div className={styles.cardContactRow}>
                                         <div className={styles.contactItem}>
                                             <Phone size={14} />
-                                            <span>{guest.phone || 'No phone recorded'}</span>
+                                            {guest.phone ? (
+                                                <a href={`tel:${guest.phone}`} style={{ color: 'inherit', textDecoration: 'none', fontWeight: 600 }}>
+                                                    {guest.phone}
+                                                </a>
+                                            ) : (
+                                                <span>No phone recorded</span>
+                                            )}
                                         </div>
                                         <div className={styles.contactItem}>
                                             <Mail size={14} />
-                                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                {guest.email || 'No email recorded'}
-                                            </span>
+                                            {guest.email ? (
+                                                <a href={`mailto:${guest.email}`} style={{ color: 'inherit', textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                    {guest.email}
+                                                </a>
+                                            ) : (
+                                                <span>No email recorded</span>
+                                            )}
                                         </div>
                                         {guest.company_name && (
                                             <div className={styles.contactItem}>

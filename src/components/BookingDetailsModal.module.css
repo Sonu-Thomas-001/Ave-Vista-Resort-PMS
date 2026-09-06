@@ -666,26 +666,62 @@
 
 /* Responsive */
 @media (max-width: 640px) {
+    .overlay {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .modal {
+        max-height: 94vh;
+        border-radius: 20px 20px 0 0;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .header {
+        padding: 16px 20px;
+    }
+
+    .closeBtn {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .heroRow {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .heroStatusBox {
+        align-items: flex-start;
+        width: 100%;
+    }
+
     .metricsGrid {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .body {
+        padding: 16px;
+        max-height: calc(94vh - 230px);
+        gap: 14px;
     }
 
     .cardsGrid {
         grid-template-columns: 1fr;
     }
 
-    .heroRow {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .heroStatusBox {
-        align-items: flex-start;
+    .card {
+        padding: 14px 16px;
     }
 
     .footer {
         flex-direction: column-reverse;
         gap: 10px;
+        padding: 14px 18px calc(14px + env(safe-area-inset-bottom, 0px));
     }
 
     .contactActions, .footerActions {
@@ -698,5 +734,20 @@
     .footerActions button {
         flex: 1;
         justify-content: center;
+        min-height: 44px;
+    }
+
+    .primaryBtn {
+        min-height: 48px;
+    }
+}
+
+@media (max-width: 380px) {
+    .metricsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .contactActions, .footerActions {
+        flex-direction: column;
     }
 }

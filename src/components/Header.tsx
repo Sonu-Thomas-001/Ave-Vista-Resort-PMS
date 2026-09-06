@@ -27,11 +27,19 @@ import {
     FileText,
     Building2,
     LogIn,
-    Compass
+    Compass,
+    Bell,
+    Menu,
+    CheckCircle2,
+    AlertTriangle,
+    Brush,
+    UserCheck,
+    Check
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOnboarding } from '@/contexts/OnboardingContext';
+import { useMobileNav } from '@/contexts/MobileNavContext';
 import { supabase } from '@/lib/supabase';
 import styles from './Header.module.css';
 
@@ -45,6 +53,16 @@ interface SearchResult {
     title: string;
     subtitle: string;
     path: string;
+}
+
+interface OperationalAlert {
+    id: string;
+    type: 'checkin' | 'checkout' | 'housekeeping' | 'billing' | 'booking';
+    title: string;
+    description: string;
+    timestamp: string;
+    path: string;
+    severity: 'info' | 'warning' | 'error' | 'success';
 }
 
 const getHeaderEmblem = (title: string, pathname: string) => {
@@ -84,17 +102,18 @@ const getHeaderEmblem = (title: string, pathname: string) => {
     if (p.includes('terms') || p.includes('privacy') || t.includes('terms') || t.includes('policy')) {
         return <FileText size={20} />;
     }
-    // Default: Dashboard / Resort Overview
     return <LayoutDashboard size={20} />;
 };
 
 export default function Header({ title = "Dashboard" }: HeaderProps) {
     const { user, logout } = useAuth();
     const { restartTour } = useOnboarding();
+    const { openMobileNav } = useMobileNav();
     const pathname = usePathname();
     const router = useRouter();
     const [currentTime, setCurrentTime] = useState(new Date());
     const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const [showNotifications, setShowNotifications] = useState(false);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [showSearchResults, setShowSearchResults] = useState(false);
@@ -104,12 +123,13 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
     // Real-time stats state
     const [todaysBookings, setTodaysBookings] = useState(0);
     const [roomStats, setRoomStats] = useState({ occupied: 0, total: 0 });
+    const [alerts, setAlerts] = useState<OperationalAlert[]>([]);
 
     const profileRef = useRef<HTMLDivElement>(null);
+    const notificationsRef = useRef<HTMLDivElement>(null);
     const searchRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
 
-    // Mounted state to prevent hydration mismatch
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -117,12 +137,13 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
         if (!user) return;
 
         fetchRealTimeStats();
+        fetchOperationalAlerts();
 
-        // Subscribe to changes
         const bookingsSubscription = supabase
             .channel('header-bookings')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
                 fetchTodaysBookings();
+                fetchOperationalAlerts();
             })
             .subscribe();
 
@@ -130,6 +151,7 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
             .channel('header-rooms')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms' }, () => {
                 fetchRoomStats();
+                fetchOperationalAlerts();
             })
             .subscribe();
 
@@ -172,13 +194,100 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
         }
     };
 
-    // Update time every second for real-time live clock
+    const fetchOperationalAlerts = async () => {
+        try {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const alertList: OperationalAlert[] = [];
+
+            // 1. Pending Arrivals Today
+            const { data: arrivals } = await supabase
+                .from('bookings')
+                .select('id, guests(first_name, last_name), rooms(room_number)')
+                .eq('status', 'Confirmed')
+                .lte('check_in_date', todayStr)
+                .limit(5);
+
+            if (arrivals && arrivals.length > 0) {
+                alertList.push({
+                    id: 'alert-arrivals',
+                    type: 'checkin',
+                    title: `${arrivals.length} Arrival${arrivals.length > 1 ? 's' : ''} Expected Today`,
+                    description: 'Guests scheduled for check-in at front desk',
+                    timestamp: 'Today',
+                    path: '/front-desk',
+                    severity: 'info'
+                });
+            }
+
+            // 2. Pending Departures Today
+            const { data: departures } = await supabase
+                .from('bookings')
+                .select('id')
+                .eq('status', 'Checked In')
+                .lte('check_out_date', todayStr)
+                .limit(5);
+
+            if (departures && departures.length > 0) {
+                alertList.push({
+                    id: 'alert-departures',
+                    type: 'checkout',
+                    title: `${departures.length} Departure${departures.length > 1 ? 's' : ''} Scheduled`,
+                    description: 'Check-out & folio settlement required today',
+                    timestamp: 'Today',
+                    path: '/front-desk/checkout',
+                    severity: 'warning'
+                });
+            }
+
+            // 3. Housekeeping Dirty Rooms
+            const { count: dirtyCount } = await supabase
+                .from('rooms')
+                .select('*', { count: 'exact', head: true })
+                .eq('status', 'Dirty');
+
+            if (dirtyCount && dirtyCount > 0) {
+                alertList.push({
+                    id: 'alert-housekeeping',
+                    type: 'housekeeping',
+                    title: `${dirtyCount} Room${dirtyCount > 1 ? 's' : ''} Require Cleaning`,
+                    description: 'Turnover needed for upcoming guest check-ins',
+                    timestamp: 'Active',
+                    path: '/rooms',
+                    severity: 'warning'
+                });
+            }
+
+            // 4. Pending Folios / Unpaid Invoices
+            const { count: pendingFoliosCount } = await supabase
+                .from('invoices')
+                .select('*', { count: 'exact', head: true })
+                .in('status', ['Pending', 'Partial']);
+
+            if (pendingFoliosCount && pendingFoliosCount > 0) {
+                alertList.push({
+                    id: 'alert-billing',
+                    type: 'billing',
+                    title: `${pendingFoliosCount} Folio${pendingFoliosCount > 1 ? 's' : ''} Awaiting Settlement`,
+                    description: 'Unsettled guest charges or balance due',
+                    timestamp: 'Pending',
+                    path: '/billing',
+                    severity: 'error'
+                });
+            }
+
+            setAlerts(alertList);
+        } catch (err) {
+            console.error('Error fetching operational alerts:', err);
+        }
+    };
+
+    // Live Clock
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
 
-    // Global shortcut (Ctrl+K / Cmd+K) to focus search
+    // Global shortcut (Ctrl+K / Cmd+K)
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -195,6 +304,9 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
         const handleClickOutside = (event: MouseEvent) => {
             if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
                 setShowProfileMenu(false);
+            }
+            if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+                setShowNotifications(false);
             }
             if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
                 setShowSearchResults(false);
@@ -220,18 +332,17 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    // Generate breadcrumbs from pathname
-    const getBreadcrumbs = () => {
-        const paths = pathname.split('/').filter(Boolean);
-        if (paths.length === 0) return [{ label: 'Dashboard', path: '/' }];
-
-        return paths.map((path, index) => ({
-            label: path.charAt(0).toUpperCase() + path.slice(1).replace(/-/g, ' '),
-            path: '/' + paths.slice(0, index + 1).join('/')
-        }));
-    };
-
-    const breadcrumbs = getBreadcrumbs();
+    // Build breadcrumbs dynamically from pathname
+    const breadcrumbs = pathname
+        .split('/')
+        .filter(Boolean)
+        .map((segment, index, array) => {
+            const path = `/${array.slice(0, index + 1).join('/')}`;
+            const label = segment
+                .replace(/-/g, ' ')
+                .replace(/\b\w/g, c => c.toUpperCase());
+            return { label, path };
+        });
 
     const navigateToProfile = () => {
         setShowProfileMenu(false);
@@ -332,6 +443,12 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
         router.push(result.path);
         setSearchQuery('');
         setShowSearchResults(false);
+        setShowMobileSearch(false);
+    };
+
+    const handleAlertClick = (alert: OperationalAlert) => {
+        setShowNotifications(false);
+        router.push(alert.path);
     };
 
     const getResultIcon = (type: string) => {
@@ -347,18 +464,51 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
         }
     };
 
+    const getAlertIcon = (type: OperationalAlert['type']) => {
+        switch (type) {
+            case 'checkin':
+                return <UserCheck size={16} />;
+            case 'checkout':
+                return <LogOut size={16} />;
+            case 'housekeeping':
+                return <Brush size={16} />;
+            case 'billing':
+                return <Receipt size={16} />;
+            default:
+                return <CalendarDays size={16} />;
+        }
+    };
+
     return (
         <header className={styles.header}>
-            {/* Left Section: Luxury Page Context & Interactive Breadcrumbs */}
+            {/* Left Section: Mobile Drawer Trigger + Desktop Luxury Emblem & Breadcrumbs */}
             <div className={styles.leftSection}>
+                {/* Mobile Menu Hamburger Button */}
+                <button
+                    type="button"
+                    className={styles.mobileNavTrigger}
+                    onClick={openMobileNav}
+                    aria-label="Open Navigation Menu"
+                    title="Open Navigation"
+                >
+                    <Menu size={20} />
+                </button>
+
+                {/* Mobile Brand Identity */}
+                <div className={styles.mobileBrand}>
+                    <span className={styles.mobileBrandTitle}>Ave Vista</span>
+                    <span className={styles.mobilePageTag}>{title}</span>
+                </div>
+
+                {/* Desktop Emblem */}
                 <div className={styles.emblemContainer}>
                     <div className={styles.emblemSquircle} title={title}>
                         {getHeaderEmblem(title, pathname)}
                     </div>
                 </div>
 
+                {/* Desktop Title & Breadcrumbs */}
                 <div className={styles.titleSection}>
-                    {/* Top Eyebrow / Breadcrumbs */}
                     <div className={styles.breadcrumbs}>
                         <button
                             type="button"
@@ -388,7 +538,6 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
                         })}
                     </div>
 
-                    {/* Main Title Row */}
                     <div className={styles.titleRow}>
                         <h1 className={styles.title}>{title}</h1>
                     </div>
@@ -397,7 +546,7 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
 
             {/* Right Section: Live Metrics & Controls */}
             <div className={styles.rightSection}>
-                {/* Real-time Clock Capsule */}
+                {/* Real-time Clock Capsule (Desktop) */}
                 {mounted && (
                     <div className={styles.dateTimeCapsule}>
                         <div className={styles.dateSegment}>
@@ -433,7 +582,6 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
                             className={`${styles.searchWrapper} ${showMobileSearch ? styles.mobileSearchOpen : ''}`}
                             ref={searchRef}
                         >
-                            {/* Mobile Search Toggle */}
                             <button
                                 className={styles.mobileSearchToggle}
                                 onClick={() => setShowMobileSearch(!showMobileSearch)}
@@ -458,7 +606,6 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
                                     <span>K</span>
                                 </div>
 
-                                {/* Mobile close button */}
                                 <button
                                     className={styles.mobileSearchClose}
                                     onClick={() => {
@@ -510,7 +657,7 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
                             )}
                         </div>
 
-                        {/* Live Operations Stat Chips */}
+                        {/* Live Operations Stat Chips (Desktop) */}
                         <div className={styles.quickStats}>
                             <div className={styles.statChipGreen} title="Bookings created today">
                                 <div className={styles.statIconWrapperGreen}>
@@ -531,9 +678,96 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
                             </div>
                         </div>
 
-                        {/* Quick Action: Settings */}
+                        {/* Operational Notifications Bell (Mobile & Desktop) */}
+                        <div className={styles.notificationWrapper} ref={notificationsRef}>
+                            <button
+                                className={styles.notificationBtn}
+                                onClick={() => setShowNotifications(!showNotifications)}
+                                aria-label="Operational Notifications"
+                                title="Resort Notifications & Live Alerts"
+                            >
+                                <Bell size={18} />
+                                {alerts.length > 0 && (
+                                    <span className={styles.notificationBadge}>
+                                        {alerts.length}
+                                    </span>
+                                )}
+                            </button>
+
+                            {/* Notifications Panel / Mobile Bottom Sheet */}
+                            {showNotifications && (
+                                <>
+                                    <div
+                                        className={styles.notificationsBackdrop}
+                                        onClick={() => setShowNotifications(false)}
+                                    />
+                                    <div className={styles.notificationsPanel}>
+                                        <div className={styles.notificationsHeader}>
+                                            <div className={styles.notificationsTitleGroup}>
+                                                <Bell size={16} className={styles.bellIcon} />
+                                                <h3 className={styles.notificationsHeading}>Operational Alerts</h3>
+                                                {alerts.length > 0 && (
+                                                    <span className={styles.activeAlertsCountBadge}>
+                                                        {alerts.length} active
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <button
+                                                className={styles.closeNotificationsBtn}
+                                                onClick={() => setShowNotifications(false)}
+                                                aria-label="Close notifications"
+                                            >
+                                                <X size={16} />
+                                            </button>
+                                        </div>
+
+                                        <div className={styles.notificationsList}>
+                                            {alerts.length === 0 ? (
+                                                <div className={styles.emptyNotifications}>
+                                                    <CheckCircle2 size={32} className={styles.emptyAlertIcon} />
+                                                    <h4>All Tasks Clear</h4>
+                                                    <p>Front desk, bookings, and housekeeping operations are currently on track.</p>
+                                                </div>
+                                            ) : (
+                                                alerts.map((alert) => (
+                                                    <div
+                                                        key={alert.id}
+                                                        className={`${styles.alertItem} ${styles[`severity_${alert.severity}`]}`}
+                                                        onClick={() => handleAlertClick(alert)}
+                                                    >
+                                                        <div className={`${styles.alertIconSquircle} ${styles[`icon_${alert.type}`]}`}>
+                                                            {getAlertIcon(alert.type)}
+                                                        </div>
+                                                        <div className={styles.alertDetails}>
+                                                            <div className={styles.alertTitleRow}>
+                                                                <h4 className={styles.alertTitle}>{alert.title}</h4>
+                                                                <span className={styles.alertTimestamp}>{alert.timestamp}</span>
+                                                            </div>
+                                                            <p className={styles.alertDesc}>{alert.description}</p>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+
+                                        <div className={styles.notificationsFooter}>
+                                            <Link
+                                                href="/front-desk"
+                                                className={styles.notificationsFooterLink}
+                                                onClick={() => setShowNotifications(false)}
+                                            >
+                                                <span>Go to Front Desk Operations</span>
+                                                <ChevronRight size={14} />
+                                            </Link>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        {/* Quick Action: Settings (Desktop) */}
                         <button
-                            className={styles.iconBtn}
+                            className={`${styles.iconBtn} ${styles.desktopOnlyBtn}`}
                             onClick={navigateToSettings}
                             aria-label="Settings"
                             title="System Settings"

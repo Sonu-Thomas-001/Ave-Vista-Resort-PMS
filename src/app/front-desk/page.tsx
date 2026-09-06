@@ -401,152 +401,280 @@ export default function FrontDeskPage() {
                             )}
                         </div>
                     ) : (
-                        <div className={styles.tableWrapper}>
-                            <table className={styles.table}>
-                                <thead>
-                                    <tr>
-                                        <th>Guest Details</th>
-                                        <th>Room Assignment</th>
-                                        <th>Stay Period</th>
-                                        <th>Pax</th>
-                                        <th>Billing & Advance</th>
-                                        <th>Status</th>
-                                        <th style={{ textAlign: 'right' }}>Front Desk Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredQueue.map(booking => {
-                                        const guest = booking.guests;
-                                        const room = booking.rooms;
-                                        const nights = calculateNights(booking.check_in_date, booking.check_out_date);
-                                        const guestFullName = guest
-                                            ? `${guest.first_name || ''} ${guest.last_name || ''}`.trim()
-                                            : 'Guest';
+                        <>
+                            {/* Desktop Table View */}
+                            <div className={styles.tableWrapper}>
+                                <table className={styles.table}>
+                                    <thead>
+                                        <tr>
+                                            <th>Guest Details</th>
+                                            <th>Room Assignment</th>
+                                            <th>Stay Period</th>
+                                            <th>Pax</th>
+                                            <th>Billing & Advance</th>
+                                            <th>Status</th>
+                                            <th style={{ textAlign: 'right' }}>Front Desk Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredQueue.map(booking => {
+                                            const guest = booking.guests;
+                                            const room = booking.rooms;
+                                            const nights = calculateNights(booking.check_in_date, booking.check_out_date);
+                                            const guestFullName = guest
+                                                ? `${guest.first_name || ''} ${guest.last_name || ''}`.trim()
+                                                : 'Guest';
 
-                                        return (
-                                            <tr key={booking.id} className={styles.tableRow}>
-                                                {/* Guest Cell */}
-                                                <td>
-                                                    <div className={styles.guestCell}>
-                                                        <div className={styles.avatarCircle}>
-                                                            {guestFullName.charAt(0).toUpperCase()}
+                                            return (
+                                                <tr key={booking.id} className={styles.tableRow}>
+                                                    {/* Guest Cell */}
+                                                    <td>
+                                                        <div className={styles.guestCell}>
+                                                            <div className={styles.avatarCircle}>
+                                                                {guestFullName.charAt(0).toUpperCase()}
+                                                            </div>
+                                                            <div className={styles.guestMeta}>
+                                                                <span className={styles.guestName}>
+                                                                    {guestFullName}
+                                                                    {guest?.is_vip && <span className={styles.vipBadge}>VIP</span>}
+                                                                </span>
+                                                                <span className={styles.guestSubtext}>
+                                                                    {guest?.phone ? (
+                                                                        <a href={`tel:${guest.phone}`} className={styles.phoneInlineLink}>
+                                                                            {guest.phone}
+                                                                        </a>
+                                                                    ) : (
+                                                                        'No phone'
+                                                                    )} • #{booking.booking_number || booking.id.slice(0, 8)}
+                                                                </span>
+                                                            </div>
                                                         </div>
-                                                        <div className={styles.guestMeta}>
-                                                            <span className={styles.guestName}>
-                                                                {guestFullName}
-                                                                {guest?.is_vip && <span className={styles.vipBadge}>VIP</span>}
+                                                    </td>
+
+                                                    {/* Room */}
+                                                    <td>
+                                                        {room ? (
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                                                <span className={styles.roomBadge}>
+                                                                    <Key size={13} style={{ color: '#0284c7' }} />
+                                                                    Room {room.room_number}
+                                                                </span>
+                                                                <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
+                                                                    {room.type}
+                                                                </span>
+                                                            </div>
+                                                        ) : (
+                                                            <span style={{ color: '#f59e0b', fontSize: '0.82rem', fontWeight: 600 }}>
+                                                                Unassigned
                                                             </span>
-                                                            <span className={styles.guestSubtext}>
-                                                                {guest?.phone || 'No phone'} • #{booking.booking_number || booking.id.slice(0, 8)}
+                                                        )}
+                                                    </td>
+
+                                                    {/* Stay Dates */}
+                                                    <td>
+                                                        <div className={styles.stayDates}>
+                                                            <span className={styles.stayDateText}>
+                                                                {new Date(booking.check_in_date).toLocaleDateString('en-IN', {
+                                                                    month: 'short',
+                                                                    day: 'numeric'
+                                                                })}
+                                                                <ArrowRight size={11} style={{ display: 'inline-block', verticalAlign: 'middle', margin: '0 4px', color: '#94a3b8' }} />
+                                                                {new Date(booking.check_out_date).toLocaleDateString('en-IN', {
+                                                                    month: 'short',
+                                                                    day: 'numeric'
+                                                                })}
+                                                            </span>
+                                                            <span className={styles.stayDuration}>
+                                                                {nights} {nights === 1 ? 'Night' : 'Nights'}
                                                             </span>
                                                         </div>
+                                                    </td>
+
+                                                    {/* Pax */}
+                                                    <td>
+                                                        <span style={{ fontSize: '0.84rem', fontWeight: 600, color: '#334155' }}>
+                                                            {booking.adults || 1} A
+                                                            {booking.children ? `, ${booking.children} C` : ''}
+                                                        </span>
+                                                    </td>
+
+                                                    {/* Amount */}
+                                                    <td>
+                                                        <div className={styles.amountCell}>
+                                                            <span className={styles.amountTotal}>
+                                                                ₹{Number(booking.total_amount || 0).toLocaleString()}
+                                                            </span>
+                                                            {booking.advance_amount > 0 && (
+                                                                <span className={styles.amountAdvance}>
+                                                                    ₹{Number(booking.advance_amount).toLocaleString()} Adv Paid
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </td>
+
+                                                    {/* Status */}
+                                                    <td>
+                                                        <span
+                                                            className={`${styles.statusPill} ${
+                                                                booking.status === 'Checked In'
+                                                                    ? styles.pillCheckedIn
+                                                                    : styles.pillConfirmed
+                                                            }`}
+                                                        >
+                                                            {booking.status}
+                                                        </span>
+                                                    </td>
+
+                                                    {/* Actions */}
+                                                    <td style={{ textAlign: 'right' }}>
+                                                        <div className={styles.actionBtnRow}>
+                                                            {booking.status === 'Confirmed' ? (
+                                                                <Link
+                                                                    href={`/front-desk/checkin?search=${encodeURIComponent(
+                                                                        guest?.first_name || ''
+                                                                    )}`}
+                                                                    className={styles.directCheckinBtn}
+                                                                >
+                                                                    <UserCheck size={14} /> Check In
+                                                                </Link>
+                                                            ) : (
+                                                                <Link
+                                                                    href={`/front-desk/checkout?room=${encodeURIComponent(
+                                                                        room?.room_number || ''
+                                                                    )}`}
+                                                                    className={styles.directCheckoutBtn}
+                                                                >
+                                                                    <LogOut size={14} /> Check Out
+                                                                </Link>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Mobile Card List View (<768px) */}
+                            <div className={styles.mobileCardList}>
+                                {filteredQueue.map(booking => {
+                                    const guest = booking.guests;
+                                    const room = booking.rooms;
+                                    const nights = calculateNights(booking.check_in_date, booking.check_out_date);
+                                    const guestFullName = guest
+                                        ? `${guest.first_name || ''} ${guest.last_name || ''}`.trim()
+                                        : 'Guest';
+
+                                    return (
+                                        <div key={`card-${booking.id}`} className={styles.queueCardItem}>
+                                            <div className={styles.queueCardTop}>
+                                                <div className={styles.guestCell}>
+                                                    <div className={styles.avatarCircle}>
+                                                        {guestFullName.charAt(0).toUpperCase()}
                                                     </div>
-                                                </td>
-
-                                                {/* Room */}
-                                                <td>
-                                                    {room ? (
-                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                                            <span className={styles.roomBadge}>
-                                                                <Key size={13} style={{ color: '#0284c7' }} />
-                                                                Room {room.room_number}
-                                                            </span>
-                                                            <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
-                                                                {room.type}
-                                                            </span>
+                                                    <div className={styles.guestMeta}>
+                                                        <div className={styles.guestNameRow}>
+                                                            <span className={styles.guestName}>{guestFullName}</span>
+                                                            {guest?.is_vip && <span className={styles.vipBadge}>VIP</span>}
                                                         </div>
+                                                        <span className={styles.guestSubtext}>
+                                                            #{booking.booking_number || booking.id.slice(0, 8)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <span
+                                                    className={`${styles.statusPill} ${
+                                                        booking.status === 'Checked In'
+                                                            ? styles.pillCheckedIn
+                                                            : styles.pillConfirmed
+                                                    }`}
+                                                >
+                                                    {booking.status}
+                                                </span>
+                                            </div>
+
+                                            <div className={styles.cardDetailsGrid}>
+                                                <div className={styles.cardDetailBox}>
+                                                    <span className={styles.cardDetailLabel}>Room</span>
+                                                    {room ? (
+                                                        <span className={styles.roomBadge}>
+                                                            <Key size={12} style={{ color: '#0284c7' }} />
+                                                            Room {room.room_number} • {room.type}
+                                                        </span>
                                                     ) : (
-                                                        <span style={{ color: '#f59e0b', fontSize: '0.82rem', fontWeight: 600 }}>
+                                                        <span style={{ color: '#f59e0b', fontSize: '0.8rem', fontWeight: 600 }}>
                                                             Unassigned
                                                         </span>
                                                     )}
-                                                </td>
+                                                </div>
 
-                                                {/* Stay Dates */}
-                                                <td>
-                                                    <div className={styles.stayDates}>
-                                                        <span className={styles.stayDateText}>
-                                                            {new Date(booking.check_in_date).toLocaleDateString('en-IN', {
-                                                                month: 'short',
-                                                                day: 'numeric'
-                                                            })}
-                                                            <ArrowRight size={11} style={{ display: 'inline-block', verticalAlign: 'middle', margin: '0 4px', color: '#94a3b8' }} />
-                                                            {new Date(booking.check_out_date).toLocaleDateString('en-IN', {
-                                                                month: 'short',
-                                                                day: 'numeric'
-                                                            })}
-                                                        </span>
-                                                        <span className={styles.stayDuration}>
-                                                            {nights} {nights === 1 ? 'Night' : 'Nights'}
-                                                        </span>
-                                                    </div>
-                                                </td>
-
-                                                {/* Pax */}
-                                                <td>
-                                                    <span style={{ fontSize: '0.84rem', fontWeight: 600, color: '#334155' }}>
-                                                        {booking.adults || 1} A
-                                                        {booking.children ? `, ${booking.children} C` : ''}
+                                                <div className={styles.cardDetailBox}>
+                                                    <span className={styles.cardDetailLabel}>Stay & Pax</span>
+                                                    <span className={styles.stayDateText}>
+                                                        {new Date(booking.check_in_date).toLocaleDateString('en-IN', {
+                                                            month: 'short',
+                                                            day: 'numeric'
+                                                        })} → {new Date(booking.check_out_date).toLocaleDateString('en-IN', {
+                                                            month: 'short',
+                                                            day: 'numeric'
+                                                        })} ({nights}N, {booking.adults || 1}A)
                                                     </span>
-                                                </td>
+                                                </div>
 
-                                                {/* Amount */}
-                                                <td>
-                                                    <div className={styles.amountCell}>
-                                                        <span className={styles.amountTotal}>
-                                                            ₹{Number(booking.total_amount || 0).toLocaleString()}
-                                                        </span>
-                                                        {booking.advance_amount > 0 && (
-                                                            <span className={styles.amountAdvance}>
-                                                                ₹{Number(booking.advance_amount).toLocaleString()} Adv Paid
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </td>
-
-                                                {/* Status */}
-                                                <td>
-                                                    <span
-                                                        className={`${styles.statusPill} ${
-                                                            booking.status === 'Checked In'
-                                                                ? styles.pillCheckedIn
-                                                                : styles.pillConfirmed
-                                                        }`}
-                                                    >
-                                                        {booking.status}
-                                                    </span>
-                                                </td>
-
-                                                {/* Actions */}
-                                                <td style={{ textAlign: 'right' }}>
-                                                    <div className={styles.actionBtnRow}>
-                                                        {booking.status === 'Confirmed' ? (
-                                                            <Link
-                                                                href={`/front-desk/checkin?search=${encodeURIComponent(
-                                                                    guest?.first_name || ''
-                                                                )}`}
-                                                                className={styles.directCheckinBtn}
-                                                            >
-                                                                <UserCheck size={14} /> Check In
-                                                            </Link>
+                                                <div className={styles.cardDetailBoxFull}>
+                                                    <div className={styles.cardContactRow}>
+                                                        {guest?.phone ? (
+                                                            <a href={`tel:${guest.phone}`} className={styles.phoneBadgeLink}>
+                                                                <Phone size={12} />
+                                                                <span>{guest.phone}</span>
+                                                            </a>
                                                         ) : (
-                                                            <Link
-                                                                href={`/front-desk/checkout?room=${encodeURIComponent(
-                                                                    room?.room_number || ''
-                                                                )}`}
-                                                                className={styles.directCheckoutBtn}
-                                                            >
-                                                                <LogOut size={14} /> Check Out
-                                                            </Link>
+                                                            <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>No phone</span>
                                                         )}
+                                                        <div className={styles.cardAmountCol}>
+                                                            <span className={styles.amountTotal}>
+                                                                ₹{Number(booking.total_amount || 0).toLocaleString()}
+                                                            </span>
+                                                            {booking.advance_amount > 0 && (
+                                                                <span className={styles.amountAdvanceMini}>
+                                                                    ₹{Number(booking.advance_amount).toLocaleString()} paid
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
+                                                </div>
+                                            </div>
+
+                                            <div className={styles.cardActionArea}>
+                                                {booking.status === 'Confirmed' ? (
+                                                    <Link
+                                                        href={`/front-desk/checkin?search=${encodeURIComponent(
+                                                            guest?.first_name || ''
+                                                        )}`}
+                                                        className={styles.mobileCheckinActionBtn}
+                                                    >
+                                                        <UserCheck size={18} />
+                                                        <span>Check In Guest</span>
+                                                    </Link>
+                                                ) : (
+                                                    <Link
+                                                        href={`/front-desk/checkout?room=${encodeURIComponent(
+                                                            room?.room_number || ''
+                                                        )}`}
+                                                        className={styles.mobileCheckoutActionBtn}
+                                                    >
+                                                        <LogOut size={18} />
+                                                        <span>Settle Folio & Check Out</span>
+                                                    </Link>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </>
                     )}
                 </div>
             </div>
