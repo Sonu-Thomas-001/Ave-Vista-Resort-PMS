@@ -24,6 +24,7 @@ import {
 import { exportToPDF, exportToExcel } from '@/lib/expenseExport';
 import CustomSelect from '@/components/ui/CustomSelect';
 import DatePicker from '@/components/ui/DatePicker';
+import ExpenseDetailsModal from './ExpenseDetailsModal';
 import styles from './ExpenseList.module.css';
 
 export interface Expense {
@@ -82,6 +83,7 @@ export default function ExpenseList({
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [previewAttachment, setPreviewAttachment] = useState<string | null>(null);
+    const [viewingExpense, setViewingExpense] = useState<Expense | null>(null);
     const [exportingType, setExportingType] = useState<'excel' | 'pdf' | null>(null);
 
     const handleSearchChange = (query: string) => {
@@ -449,15 +451,13 @@ export default function ExpenseList({
                                         {/* Actions */}
                                         <td>
                                             <div className={styles.actionCell} style={{ justifyContent: 'flex-end' }}>
-                                                {expense.attachment_url && (
-                                                    <button
-                                                        className={styles.actionBtn}
-                                                        title="View Receipt"
-                                                        onClick={() => setPreviewAttachment(expense.attachment_url!)}
-                                                    >
-                                                        <Eye size={15} />
-                                                    </button>
-                                                )}
+                                                <button
+                                                    className={styles.actionBtn}
+                                                    title="View Expense Details"
+                                                    onClick={() => setViewingExpense(expense)}
+                                                >
+                                                    <Eye size={15} />
+                                                </button>
                                                 <button
                                                     className={styles.actionBtn}
                                                     title="Edit Expense"
@@ -543,6 +543,15 @@ export default function ExpenseList({
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Modern Expense Details Modal */}
+            {viewingExpense && (
+                <ExpenseDetailsModal
+                    expense={viewingExpense}
+                    onClose={() => setViewingExpense(null)}
+                    onEdit={onEdit}
+                />
             )}
         </div>
     );

@@ -1149,11 +1149,11 @@ export default function BillingPage() {
                                     )}
                                 </div>
                                 <h3 className={styles.modalTitle}>
-                                    Edit Folio Invoice #{editingInvoice.invoice_number}
+                                    Edit Folio Invoice
                                 </h3>
-                                <span className={styles.modalSubtitle}>
+                                <p className={styles.modalSubtitle}>
                                     Update invoice dates, reservation folio linkage, guest billing details, and payment settlement
-                                </span>
+                                </p>
                             </div>
                             <button
                                 onClick={() => setEditingInvoice(null)}

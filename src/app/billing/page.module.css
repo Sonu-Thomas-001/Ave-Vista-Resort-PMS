@@ -753,6 +753,8 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    flex-shrink: 0;
+    gap: 16px;
 }
 
 .headerGlow {
@@ -771,6 +773,8 @@
     gap: 6px;
     position: relative;
     z-index: 2;
+    flex: 1;
+    min-width: 0;
 }
 
 .folioBadgeRow {
@@ -809,7 +813,7 @@
 }
 
 .modalTitle {
-    font-size: 1.4rem;
+    font-size: 1.35rem;
     font-weight: 800;
     color: #ffffff;
     letter-spacing: -0.02em;
@@ -819,8 +823,10 @@
 
 .modalSubtitle {
     font-size: 0.82rem;
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.92);
     font-weight: 500;
+    margin: 0;
+    line-height: 1.4;
 }
 
 .closeBtn {
@@ -838,6 +844,7 @@
     backdrop-filter: blur(8px);
     position: relative;
     z-index: 2;
+    flex-shrink: 0;
 }
 
 .closeBtn:hover {
@@ -846,6 +853,8 @@
 }
 
 .modalBody {
+    flex: 1;
+    min-height: 0;
     padding: 1.5rem 1.75rem;
     overflow-y: auto;
     display: flex;
@@ -999,6 +1008,7 @@
 }
 
 .modalFooter {
+    flex-shrink: 0;
     padding: 1rem 1.75rem;
     border-top: 1px solid #e2e8f0;
     background: #ffffff;
