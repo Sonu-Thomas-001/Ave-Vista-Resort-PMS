@@ -9,14 +9,18 @@ create table if not exists public.app_settings (
   gst_number text default '32AAAAA0000A1Z5',
   tax_rate numeric default 18.0,
   gst_enabled boolean default true,
+  allow_registration boolean default true,
   updated_at timestamp with time zone default timezone('utc'::text, now())
 );
 
--- Ensure gst_enabled column exists if table was created previously
+-- Ensure gst_enabled and allow_registration columns exist if table was created previously
 do $$
 begin
   if not exists (select 1 from information_schema.columns where table_name = 'app_settings' and column_name = 'gst_enabled') then
     alter table public.app_settings add column gst_enabled boolean default true;
+  end if;
+  if not exists (select 1 from information_schema.columns where table_name = 'app_settings' and column_name = 'allow_registration') then
+    alter table public.app_settings add column allow_registration boolean default true;
   end if;
 end $$;
 

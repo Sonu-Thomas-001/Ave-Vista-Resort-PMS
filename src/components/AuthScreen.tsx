@@ -12,8 +12,10 @@ import {
     Shield,
     LogIn,
     UserPlus,
-    Lock
+    Lock,
+    ShieldAlert
 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 import LoginForm from './auth/LoginForm';
 import SignupForm from './auth/SignupForm';
 import AuthFooter from './AuthFooter';
@@ -27,6 +29,51 @@ export default function AuthScreen({ initialMode }: AuthScreenProps) {
     const pathname = usePathname();
     const router = useRouter();
     const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
+    const [allowRegistration, setAllowRegistration] = useState<boolean>(true);
+
+    // Synchronize settings for registration state
+    useEffect(() => {
+        // 1. Read from localStorage for immediate render
+        if (typeof window !== 'undefined') {
+            try {
+                const cached = localStorage.getItem('ave_vista_app_settings');
+                if (cached) {
+                    const parsed = JSON.parse(cached);
+                    if (parsed.allow_registration !== undefined) {
+                        setAllowRegistration(Boolean(parsed.allow_registration));
+                    }
+                }
+            } catch (e) {
+                // Ignore localStorage read errors
+            }
+        }
+
+        // 2. Fetch latest status from Supabase
+        const fetchStatus = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('app_settings')
+                    .select('allow_registration')
+                    .limit(1);
+
+                if (!error && data && data.length > 0 && data[0].allow_registration !== undefined) {
+                    setAllowRegistration(Boolean(data[0].allow_registration));
+                }
+            } catch {
+                // Ignore fetch error
+            }
+        };
+        fetchStatus();
+
+        // 3. Listen for live changes if settings are updated in another tab or modal
+        const handleSettingsChange = (e: any) => {
+            if (e?.detail?.allow_registration !== undefined) {
+                setAllowRegistration(Boolean(e.detail.allow_registration));
+            }
+        };
+        window.addEventListener('app_settings_changed', handleSettingsChange);
+        return () => window.removeEventListener('app_settings_changed', handleSettingsChange);
+    }, []);
 
     // Keep mode synchronized with current route if back/forward button is pressed
     useEffect(() => {
@@ -142,12 +189,18 @@ export default function AuthScreen({ initialMode }: AuthScreenProps) {
                             </div>
                         </div>
                         <h2 className={styles.portalTitle}>
-                            {mode === 'login' ? 'Staff Sign In' : 'Create Staff Account'}
+                            {mode === 'login'
+                                ? 'Staff Sign In'
+                                : allowRegistration
+                                ? 'Create Staff Account'
+                                : 'Registration Paused'}
                         </h2>
                         <p className={styles.portalSubtitle}>
                             {mode === 'login'
                                 ? 'Enter your institutional credentials to access the PMS workspace'
-                                : 'Join the Ave Vista Resort & Spa hospitality operations team'}
+                                : allowRegistration
+                                ? 'Join the Ave Vista Resort & Spa hospitality operations team'
+                                : 'Staff self-registration is currently paused by property administration'}
                         </p>
                     </div>
 
@@ -167,16 +220,41 @@ export default function AuthScreen({ initialMode }: AuthScreenProps) {
                             onClick={() => switchMode('signup')}
                         >
                             <UserPlus size={18} />
-                            Create Account
+                            <span>Create Account</span>
+                            {!allowRegistration && <span className={styles.pausedPill}>Paused</span>}
                         </button>
                     </div>
 
                     {/* Active Form */}
-                    <div className={styles.formWrapper} key={mode}>
+                    <div className={styles.formWrapper} key={`${mode}-${allowRegistration}`}>
                         {mode === 'login' ? (
                             <LoginForm onSwitchToSignup={() => switchMode('signup')} />
-                        ) : (
+                        ) : allowRegistration ? (
                             <SignupForm onSwitchToLogin={() => switchMode('login')} />
+                        ) : (
+                            <div className={styles.pausedCard}>
+                                <div className={styles.pausedIconCircle}>
+                                    <ShieldAlert size={30} />
+                                </div>
+                                <h3 className={styles.pausedHeading}>Registration Temporarily Paused</h3>
+                                <p className={styles.pausedMessage}>
+                                    Public self-registration for new resort staff accounts is temporarily closed by property administration.
+                                </p>
+                                <div className={styles.pausedInfoBox}>
+                                    <Lock size={15} />
+                                    <span>
+                                        Please reach out to your General Manager or system administrator to have an institutional staff account provisioned for you.
+                                    </span>
+                                </div>
+                                <button
+                                    type="button"
+                                    className={styles.pausedReturnBtn}
+                                    onClick={() => switchMode('login')}
+                                >
+                                    <LogIn size={16} />
+                                    Return to Staff Sign In
+                                </button>
+                            </div>
                         )}
                     </div>
                 </div>

@@ -31,6 +31,20 @@ export default function SignupForm({ onSwitchToLogin }: SignupFormProps) {
         setError('');
         setIsSubmitting(true);
 
+        // Check if registration is paused locally
+        if (typeof window !== 'undefined') {
+            try {
+                const cached = localStorage.getItem('ave_vista_app_settings');
+                if (cached && JSON.parse(cached).allow_registration === false) {
+                    setError('Staff self-registration is currently paused by property administration.');
+                    setIsSubmitting(false);
+                    return;
+                }
+            } catch (err) {
+                // Ignore
+            }
+        }
+
         if (!email || !password || !fullName) {
             setError('Please complete all required fields.');
             setIsSubmitting(false);

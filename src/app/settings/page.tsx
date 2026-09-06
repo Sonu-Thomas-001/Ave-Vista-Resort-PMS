@@ -28,7 +28,14 @@ import {
     List,
     ExternalLink,
     Star,
-    Calculator
+    Calculator,
+    ShieldAlert,
+    UserPlus,
+    UserX,
+    PauseCircle,
+    PlayCircle,
+    Lock,
+    Shield
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
@@ -39,6 +46,7 @@ import { getPricingUnit } from '@/lib/constants';
 
 type SettingsData = Database['public']['Tables']['app_settings']['Row'] & {
     gst_enabled?: boolean;
+    allow_registration?: boolean;
 };
 type RoomData = Database['public']['Tables']['rooms']['Row'];
 
@@ -50,11 +58,12 @@ const DEFAULT_SETTINGS: SettingsData = {
     gst_number: '32AAAAA0000A1Z5',
     tax_rate: 18,
     gst_enabled: true,
+    allow_registration: true,
     updated_at: new Date().toISOString()
 };
 
 export default function SettingsPage() {
-    const [activeTopTab, setActiveTopTab] = useState<'Property' | 'Rooms' | 'Finance' | 'Email'>('Property');
+    const [activeTopTab, setActiveTopTab] = useState<'Property' | 'Rooms' | 'Finance' | 'Email' | 'Security'>('Property');
     const [loading, setLoading] = useState(false);
     const [settings, setSettings] = useState<SettingsData>(DEFAULT_SETTINGS);
     const [rooms, setRooms] = useState<RoomData[]>([]);
@@ -123,7 +132,10 @@ export default function SettingsPage() {
                     // Preserve gst_enabled if it was set in localStorage or derive from tax_rate
                     gst_enabled: cloudSettings.gst_enabled !== undefined
                         ? Boolean(cloudSettings.gst_enabled)
-                        : (prev.gst_enabled !== undefined ? prev.gst_enabled : (Number(cloudSettings.tax_rate) > 0))
+                        : (prev.gst_enabled !== undefined ? prev.gst_enabled : (Number(cloudSettings.tax_rate) > 0)),
+                    allow_registration: cloudSettings.allow_registration !== undefined
+                        ? Boolean(cloudSettings.allow_registration)
+                        : (prev.allow_registration !== undefined ? prev.allow_registration : true)
                 }));
             }
         } catch (error) {
@@ -140,16 +152,61 @@ export default function SettingsPage() {
         }
     };
 
+    const handleToggleRegistration = async (newVal: boolean) => {
+        const completeSettings: SettingsData = {
+            ...settings,
+            allow_registration: newVal,
+            updated_at: new Date().toISOString()
+        };
+        setSettings(completeSettings);
+
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('ave_vista_app_settings', JSON.stringify(completeSettings));
+            window.dispatchEvent(new CustomEvent('app_settings_changed', { detail: completeSettings }));
+        }
+
+        try {
+            const { error: updateError } = await supabase
+                .from('app_settings')
+                .update({ allow_registration: newVal, updated_at: completeSettings.updated_at })
+                .eq('id', 1);
+
+            if (updateError) {
+                await supabase.from('app_settings').upsert({
+                    id: 1,
+                    allow_registration: newVal,
+                    updated_at: completeSettings.updated_at
+                });
+            }
+            showToast(
+                newVal
+                    ? 'Staff self-registration is now ACTIVE. New staff can register at /signup.'
+                    : 'Staff self-registration is now PAUSED. Public signups are blocked.',
+                'success'
+            );
+        } catch (e: any) {
+            console.warn('Registration toggle sync note:', e);
+            showToast(
+                newVal
+                    ? 'Staff self-registration enabled (saved)'
+                    : 'Staff self-registration paused (saved)',
+                'success'
+            );
+        }
+    };
+
     const handleSaveSettings = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
 
         try {
             const isGstEnabled = settings.gst_enabled !== false;
+            const isRegAllowed = settings.allow_registration !== false;
             const completeSettings: SettingsData = {
                 ...settings,
                 id: 1,
                 gst_enabled: isGstEnabled,
+                allow_registration: isRegAllowed,
                 tax_rate: isGstEnabled ? (Number(settings.tax_rate) || 18) : 0,
                 updated_at: new Date().toISOString()
             };
@@ -169,6 +226,7 @@ export default function SettingsPage() {
                 address: completeSettings.address || DEFAULT_SETTINGS.address,
                 gst_number: completeSettings.gst_number || DEFAULT_SETTINGS.gst_number,
                 tax_rate: completeSettings.tax_rate,
+                allow_registration: isRegAllowed,
                 updated_at: completeSettings.updated_at
             };
 
@@ -194,7 +252,7 @@ export default function SettingsPage() {
                 console.warn('Could not sync to cloud database:', cloudErr?.message || cloudErr);
             }
 
-            showToast('System configuration & tax rules saved successfully!', 'success');
+            showToast('System configuration & settings saved successfully!', 'success');
         } catch (error: any) {
             const errMsg = error?.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
             console.error('Error saving settings:', errMsg, error);
@@ -350,7 +408,7 @@ export default function SettingsPage() {
                     <aside className={styles.sidebar}>
                         <div className={styles.sidebarHeader}>
                             <span className={styles.sidebarSectionLabel}>System Categories</span>
-                            <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600 }}>4 Modules</span>
+                            <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600 }}>5 Modules</span>
                         </div>
 
                         {/* Category 1: Property Profile */}
@@ -411,6 +469,23 @@ export default function SettingsPage() {
                                 <span className={styles.categorySubtitle}>Dispatch & Templates</span>
                             </div>
                             {activeTopTab === 'Email' && <div className={styles.activeIndicatorDot}></div>}
+                        </button>
+
+                        {/* Category 5: Access & Security */}
+                        <button
+                            className={`${styles.categoryCardBtn} ${activeTopTab === 'Security' ? styles.activeCategory : ''}`}
+                            onClick={() => setActiveTopTab('Security')}
+                        >
+                            <div className={`${styles.categoryIconWrapper} ${styles.categoryRose}`}>
+                                <ShieldCheck size={20} />
+                            </div>
+                            <div className={styles.categoryTextGroup}>
+                                <span className={styles.categoryTitle}>Access & Security</span>
+                                <span className={styles.categorySubtitle} style={{ color: settings.allow_registration !== false ? '#059669' : '#dc2626' }}>
+                                    {settings.allow_registration !== false ? '● Registration Active' : '■ Registration Paused'}
+                                </span>
+                            </div>
+                            {activeTopTab === 'Security' && <div className={styles.activeIndicatorDot}></div>}
                         </button>
                     </aside>
 
@@ -601,6 +676,63 @@ export default function SettingsPage() {
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+
+                                {/* Staff Access & Registration Quick Card */}
+                                <div className={styles.cardGroup}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 10 }}>
+                                        <div>
+                                            <h3 className={styles.cardGroupTitle} style={{ margin: 0 }}>
+                                                <ShieldCheck size={18} color="#e11d48" /> Staff Portal Self-Registration
+                                            </h3>
+                                            <p className={styles.cardGroupSubtitle} style={{ margin: '4px 0 0 0' }}>
+                                                Permit or pause public staff account creation at the <code>/signup</code> portal.
+                                            </p>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                            <span className={`${styles.regStatusIndicator} ${settings.allow_registration !== false ? styles.regStatusActive : styles.regStatusPaused}`}>
+                                                {settings.allow_registration !== false ? (
+                                                    <>
+                                                        <CheckCircle2 size={13} /> Active
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <PauseCircle size={13} /> Paused
+                                                    </>
+                                                )}
+                                            </span>
+                                            {settings.allow_registration !== false ? (
+                                                <button
+                                                    type="button"
+                                                    className={`${styles.regToggleActionBtn} ${styles.pauseActionBtn}`}
+                                                    style={{ padding: '8px 16px', fontSize: '0.84rem' }}
+                                                    onClick={() => handleToggleRegistration(false)}
+                                                >
+                                                    <PauseCircle size={15} /> Pause Signups
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    className={`${styles.regToggleActionBtn} ${styles.resumeActionBtn}`}
+                                                    style={{ padding: '8px 16px', fontSize: '0.84rem' }}
+                                                    onClick={() => handleToggleRegistration(true)}
+                                                >
+                                                    <PlayCircle size={15} /> Resume Signups
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <p style={{ margin: 0, fontSize: '0.82rem', color: '#64748b' }}>
+                                        When paused, prospective employees cannot self-register. To view complete authentication guidelines, visit the{' '}
+                                        <button
+                                            type="button"
+                                            onClick={() => setActiveTopTab('Security')}
+                                            style={{ background: 'none', border: 'none', color: '#0284c7', fontWeight: 600, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                                        >
+                                            Access & Security
+                                        </button>{' '}
+                                        module.
+                                    </p>
                                 </div>
 
                                 <div className={styles.actionRow}>
@@ -1124,6 +1256,175 @@ export default function SettingsPage() {
                            ───────────────────────────────────────────────────── */}
                         {activeTopTab === 'Email' && (
                             <EmailSettingsPage />
+                        )}
+
+                        {/* ─────────────────────────────────────────────────────
+                           SECTION 5: ACCESS & SECURITY / REGISTRATION
+                           ───────────────────────────────────────────────────── */}
+                        {activeTopTab === 'Security' && (
+                            <div className={styles.section}>
+                                <div className={styles.sectionHeader}>
+                                    <div>
+                                        <h2 className={styles.sectionTitle}>Access & User Registration Control</h2>
+                                        <p className={styles.sectionSubtitle}>
+                                            Manage staff onboarding protocols, self-registration privileges, and institutional portal security.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Security Hero Card */}
+                                <div className={styles.securityHeroCard}>
+                                    <div className={styles.securityHeroContent}>
+                                        <div className={styles.securityHeroBadge}>
+                                            <Shield size={13} /> Institutional Access Control
+                                        </div>
+                                        <h3 className={styles.securityHeroTitle}>Staff Portal Self-Registration</h3>
+                                        <p className={styles.securityHeroDesc}>
+                                            Control whether new personnel can self-register at the <code>/signup</code> portal, or if all staff accounts must be strictly provisioned by an administrator.
+                                        </p>
+                                    </div>
+                                    <div
+                                        className={styles.resortEmblem}
+                                        style={{
+                                            background: settings.allow_registration !== false ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                                            width: 58,
+                                            height: 58,
+                                            borderRadius: 16,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            flexShrink: 0
+                                        }}
+                                    >
+                                        {settings.allow_registration !== false ? <CheckCircle2 size={32} color="#10b981" /> : <Lock size={32} color="#f87171" />}
+                                    </div>
+                                </div>
+
+                                {/* Master Control Card */}
+                                <div className={`${styles.regControlCard} ${settings.allow_registration !== false ? styles.activeState : styles.pausedState}`}>
+                                    <div className={styles.regControlHeader}>
+                                        <div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
+                                                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#0f172a' }}>
+                                                    New User Self-Registration
+                                                </h3>
+                                                <span className={`${styles.regStatusIndicator} ${settings.allow_registration !== false ? styles.regStatusActive : styles.regStatusPaused}`}>
+                                                    {settings.allow_registration !== false ? (
+                                                        <>
+                                                            <CheckCircle2 size={14} /> Open & Active
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <PauseCircle size={14} /> Paused / Blocked
+                                                        </>
+                                                    )}
+                                                </span>
+                                            </div>
+                                            <p style={{ margin: 0, fontSize: '0.88rem', color: '#64748b', maxWidth: '640px', lineHeight: 1.5 }}>
+                                                {settings.allow_registration !== false
+                                                    ? 'Staff self-registration is currently allowed. Anyone with access to the /signup page can submit credentials and create a staff profile.'
+                                                    : 'Staff self-registration is currently PAUSED. The public /signup page displays an administrative hold notice and prevents any new user creations.'}
+                                            </p>
+                                        </div>
+
+                                        {settings.allow_registration !== false ? (
+                                            <button
+                                                type="button"
+                                                className={`${styles.regToggleActionBtn} ${styles.pauseActionBtn}`}
+                                                onClick={() => handleToggleRegistration(false)}
+                                            >
+                                                <PauseCircle size={18} />
+                                                Pause Registration
+                                            </button>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                className={`${styles.regToggleActionBtn} ${styles.resumeActionBtn}`}
+                                                onClick={() => handleToggleRegistration(true)}
+                                            >
+                                                <PlayCircle size={18} />
+                                                Resume Registration
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {/* Policy & Security Guidance Grid */}
+                                    <div className={styles.regPolicyGrid}>
+                                        <div className={styles.regPolicyCard}>
+                                            <div className={styles.regPolicyHeader}>
+                                                <ShieldAlert size={18} color="#e11d48" />
+                                                <span>What Happens When Paused</span>
+                                            </div>
+                                            <p className={styles.regPolicyText}>
+                                                The <code>/signup</code> page presents a clean pause notice. Direct API signup requests to Supabase are rejected. Prospective staff cannot register accounts autonomously.
+                                            </p>
+                                        </div>
+
+                                        <div className={styles.regPolicyCard}>
+                                            <div className={styles.regPolicyHeader}>
+                                                <CheckCircle2 size={18} color="#059669" />
+                                                <span>Existing Staff Unaffected</span>
+                                            </div>
+                                            <p className={styles.regPolicyText}>
+                                                All existing staff members and administrators can continue signing in and operating the PMS at <code>/login</code> without interruption.
+                                            </p>
+                                        </div>
+
+                                        <div className={styles.regPolicyCard}>
+                                            <div className={styles.regPolicyHeader}>
+                                                <UserPlus size={18} color="#2563eb" />
+                                                <span>Admin Account Provisioning</span>
+                                            </div>
+                                            <p className={styles.regPolicyText}>
+                                                Administrators can provision verified staff accounts directly from the Supabase dashboard or temporarily resume registration whenever onboarding a new hire.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Live Visitor Simulation Preview */}
+                                    <div className={styles.livePreviewNotice}>
+                                        <div className={styles.livePreviewHeader}>
+                                            <span className={styles.livePreviewTitle}>
+                                                <Globe size={14} /> Visitor View Simulation at /signup
+                                            </span>
+                                            <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
+                                                Current Mode: {settings.allow_registration !== false ? 'Live Form' : 'Pause Banner'}
+                                            </span>
+                                        </div>
+
+                                        {settings.allow_registration !== false ? (
+                                            <div className={styles.previewMockBox}>
+                                                <div className={styles.previewMockIcon} style={{ background: '#ecfdf5', color: '#059669' }}>
+                                                    <UserPlus size={20} />
+                                                </div>
+                                                <div>
+                                                    <strong style={{ fontSize: '0.88rem', color: '#0f172a', display: 'block' }}>
+                                                        Self-Registration Form Displayed
+                                                    </strong>
+                                                    <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                                                        Visitors see the full Staff Account Registration form with Full Name, Email, Password, and Role selection.
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className={styles.previewMockBox} style={{ border: '1px solid #fecdd3', background: '#fff5f5' }}>
+                                                <div className={styles.previewMockIcon} style={{ background: '#fee2e2', color: '#dc2626' }}>
+                                                    <Lock size={20} />
+                                                </div>
+                                                <div>
+                                                    <strong style={{ fontSize: '0.88rem', color: '#991b1b', display: 'block' }}>
+                                                        Staff Registration Paused Notice Displayed
+                                                    </strong>
+                                                    <span style={{ fontSize: '0.8rem', color: '#7f1d1d' }}>
+                                                        Visitors are greeted with: &ldquo;New staff self-registration is currently paused by property administration. Please contact your General Manager to have an account provisioned.&rdquo;
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
                         )}
                     </main>
                 </div>

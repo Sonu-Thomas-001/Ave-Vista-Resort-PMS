@@ -84,10 +84,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const signup = async (email: string, password: string, fullName: string, role: string) => {
+        // 1. Check if self-registration is paused in local cache
+        if (typeof window !== 'undefined') {
+            try {
+                const cached = localStorage.getItem('ave_vista_app_settings');
+                if (cached) {
+                    const parsed = JSON.parse(cached);
+                    if (parsed.allow_registration === false) {
+                        return 'Staff self-registration is currently paused by property administration.';
+                    }
+                }
+            } catch (e) {
+                // Ignore local read error
+            }
+        }
+
+        // 2. Double-check live status from app_settings
+        try {
+            const { data } = await supabase.from('app_settings').select('allow_registration').limit(1);
+            if (data && data.length > 0 && data[0].allow_registration === false) {
+                return 'Staff self-registration is currently paused by property administration.';
+            }
+        } catch (e) {
+            // Proceed if settings table cannot be queried
+        }
+
+        const redirectTo = typeof window !== 'undefined'
+            ? `${window.location.origin}/login`
+            : undefined;
+
         const { error } = await supabase.auth.signUp({
             email,
             password,
             options: {
+                emailRedirectTo: redirectTo,
                 data: {
                     full_name: fullName,
                     role: role,

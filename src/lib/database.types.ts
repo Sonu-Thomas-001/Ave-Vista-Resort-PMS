@@ -185,6 +185,7 @@ export interface Database {
                     address: string | null
                     gst_number: string | null
                     tax_rate: number | null
+                    allow_registration?: boolean | null
                     updated_at: string
                 }
                 Update: { [key: string]: any;
@@ -193,6 +194,7 @@ export interface Database {
                     address?: string | null
                     gst_number?: string | null
                     tax_rate?: number | null
+                    allow_registration?: boolean | null
                 }
             }
             invoices: {

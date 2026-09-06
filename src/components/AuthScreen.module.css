@@ -352,6 +352,108 @@
     }
 }
 
+/* Registration Paused State Notice */
+.pausedCard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px 10px;
+    background: #ffffff;
+    border-radius: 16px;
+    animation: fadeIn 0.25s ease;
+}
+
+.pausedIconCircle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #fef2f2;
+    border: 2px solid #fecdd3;
+    color: #dc2626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.12);
+}
+
+.pausedHeading {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 10px 0;
+    letter-spacing: -0.02em;
+}
+
+.pausedMessage {
+    font-size: 0.88rem;
+    color: #64748b;
+    line-height: 1.55;
+    margin: 0 0 16px 0;
+    max-width: 360px;
+}
+
+.pausedInfoBox {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 0.82rem;
+    color: #475569;
+    text-align: left;
+    margin-bottom: 20px;
+    line-height: 1.45;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.pausedInfoBox svg {
+    color: #64748b;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.pausedReturnBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 20px;
+    background: #0284c7;
+    color: #ffffff;
+    font-size: 0.92rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.2);
+}
+
+.pausedReturnBtn:hover {
+    background: #0369a1;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(2, 132, 199, 0.3);
+}
+
+.pausedPill {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 2px 6px;
+    border-radius: 8px;
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecdd3;
+    margin-left: 4px;
+}
+
 /* ─────────────────────────────────────────────────────────────
    RESPONSIVE DESIGN BREAKPOINTS
    ───────────────────────────────────────────────────────────── */
