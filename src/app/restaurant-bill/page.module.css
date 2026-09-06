@@ -3,7 +3,7 @@
    ========================================================================== */
 
 .container {
-    padding: 0 var(--spacing-lg, 24px) 48px;
+    padding: 24px var(--spacing-lg, 24px) 48px;
     background: #F8FAFC;
     min-height: calc(100vh - 76px);
 }
@@ -373,6 +373,13 @@
     flex-wrap: wrap;
 }
 
+.filterControlsGroup {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
 .filterLabelGroup {
     display: flex;
     align-items: center;
@@ -380,6 +387,13 @@
     font-size: 0.84rem;
     color: #64748B;
     font-weight: 600;
+}
+
+.filterLabelText {
+    font-size: 0.84rem;
+    color: #64748B;
+    font-weight: 600;
+    white-space: nowrap;
 }
 
 .filterSelect {
@@ -405,7 +419,7 @@
 }
 
 /* ─────────────────────────────────────────────────────────────
-   LEDGER TABLE
+   LEDGER TABLE & MOBILE BILL CARDS
    ───────────────────────────────────────────────────────────── */
 .tableCard {
     background: white;
@@ -418,6 +432,10 @@
 .tableWrapper {
     width: 100%;
     overflow-x: auto;
+}
+
+.mobileBillsContainer {
+    display: none;
 }
 
 .table {
@@ -1763,27 +1781,294 @@ select.posInput:focus {
 
 @media (max-width: 768px) {
     .container {
-        padding: 0 14px 32px;
+        padding: 16px 12px 36px;
     }
     .heroBanner {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
         padding: 18px 16px;
-        gap: 16px;
+        gap: 14px;
+    }
+    .heroTitle {
+        font-size: 1.35rem;
+    }
+    .heroSubtitle {
+        font-size: 0.8rem;
+        flex-wrap: wrap;
     }
     .heroActions {
         width: 100%;
+        display: flex;
+        gap: 8px;
+    }
+    .exportBtn,
+    .primaryPosBtn {
+        flex: 1;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.82rem;
+        padding: 0 10px;
+        text-align: center;
+        white-space: nowrap;
     }
     .kpiGrid {
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
     }
+    .kpiCard {
+        padding: 14px;
+    }
+    .kpiValue {
+        font-size: 1.35rem;
+    }
+    .toolbarCard {
+        padding: 14px;
+    }
     .toolbarRow {
         flex-direction: column;
         align-items: stretch;
+        gap: 10px;
     }
     .searchBox {
         max-width: 100%;
+        width: 100%;
+    }
+    .searchInput {
+        min-height: 44px;
+    }
+    .pillGroup {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding: 4px;
+    }
+    .pillGroup::-webkit-scrollbar {
+        display: none;
+    }
+    .pillBtn {
+        flex-shrink: 0;
+        padding: 7px 12px;
+        font-size: 0.8rem;
+    }
+    .filterSubRow {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    .filterControlsGroup {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        width: 100%;
+    }
+    .filterLabelGroup {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+    .filterLabelGroup .pillGroup {
+        flex: 1;
+        min-width: 0;
+    }
+    .filterSelect {
+        flex: 1;
+        min-height: 42px;
+        font-size: 0.84rem;
+    }
+    .resultsCount {
+        font-size: 0.78rem;
+        text-align: right;
+    }
+    .tableWrapper {
+        display: none !important;
+    }
+    .mobileBillsContainer {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 12px;
+    }
+    .mobileBillCard {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .mobileBillCard:active {
+        transform: scale(0.99);
+    }
+    .mobileBillHeader {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 8px;
+    }
+    .mobileBillRefCol {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+    .mobileBillNum {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: 'Courier New', monospace;
+        font-weight: 700;
+        font-size: 0.88rem;
+        color: #0F172A;
+        background: #F1F5F9;
+        padding: 4px 9px;
+        border-radius: 6px;
+        cursor: pointer;
+        width: fit-content;
+    }
+    .mobileBillDate {
+        font-size: 0.74rem;
+        color: #94A3B8;
+        font-weight: 500;
+    }
+    .mobileBillGuestRow {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        background: #F8FAFC;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #F1F5F9;
+    }
+    .mobileGuestDetails {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+    }
+    .mobileGuestDetails .guestName {
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: #0F172A;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .mobileLocationMeta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+    .mobileBillTotalBox {
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex-shrink: 0;
+    }
+    .mobileTotalLabel {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+    .mobileTotalValue {
+        font-family: 'Courier New', monospace;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #0F172A;
+    }
+    .mobileItemsList {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    .mobileBillActionsRow {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-top: 8px;
+        border-top: 1px dashed #E2E8F0;
+    }
+    .mobileSettleActionBtn {
+        flex: 1;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        background: #10B981;
+        color: #FFFFFF;
+        border: none;
+        border-radius: 9px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+    }
+    .mobileSettleActionBtn:active {
+        background: #059669;
+    }
+    .mobileViewActionBtn {
+        flex: 1;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        background: #0284C7;
+        color: #FFFFFF;
+        border: none;
+        border-radius: 9px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(2, 132, 199, 0.2);
+    }
+    .mobileViewActionBtn:active {
+        background: #0369A1;
+    }
+    .mobileSecondaryActionBtn {
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #F1F5F9;
+        color: #475569;
+        border: 1px solid #E2E8F0;
+        border-radius: 9px;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+    .mobileSecondaryActionBtn:active {
+        background: #E2E8F0;
+        color: #0F172A;
+    }
+    .mobileDeleteActionBtn {
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #FEF2F2;
+        color: #DC2626;
+        border: 1px solid #FEE2E2;
+        border-radius: 9px;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+    .mobileDeleteActionBtn:active {
+        background: #FEE2E2;
     }
     .catalogGrid {
         grid-template-columns: repeat(2, 1fr);
@@ -1801,5 +2086,12 @@ select.posInput:focus {
     }
     .catalogGrid {
         grid-template-columns: 1fr;
+    }
+    .mobileBillGuestRow {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .mobileBillTotalBox {
+        text-align: left;
     }
 }

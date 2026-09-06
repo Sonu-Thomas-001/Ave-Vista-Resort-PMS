@@ -60,7 +60,7 @@ export default function RestaurantBillPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<'ALL' | 'Paid' | 'Pending' | 'Partial'>('ALL');
     const [paymentFilter, setPaymentFilter] = useState<string>('ALL');
-    const [datePreset, setDatePreset] = useState<'TODAY' | 'YESTERDAY' | 'WEEK' | 'MONTH' | 'ALL'>('TODAY');
+    const [datePreset, setDatePreset] = useState<'TODAY' | 'YESTERDAY' | 'WEEK' | 'MONTH' | 'ALL'>('ALL');
 
     // Modals
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -682,7 +682,16 @@ export default function RestaurantBillPage() {
     };
 
     // Filter Logic
-    const todayStr = new Date().toISOString().split('T')[0];
+    const getLocalDateString = (d: Date | string) => {
+        const date = new Date(d);
+        if (isNaN(date.getTime())) return '';
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    };
+
+    const todayStr = getLocalDateString(new Date());
 
     const filteredBills = useMemo(() => {
         return bills.filter(bill => {
@@ -708,21 +717,23 @@ export default function RestaurantBillPage() {
 
             // Date Preset
             if (datePreset !== 'ALL') {
-                const billDate = bill.created_at.split('T')[0];
+                const billDate = getLocalDateString(bill.created_at);
                 if (datePreset === 'TODAY') {
                     if (billDate !== todayStr) return false;
                 } else if (datePreset === 'YESTERDAY') {
                     const yesterday = new Date();
                     yesterday.setDate(yesterday.getDate() - 1);
-                    const yDateStr = yesterday.toISOString().split('T')[0];
+                    const yDateStr = getLocalDateString(yesterday);
                     if (billDate !== yDateStr) return false;
                 } else if (datePreset === 'WEEK') {
                     const weekAgo = new Date();
                     weekAgo.setDate(weekAgo.getDate() - 7);
+                    weekAgo.setHours(0, 0, 0, 0);
                     if (new Date(bill.created_at) < weekAgo) return false;
                 } else if (datePreset === 'MONTH') {
                     const monthAgo = new Date();
                     monthAgo.setDate(monthAgo.getDate() - 30);
+                    monthAgo.setHours(0, 0, 0, 0);
                     if (new Date(bill.created_at) < monthAgo) return false;
                 }
             }
@@ -733,7 +744,7 @@ export default function RestaurantBillPage() {
 
     // KPI Metrics
     const metrics = useMemo(() => {
-        const todayBills = bills.filter(b => b.created_at.startsWith(todayStr));
+        const todayBills = bills.filter(b => getLocalDateString(b.created_at) === todayStr);
         const todayRevenue = todayBills.reduce((sum, b) => sum + (b.status === 'Paid' ? b.total_amount : b.status === 'Partial' ? (b.total_amount * 0.5) : 0), 0);
         const avgTicket = todayBills.length > 0 ? Math.round(todayRevenue / todayBills.length) : 0;
         const pendingBills = bills.filter(b => b.status !== 'Paid');
@@ -741,7 +752,7 @@ export default function RestaurantBillPage() {
 
         // Month-to-date
         const curYearMonth = todayStr.slice(0, 7);
-        const mtdBills = bills.filter(b => b.created_at.startsWith(curYearMonth));
+        const mtdBills = bills.filter(b => getLocalDateString(b.created_at).startsWith(curYearMonth));
         const mtdRevenue = mtdBills.reduce((sum, b) => sum + (b.status === 'Paid' ? b.total_amount : 0), 0);
 
         return {
@@ -931,18 +942,18 @@ export default function RestaurantBillPage() {
 
                     {/* Secondary Filters Row */}
                     <div className={styles.filterSubRow}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                        <div className={styles.filterControlsGroup}>
                             {/* Date Presets */}
                             <div className={styles.filterLabelGroup}>
-                                <span>Period:</span>
+                                <span className={styles.filterLabelText}>Period:</span>
                                 <div className={styles.pillGroup}>
-                                    {(['TODAY', 'YESTERDAY', 'WEEK', 'MONTH', 'ALL'] as const).map(preset => (
+                                    {(['ALL', 'TODAY', 'YESTERDAY', 'WEEK', 'MONTH'] as const).map(preset => (
                                         <button
                                             key={preset}
                                             className={`${styles.pillBtn} ${datePreset === preset ? styles.pillBtnActive : ''}`}
                                             onClick={() => setDatePreset(preset)}
                                         >
-                                            {preset === 'TODAY' ? 'Today' : preset === 'YESTERDAY' ? 'Yesterday' : preset === 'WEEK' ? '7 Days' : preset === 'MONTH' ? '30 Days' : 'All Time'}
+                                            {preset === 'ALL' ? 'All Time' : preset === 'TODAY' ? 'Today' : preset === 'YESTERDAY' ? 'Yesterday' : preset === 'WEEK' ? '7 Days' : '30 Days'}
                                         </button>
                                     ))}
                                 </div>
@@ -950,7 +961,7 @@ export default function RestaurantBillPage() {
 
                             {/* Payment Mode Selector */}
                             <div className={styles.filterLabelGroup}>
-                                <span>Payment:</span>
+                                <span className={styles.filterLabelText}>Payment:</span>
                                 <select
                                     className={styles.filterSelect}
                                     value={paymentFilter}
@@ -989,156 +1000,284 @@ export default function RestaurantBillPage() {
                             </p>
                         </div>
                     ) : (
-                        <div className={styles.tableWrapper}>
-                            <table className={styles.table}>
-                                <thead>
-                                    <tr>
-                                        <th>Bill Number</th>
-                                        <th>Date / Time</th>
-                                        <th>Guest & Location</th>
-                                        <th>Ordered Items</th>
-                                        <th>Total Amount</th>
-                                        <th>Payment</th>
-                                        <th>Status</th>
-                                        <th style={{ textAlign: 'right' }}>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredBills.map((bill) => {
-                                        const billDate = new Date(bill.created_at).toLocaleDateString('en-IN', {
-                                            day: '2-digit', month: 'short',
-                                        });
-                                        const billTime = new Date(bill.created_at).toLocaleTimeString('en-IN', {
-                                            hour: '2-digit', minute: '2-digit',
-                                        });
+                        <>
+                            <div className={styles.tableWrapper}>
+                                <table className={styles.table}>
+                                    <thead>
+                                        <tr>
+                                            <th>Bill Number</th>
+                                            <th>Date / Time</th>
+                                            <th>Guest & Location</th>
+                                            <th>Ordered Items</th>
+                                            <th>Total Amount</th>
+                                            <th>Payment</th>
+                                            <th>Status</th>
+                                            <th style={{ textAlign: 'right' }}>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredBills.map((bill) => {
+                                            const billDate = new Date(bill.created_at).toLocaleDateString('en-IN', {
+                                                day: '2-digit', month: 'short',
+                                            });
+                                            const billTime = new Date(bill.created_at).toLocaleTimeString('en-IN', {
+                                                hour: '2-digit', minute: '2-digit',
+                                            });
 
-                                        const payClass = bill.payment_mode === 'Cash'
-                                            ? styles.payCash
-                                            : bill.payment_mode === 'UPI'
-                                                ? styles.payUpi
-                                                : bill.payment_mode === 'Card'
-                                                    ? styles.payCard
-                                                    : styles.payRoom;
+                                            const payClass = bill.payment_mode === 'Cash'
+                                                ? styles.payCash
+                                                : bill.payment_mode === 'UPI'
+                                                    ? styles.payUpi
+                                                    : bill.payment_mode === 'Card'
+                                                        ? styles.payCard
+                                                        : styles.payRoom;
 
-                                        const statusClass = bill.status === 'Paid'
-                                            ? styles.statusPaid
-                                            : bill.status === 'Partial'
-                                                ? styles.statusPartial
-                                                : styles.statusPending;
+                                            const statusClass = bill.status === 'Paid'
+                                                ? styles.statusPaid
+                                                : bill.status === 'Partial'
+                                                    ? styles.statusPartial
+                                                    : styles.statusPending;
 
-                                        return (
-                                            <tr key={bill.id}>
-                                                <td>
+                                            return (
+                                                <tr key={bill.id}>
+                                                    <td>
+                                                        <span
+                                                            className={styles.billRefBox}
+                                                            onClick={() => setViewingBill(bill)}
+                                                            title="Click to view bill"
+                                                        >
+                                                            <FileText size={13} style={{ color: '#FF6B35' }} />
+                                                            {bill.bill_number}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div style={{ fontSize: '0.84rem', fontWeight: 600, color: '#0F172A' }}>
+                                                            {billDate}
+                                                        </div>
+                                                        <div style={{ fontSize: '0.74rem', color: '#94A3B8' }}>
+                                                            {billTime}
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div className={styles.guestInfo}>
+                                                            <span className={styles.guestName}>{bill.guest_name}</span>
+                                                            <span className={styles.guestSub}>
+                                                                {bill.room_number ? (
+                                                                    <span className={styles.roomBadge}>
+                                                                        <Bed size={11} /> Room {bill.room_number}
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className={styles.walkInBadge}>
+                                                                        Dine-In
+                                                                    </span>
+                                                                )}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div className={styles.itemsPreview}>
+                                                            {bill.items.slice(0, 2).map((item, i) => (
+                                                                <span key={i} className={styles.itemChip}>
+                                                                    {item.qty}× {item.name}
+                                                                </span>
+                                                            ))}
+                                                            {bill.items.length > 2 && (
+                                                                <span className={styles.moreItemsChip}>
+                                                                    +{bill.items.length - 2} more
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span className={styles.amountMono}>
+                                                            ₹{bill.total_amount.toLocaleString('en-IN')}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span className={`${styles.payChip} ${payClass}`}>
+                                                            {bill.payment_mode}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span className={`${styles.statusBadge} ${statusClass}`}>
+                                                            <span className={styles.statusDot} />
+                                                            {bill.status}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div className={styles.actionGroup}>
+                                                            {bill.status !== 'Paid' && (
+                                                                <button
+                                                                    className={styles.settleBtn}
+                                                                    title="Mark as Paid"
+                                                                    onClick={() => handleMarkAsPaid(bill)}
+                                                                >
+                                                                    <CheckCircle2 size={15} />
+                                                                </button>
+                                                            )}
+                                                            <button
+                                                                className={styles.iconBtn}
+                                                                title="Preview Bill"
+                                                                onClick={() => setViewingBill(bill)}
+                                                            >
+                                                                <Eye size={15} />
+                                                            </button>
+                                                            <button
+                                                                className={styles.iconBtn}
+                                                                title="Print Thermal Slip"
+                                                                onClick={() => handlePrintBill(bill, 'thermal')}
+                                                            >
+                                                                <Printer size={15} />
+                                                            </button>
+                                                            <button
+                                                                className={styles.iconBtn}
+                                                                title="Edit Bill"
+                                                                onClick={() => openEditModal(bill)}
+                                                            >
+                                                                <Pencil size={15} />
+                                                            </button>
+                                                            <button
+                                                                className={styles.deleteBtn}
+                                                                title="Delete Bill"
+                                                                onClick={() => setDeletingBill(bill)}
+                                                            >
+                                                                <Trash2 size={15} />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Mobile Bill Cards (<768px viewports) */}
+                            <div className={styles.mobileBillsContainer}>
+                                {filteredBills.map((bill) => {
+                                    const billDate = new Date(bill.created_at).toLocaleDateString('en-IN', {
+                                        day: '2-digit', month: 'short',
+                                    });
+                                    const billTime = new Date(bill.created_at).toLocaleTimeString('en-IN', {
+                                        hour: '2-digit', minute: '2-digit',
+                                    });
+                                    const payClass = bill.payment_mode === 'Cash'
+                                        ? styles.payCash
+                                        : bill.payment_mode === 'UPI'
+                                            ? styles.payUpi
+                                            : bill.payment_mode === 'Card'
+                                                ? styles.payCard
+                                                : styles.payRoom;
+                                    const statusClass = bill.status === 'Paid'
+                                        ? styles.statusPaid
+                                        : bill.status === 'Partial'
+                                            ? styles.statusPartial
+                                            : styles.statusPending;
+
+                                    return (
+                                        <div key={bill.id} className={styles.mobileBillCard}>
+                                            <div className={styles.mobileBillHeader}>
+                                                <div className={styles.mobileBillRefCol}>
                                                     <span
-                                                        className={styles.billRefBox}
+                                                        className={styles.mobileBillNum}
                                                         onClick={() => setViewingBill(bill)}
-                                                        title="Click to view bill"
                                                     >
                                                         <FileText size={13} style={{ color: '#FF6B35' }} />
                                                         {bill.bill_number}
                                                     </span>
-                                                </td>
-                                                <td>
-                                                    <div style={{ fontSize: '0.84rem', fontWeight: 600, color: '#0F172A' }}>
-                                                        {billDate}
-                                                    </div>
-                                                    <div style={{ fontSize: '0.74rem', color: '#94A3B8' }}>
-                                                        {billTime}
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div className={styles.guestInfo}>
-                                                        <span className={styles.guestName}>{bill.guest_name}</span>
-                                                        <span className={styles.guestSub}>
-                                                            {bill.room_number ? (
-                                                                <span className={styles.roomBadge}>
-                                                                    <Bed size={11} /> Room {bill.room_number}
-                                                                </span>
-                                                            ) : (
-                                                                <span className={styles.walkInBadge}>
-                                                                    Dine-In
-                                                                </span>
-                                                            )}
+                                                    <span className={styles.mobileBillDate}>
+                                                        {billDate} at {billTime}
+                                                    </span>
+                                                </div>
+                                                <span className={`${styles.statusBadge} ${statusClass}`}>
+                                                    <span className={styles.statusDot} />
+                                                    {bill.status}
+                                                </span>
+                                            </div>
+
+                                            <div className={styles.mobileBillGuestRow}>
+                                                <div className={styles.mobileGuestDetails}>
+                                                    <span className={styles.guestName}>{bill.guest_name}</span>
+                                                    <div className={styles.mobileLocationMeta}>
+                                                        {bill.room_number ? (
+                                                            <span className={styles.roomBadge}>
+                                                                <Bed size={11} /> Room {bill.room_number}
+                                                            </span>
+                                                        ) : (
+                                                            <span className={styles.walkInBadge}>Dine-In</span>
+                                                        )}
+                                                        <span className={`${styles.payChip} ${payClass}`}>
+                                                            {bill.payment_mode}
                                                         </span>
                                                     </div>
-                                                </td>
-                                                <td>
-                                                    <div className={styles.itemsPreview}>
-                                                        {bill.items.slice(0, 2).map((item, i) => (
-                                                            <span key={i} className={styles.itemChip}>
-                                                                {item.qty}× {item.name}
-                                                            </span>
-                                                        ))}
-                                                        {bill.items.length > 2 && (
-                                                            <span className={styles.moreItemsChip}>
-                                                                +{bill.items.length - 2} more
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <span className={styles.amountMono}>
+                                                </div>
+                                                <div className={styles.mobileBillTotalBox}>
+                                                    <span className={styles.mobileTotalLabel}>Amount</span>
+                                                    <span className={styles.mobileTotalValue}>
                                                         ₹{bill.total_amount.toLocaleString('en-IN')}
                                                     </span>
-                                                </td>
-                                                <td>
-                                                    <span className={`${styles.payChip} ${payClass}`}>
-                                                        {bill.payment_mode}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <span className={`${styles.statusBadge} ${statusClass}`}>
-                                                        <span className={styles.statusDot} />
-                                                        {bill.status}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <div className={styles.actionGroup}>
-                                                        {bill.status !== 'Paid' && (
-                                                            <button
-                                                                className={styles.settleBtn}
-                                                                title="Mark as Paid"
-                                                                onClick={() => handleMarkAsPaid(bill)}
-                                                            >
-                                                                <CheckCircle2 size={15} />
-                                                            </button>
-                                                        )}
-                                                        <button
-                                                            className={styles.iconBtn}
-                                                            title="Preview Bill"
-                                                            onClick={() => setViewingBill(bill)}
-                                                        >
-                                                            <Eye size={15} />
-                                                        </button>
-                                                        <button
-                                                            className={styles.iconBtn}
-                                                            title="Print Thermal Slip"
-                                                            onClick={() => handlePrintBill(bill, 'thermal')}
-                                                        >
-                                                            <Printer size={15} />
-                                                        </button>
-                                                        <button
-                                                            className={styles.iconBtn}
-                                                            title="Edit Bill"
-                                                            onClick={() => openEditModal(bill)}
-                                                        >
-                                                            <Pencil size={15} />
-                                                        </button>
-                                                        <button
-                                                            className={styles.deleteBtn}
-                                                            title="Delete Bill"
-                                                            onClick={() => setDeletingBill(bill)}
-                                                        >
-                                                            <Trash2 size={15} />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
+                                                </div>
+                                            </div>
+
+                                            {bill.items.length > 0 && (
+                                                <div className={styles.mobileItemsList}>
+                                                    {bill.items.map((item, i) => (
+                                                        <span key={i} className={styles.itemChip}>
+                                                            {item.qty}× {item.name}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            <div className={styles.mobileBillActionsRow}>
+                                                {bill.status !== 'Paid' && (
+                                                    <button
+                                                        type="button"
+                                                        className={styles.mobileSettleActionBtn}
+                                                        onClick={() => handleMarkAsPaid(bill)}
+                                                    >
+                                                        <CheckCircle2 size={15} />
+                                                        <span>Settle</span>
+                                                    </button>
+                                                )}
+                                                <button
+                                                    type="button"
+                                                    className={styles.mobileViewActionBtn}
+                                                    onClick={() => setViewingBill(bill)}
+                                                >
+                                                    <Eye size={15} />
+                                                    <span>View</span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className={styles.mobileSecondaryActionBtn}
+                                                    title="Print Thermal Slip"
+                                                    onClick={() => handlePrintBill(bill, 'thermal')}
+                                                >
+                                                    <Printer size={15} />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className={styles.mobileSecondaryActionBtn}
+                                                    title="Edit Bill"
+                                                    onClick={() => openEditModal(bill)}
+                                                >
+                                                    <Pencil size={15} />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className={styles.mobileDeleteActionBtn}
+                                                    title="Delete Bill"
+                                                    onClick={() => setDeletingBill(bill)}
+                                                >
+                                                    <Trash2 size={15} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </>
                     )}
                 </div>
             </div>
