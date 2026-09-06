@@ -48,6 +48,7 @@
     position: relative;
     color: #ffffff;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
 .headerGlow {
@@ -261,6 +262,7 @@
     gap: 1px;
     background: #e2e8f0;
     border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
 }
 
 .metricTile {
@@ -306,7 +308,8 @@
     flex-direction: column;
     gap: 18px;
     background: #ffffff;
-    max-height: calc(90vh - 280px);
+    flex: 1 1 auto;
+    min-height: 0;
 }
 
 .cardsGrid {
@@ -547,6 +550,7 @@
     justify-content: space-between;
     align-items: center;
     gap: 12px;
+    flex-shrink: 0;
 }
 
 .contactActions {

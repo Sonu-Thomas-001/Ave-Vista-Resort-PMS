@@ -48,6 +48,7 @@
     position: relative;
     color: #ffffff;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
 .headerGlow {
@@ -172,7 +173,8 @@
     flex-direction: column;
     gap: 18px;
     background: #f8fafc;
-    max-height: calc(90vh - 220px);
+    flex: 1 1 auto;
+    min-height: 0;
 }
 
 .sectionCard {
@@ -398,6 +400,7 @@
     justify-content: flex-end;
     align-items: center;
     gap: 12px;
+    flex-shrink: 0;
 }
 
 .cancelBtn {
