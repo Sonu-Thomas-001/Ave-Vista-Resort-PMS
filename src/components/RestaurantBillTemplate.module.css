@@ -1,50 +1,62 @@
-/* Modern Restaurant Bill Template — A4 Luxury & 80mm POS Thermal Receipt */
+/* ==========================================================================
+   Ave Vista Resorts & Hotels - Restaurant Dining & POS Bill Template
+   A4 Luxury Dining Tax Invoice & 80mm POS Thermal Slip
+   ========================================================================== */
 
 /* ─────────────────────────────────────────────────────────────
-   A4 RESORT DINING INVOICE STYLES
+   MODE 1: A4 RESORT DINING TAX INVOICE
    ───────────────────────────────────────────────────────────── */
-.container {
-    padding: 44px;
-    background: #ffffff;
-    max-width: 210mm;
-    margin: 0 auto;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #1f2937;
-    position: relative;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    border-radius: 12px;
+@page {
+    size: A4 portrait;
+    margin: 8mm 10mm;
 }
 
-/* ─── Header ─── */
+.container {
+    width: 100%;
+    max-width: 210mm;
+    margin: 0 auto;
+    padding: 36px 42px;
+    background: #FFFFFF;
+    color: #0F172A;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    position: relative;
+    box-sizing: border-box;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* Header */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    padding-bottom: 28px;
-    margin-bottom: 28px;
-    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 24px;
+    margin-bottom: 24px;
+    border-bottom: 1.5px solid #E2E8F0;
     position: relative;
 }
 
 .header::after {
     content: '';
     position: absolute;
-    bottom: -1px;
+    bottom: -1.5px;
     left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, #FF6B35 25%, #00a0d2 75%, transparent);
+    width: 140px;
+    height: 3px;
+    background: linear-gradient(90deg, #EA580C 0%, #F97316 100%);
+    border-radius: 2px;
 }
 
 .headerLeft {
     flex: 1;
+    max-width: 58%;
 }
 
 .brandName {
-    font-size: 26px;
-    font-weight: 800;
+    font-size: 25px;
+    font-weight: 900;
     color: #0F172A;
-    margin: 0 0 6px 0;
+    margin: 0 0 4px 0;
     letter-spacing: -0.5px;
     display: flex;
     align-items: center;
@@ -52,131 +64,150 @@
 }
 
 .brandName span {
-    color: #FF6B35;
+    color: #EA580C;
 }
 
-.tagline {
-    font-size: 13px;
+.brandSub {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
     color: #64748B;
-    margin: 0 0 12px 0;
+    margin: 0 0 8px 0;
 }
 
-.contactRow {
+.address {
+    font-size: 11.5px;
+    color: #475569;
+    margin: 0 0 10px 0;
+    line-height: 1.5;
+}
+
+.contactBar {
     display: flex;
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
-    font-size: 12px;
+    font-size: 11px;
     color: #475569;
 }
 
 .contactItem {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
+    font-weight: 500;
 }
 
 .contactItem svg {
-    color: #FF6B35;
+    color: #EA580C;
 }
 
-.contactDivider {
+.barDivider {
     color: #CBD5E1;
 }
 
 .headerRight {
     text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
 }
 
-.billBadge {
+.diningBadge {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 18px;
-    background: linear-gradient(135deg, #FF6B35 0%, #E65100 100%);
-    color: white;
+    padding: 5px 14px;
+    background: #FFF7ED;
+    border: 1px solid #FED7AA;
+    color: #EA580C;
     border-radius: 20px;
-    font-size: 12px;
-    font-weight: 700;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
     letter-spacing: 0.8px;
-    text-transform: uppercase;
-    margin-bottom: 14px;
-    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.25);
+    margin-bottom: 12px;
 }
 
-.billMeta {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    align-items: flex-end;
+.billNumberBox {
+    margin-bottom: 6px;
 }
 
-.metaItem {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-}
-
-.metaLabel {
+.billNumLabel {
     font-size: 10px;
-    color: #94A3B8;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 600;
+    letter-spacing: 0.6px;
+    color: #64748B;
+    margin-bottom: 2px;
 }
 
-.metaValue {
-    font-size: 14px;
-    font-weight: 700;
+.billNumValue {
+    font-size: 18px;
+    font-weight: 900;
     color: #0F172A;
+    letter-spacing: -0.5px;
     font-family: 'Courier New', monospace;
 }
 
-/* ─── Cards Grid ─── */
+.billDateRow {
+    font-size: 11.5px;
+    color: #64748B;
+    font-weight: 500;
+}
+
+.billDateRow strong {
+    color: #1E293B;
+}
+
+/* 2-Column Metadata Cards */
 .cardsGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 28px;
+    gap: 16px;
+    margin-bottom: 24px;
 }
 
 .infoCard {
     background: #F8FAFC;
     border: 1px solid #E2E8F0;
     border-radius: 12px;
-    padding: 18px;
+    padding: 14px 18px;
 }
 
-.cardHeader {
+.infoCardHeader {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 14px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #E2E8F0;
-    color: #FF6B35;
-}
-
-.cardTitle {
-    margin: 0;
-    font-size: 12px;
-    font-weight: 700;
-    color: #334155;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #EDF2F7;
+    color: #EA580C;
+    font-size: 11px;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
 }
 
-.cardBody {
+.infoCardHeader h3 {
+    margin: 0;
+    font-size: inherit;
+    font-weight: inherit;
+    color: #334155;
+}
+
+.infoCardBody {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 }
 
 .infoRow {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 13px;
+    font-size: 11.5px;
 }
 
 .infoLabel {
@@ -186,337 +217,380 @@
 
 .infoValue {
     color: #0F172A;
-    font-weight: 600;
-}
-
-.statusBadge {
-    display: inline-block;
-    padding: 2px 10px;
-    border-radius: 20px;
-    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.3px;
 }
 
-.statusPaid {
+.locationBadgeDineIn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    background: #F1F5F9;
+    color: #334155;
+    border-radius: 6px;
+    font-size: 10.5px;
+    font-weight: 700;
+}
+
+.locationBadgeRoom {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    background: #FEF3C7;
+    color: #92400E;
+    border-radius: 6px;
+    font-size: 10.5px;
+    font-weight: 800;
+}
+
+.statusBadgePaid {
+    display: inline-block;
+    padding: 2px 8px;
     background: #DCFCE7;
     color: #15803D;
+    border-radius: 6px;
+    font-size: 10.5px;
+    font-weight: 800;
 }
 
-.statusPending {
+.statusBadgePending {
+    display: inline-block;
+    padding: 2px 8px;
     background: #FEE2E2;
     color: #B91C1C;
+    border-radius: 6px;
+    font-size: 10.5px;
+    font-weight: 800;
 }
 
-.statusPartial {
-    background: #FEF3C7;
-    color: #B45309;
-}
-
-.paymentBadge {
+.statusBadgePartial {
     display: inline-block;
-    padding: 2px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    background: #EFF6FF;
-    color: #1D4ED8;
+    padding: 2px 8px;
+    background: #FEF3C7;
+    color: #92400E;
+    border-radius: 6px;
+    font-size: 10.5px;
+    font-weight: 800;
 }
 
-/* ─── Items Table ─── */
-.tariffSection {
-    margin-bottom: 28px;
+/* Itemized Culinary Table */
+.tableSection {
+    margin-bottom: 24px;
 }
 
-.sectionTitle {
-    font-size: 14px;
-    font-weight: 700;
-    color: #1E293B;
-    margin: 0 0 12px 0;
-    padding-bottom: 8px;
-    border-bottom: 2px solid #FF6B35;
+.sectionHeading {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #334155;
+    margin: 0 0 10px 0;
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.sectionTitle svg {
-    color: #FF6B35;
-}
-
-.tariffTable {
+.itemsTableWrapper {
     border: 1px solid #E2E8F0;
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
 }
 
-.tableHeader {
-    display: grid;
-    grid-template-columns: 44px 2fr 70px 100px 110px;
-    background: #F8FAFC;
-    padding: 12px 16px;
-    font-size: 11px;
-    font-weight: 700;
-    color: #64748B;
+.itemsTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.itemsTable thead {
+    background: #F1F5F9;
+}
+
+.itemsTable th {
+    padding: 10px 14px;
+    color: #475569;
+    font-weight: 800;
+    font-size: 10.5px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
     border-bottom: 1px solid #E2E8F0;
 }
 
-.tableBody {
-    background: white;
-}
-
-.tableRow {
-    display: grid;
-    grid-template-columns: 44px 2fr 70px 100px 110px;
-    padding: 12px 16px;
-    font-size: 13px;
+.itemsTable td {
+    padding: 12px 14px;
     border-bottom: 1px solid #F1F5F9;
-    align-items: center;
+    color: #1E293B;
+    vertical-align: middle;
 }
 
-.tableRow:last-child {
+.itemsTable tbody tr:last-child td {
     border-bottom: none;
 }
 
-.colSno {
-    color: #94A3B8;
+.itemsTable tbody tr:nth-child(even) {
+    background: #FAFBFC;
+}
+
+.colIndex {
+    width: 8%;
+    text-align: center;
+    color: #64748B;
     font-weight: 600;
 }
 
-.colDescription {
-    color: #1E293B;
-    font-weight: 600;
+.colItem {
+    width: 52%;
+    text-align: left;
 }
 
 .colQty {
+    width: 12%;
     text-align: center;
-    color: #475569;
+}
+
+.colPrice {
+    width: 14%;
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+}
+
+.colTotal {
+    width: 14%;
+    text-align: right;
+    font-family: 'Courier New', monospace;
     font-weight: 700;
 }
 
-.colRate {
-    text-align: right;
-    color: #64748B;
-    font-family: 'Courier New', monospace;
-}
-
-.colAmount {
-    text-align: right;
+.dishTitle {
     font-weight: 700;
     color: #0F172A;
-    font-family: 'Courier New', monospace;
 }
 
-/* ─── Summary Card ─── */
-.summaryCard {
-    width: 55%;
-    margin-left: auto;
-    margin-bottom: 28px;
-    padding: 18px 22px;
+.qtyPill {
+    display: inline-block;
+    padding: 2px 7px;
+    background: #F1F5F9;
+    border-radius: 6px;
+    font-weight: 800;
+    font-size: 11px;
+    color: #334155;
+}
+
+/* Settlement & Summary Grid */
+.settlementGrid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 20px;
+    margin-bottom: 24px;
+    align-items: start;
+}
+
+.notesCard {
     background: #F8FAFC;
     border: 1px solid #E2E8F0;
     border-radius: 12px;
+    padding: 14px 16px;
+}
+
+.notesHeader {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #334155;
+    margin-bottom: 6px;
+}
+
+.notesContent {
+    font-size: 11.5px;
+    color: #64748B;
+    font-style: italic;
+    line-height: 1.4;
+}
+
+.summaryCard {
+    background: #FFFFFF;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03);
 }
 
 .summaryRow {
     display: flex;
     justify-content: space-between;
-    padding: 8px 0;
-    font-size: 13px;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 12px;
     color: #475569;
-    border-bottom: 1px solid #E2E8F0;
 }
 
-.summaryRow:last-of-type {
-    border-bottom: 2px solid #CBD5E1;
-}
-
-.summaryRow span:last-child {
+.summaryRow strong {
     font-family: 'Courier New', monospace;
-    font-weight: 700;
+    font-size: 13px;
     color: #0F172A;
+}
+
+.summaryDivider {
+    height: 1px;
+    background: #E2E8F0;
+    margin: 8px 0;
 }
 
 .grandTotalRow {
     display: flex;
     justify-content: space-between;
-    padding: 14px 0 0 0;
-    font-size: 18px;
+    align-items: center;
+    padding: 10px 0 6px 0;
+    color: #EA580C;
+    font-size: 14px;
     font-weight: 800;
-    color: #E65100;
-    margin-top: 4px;
 }
 
-.grandTotalRow span:last-child {
+.grandTotalAmount {
+    font-size: 20px;
+    font-weight: 900;
+    color: #EA580C;
     font-family: 'Courier New', monospace;
 }
 
-/* ─── Notes ─── */
-.notesSection {
-    margin-bottom: 24px;
-    padding: 14px 18px;
-    background: #FFF7ED;
-    border-left: 4px solid #FF6B35;
-    border-radius: 0 8px 8px 0;
-    font-size: 13px;
-    color: #9A3412;
-}
-
-.notesSection strong {
-    color: #7C2D12;
-}
-
-/* ─── Footer ─── */
-.footerDivider {
-    margin: 28px 0 0 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, #FF6B35 50%, transparent);
-    border-radius: 2px;
-}
-
+/* Footer */
 .footer {
-    padding: 24px 16px;
-    text-align: center;
-    background: #F8FAFC;
-    border-radius: 10px;
-    margin-top: 20px;
-}
-
-.thankYou {
-    margin: 0 0 6px;
-    font-size: 16px;
-    font-weight: 700;
-    color: #0F172A;
-}
-
-.thankYouSub {
-    margin: 0 0 12px;
-    font-size: 12px;
-    color: #64748B;
-    font-style: italic;
-}
-
-.footerContact {
     display: flex;
-    justify-content: center;
-    gap: 18px;
-    font-size: 11px;
-    color: #94A3B8;
-    margin-bottom: 10px;
-}
-
-.footerContact span {
-    display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 4px;
+    padding-top: 18px;
+    border-top: 1.5px solid #E2E8F0;
 }
 
-.footerNote {
-    font-size: 10px;
+.thankYouText {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #0F172A;
+    margin: 0 0 2px 0;
+}
+
+.copyrightText {
+    font-size: 10.5px;
     color: #94A3B8;
     margin: 0;
 }
 
 
 /* ─────────────────────────────────────────────────────────────
-   80MM POS THERMAL RECEIPT STYLES
+   MODE 2: 80MM POS COMPACT THERMAL RECEIPT
    ───────────────────────────────────────────────────────────── */
 .thermalContainer {
-    width: 340px;
-    max-width: 100%;
+    width: 80mm;
+    max-width: 80mm;
     margin: 0 auto;
-    padding: 24px 18px;
-    background: #ffffff;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 12px;
+    padding: 14px 12px;
+    background: #FFFFFF;
     color: #000000;
-    line-height: 1.4;
-    border: 1px dashed #CBD5E1;
-    border-radius: 8px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    line-height: 1.35;
+    box-sizing: border-box;
 }
 
 .thermalCenter {
     text-align: center;
+    margin-bottom: 8px;
 }
 
 .thermalBrand {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 900;
     letter-spacing: 0.5px;
-    margin: 0 0 4px 0;
+    margin: 0 0 2px 0;
     text-transform: uppercase;
 }
 
 .thermalSub {
     font-size: 10px;
-    margin: 0 0 4px 0;
-    color: #334155;
+    margin: 0;
 }
 
 .thermalContact {
-    font-size: 10px;
-    margin: 0 0 10px 0;
+    font-size: 9.5px;
+    margin: 1px 0 0 0;
 }
 
 .thermalDashed {
     border-top: 1px dashed #000000;
-    margin: 10px 0;
+    margin: 6px 0;
 }
 
 .thermalSolid {
     border-top: 1px solid #000000;
-    margin: 10px 0;
+    margin: 6px 0;
+}
+
+.thermalTitlePill {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin: 4px 0;
 }
 
 .thermalMetaRow {
     display: flex;
     justify-content: space-between;
-    font-size: 11px;
-    margin-bottom: 4px;
+    font-size: 10.5px;
+    margin-bottom: 2px;
 }
 
 .thermalTableHeader {
     display: grid;
-    grid-template-columns: 1.8fr 40px 60px 65px;
-    font-weight: 800;
-    font-size: 11px;
+    grid-template-columns: 1.8fr 32px 50px 58px;
+    font-weight: 900;
+    font-size: 10.5px;
+    border-bottom: 1px solid #000000;
     padding-bottom: 4px;
-    border-bottom: 1px dashed #000000;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
 }
 
 .thermalItemRow {
     display: grid;
-    grid-template-columns: 1.8fr 40px 60px 65px;
-    font-size: 11px;
-    margin-bottom: 4px;
+    grid-template-columns: 1.8fr 32px 50px 58px;
+    font-size: 10.5px;
+    margin-bottom: 3px;
+    align-items: start;
 }
 
 .thermalTotalRow {
     display: flex;
     justify-content: space-between;
-    font-size: 12px;
-    font-weight: 700;
-    margin-bottom: 4px;
+    font-size: 11px;
+    margin-bottom: 3px;
 }
 
 .thermalGrandTotal {
     display: flex;
     justify-content: space-between;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 900;
     padding-top: 6px;
-    border-top: 2px solid #000000;
+    border-top: 1.5px solid #000000;
+    margin-top: 4px;
+}
+
+.thermalNotes {
     margin-top: 6px;
+    font-size: 9.5px;
+    font-style: italic;
+    border-top: 1px dashed #666666;
+    padding-top: 4px;
 }
 
 .thermalFooter {
     text-align: center;
-    margin-top: 16px;
-    font-size: 11px;
+    margin-top: 12px;
+    font-size: 10px;
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -524,34 +598,35 @@
    ───────────────────────────────────────────────────────────── */
 @media print {
     .container {
-        padding: 8mm 6mm !important;
+        padding: 6mm 8mm !important;
         margin: 0 !important;
         max-width: 100% !important;
-        box-shadow: none !important;
-        border-radius: 0 !important;
-        zoom: 0.95;
+        background: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
 
     .thermalContainer {
-        width: 78mm !important;
-        max-width: 78mm !important;
-        padding: 4mm !important;
+        width: 76mm !important;
+        max-width: 76mm !important;
+        padding: 2mm !important;
         margin: 0 auto !important;
-        border: none !important;
-        box-shadow: none !important;
     }
 
     .infoCard,
-    .summaryCard,
-    .tariffTable,
-    .thermalContainer {
-        break-inside: avoid;
+    .tableSection,
+    .settlementGrid,
+    .footer {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
     }
 
-    .billBadge,
-    .statusBadge,
-    .paymentBadge {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+    .diningBadge,
+    .locationBadgeRoom,
+    .locationBadgeDineIn,
+    .statusBadgePaid,
+    .qtyPill {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
 }
