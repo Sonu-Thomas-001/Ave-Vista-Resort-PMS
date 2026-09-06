@@ -603,6 +603,102 @@
 }
 
 /* ─────────────────────────────────────────────────────────────
+   RESPONSIVE SCREEN STYLING (MOBILE & TABLET VIEWPORTS)
+   (Preserves 3-column A4 format under @media print)
+   ───────────────────────────────────────────────────────────── */
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 16px 14px;
+        max-width: 100%;
+        font-size: 12px;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        padding-bottom: 16px;
+        margin-bottom: 16px;
+    }
+
+    .headerLeft {
+        max-width: 100%;
+    }
+
+    .brandName {
+        font-size: 20px;
+    }
+
+    .contactBar {
+        gap: 8px;
+    }
+
+    .headerRight {
+        align-items: flex-start;
+        text-align: left;
+        width: 100%;
+    }
+
+    .folioGrid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .folioCard {
+        padding: 12px 14px;
+    }
+
+    .folioRow {
+        font-size: 12px;
+        gap: 10px;
+    }
+
+    .folioLabel {
+        white-space: nowrap;
+    }
+
+    .folioValue {
+        text-align: right;
+        word-break: break-word;
+    }
+
+    .tariffSection {
+        margin-bottom: 18px;
+    }
+
+    .tariffTableWrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .tariffTable {
+        min-width: 480px;
+    }
+
+    .settlementGrid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        margin-bottom: 18px;
+    }
+
+    .policiesGrid {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+    .footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .footerRight {
+        text-align: left;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────
    PRINT MEDIA RULES
    ───────────────────────────────────────────────────────────── */
 @media print {

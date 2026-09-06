@@ -356,14 +356,33 @@
         width: 100%;
         justify-content: space-between;
     }
+    .modalBody {
+        padding: 8px 4px;
+    }
+    .paperSheet {
+        box-shadow: none;
+        width: 100%;
+        border-radius: 4px;
+    }
+    .paperA4 {
+        min-height: auto;
+        width: 100%;
+    }
     .modalFooter {
         padding: 12px 14px;
         padding-bottom: env(safe-area-inset-bottom, 12px);
     }
-    .footerActions {
+    .actionBtns {
         width: 100%;
         display: flex;
         gap: 8px;
+    }
+    .cancelBtn {
+        padding: 0 14px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
     .printBtn,
     .downloadPdfBtn {
