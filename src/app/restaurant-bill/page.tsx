@@ -12,6 +12,7 @@ import { supabase } from '@/lib/supabase';
 import styles from './page.module.css';
 import { RestaurantBillTemplate } from '@/components/RestaurantBillTemplate';
 import { InvoicePreviewModal } from '@/components/ui/InvoicePreviewModal';
+import CustomSelect, { CustomSelectOption } from '@/components/ui/CustomSelect';
 
 interface BillItem {
     name: string;
@@ -91,6 +92,36 @@ export default function RestaurantBillPage() {
     const [tempItemPrice, setTempItemPrice] = useState<string>('');
 
     const billRef = useRef<HTMLDivElement>(null);
+
+    const diningLocationOptions = useMemo<CustomSelectOption[]>(() => {
+        const list: CustomSelectOption[] = [
+            {
+                label: 'Dine-In / Walk-In Table',
+                value: '',
+                icon: <UtensilsCrossed size={14} color="#ea580c" />,
+                badge: 'Walk-In'
+            }
+        ];
+
+        occupiedRooms.forEach((r) => {
+            list.push({
+                label: `Room ${r.room_number}`,
+                value: r.room_number,
+                icon: <Bed size={14} color="#0284c7" />,
+                sublabel: r.guest_name ? r.guest_name : undefined,
+                badge: 'In-House'
+            });
+        });
+
+        list.push({
+            label: 'Custom / Other Room Number...',
+            value: '__custom__',
+            icon: <Pencil size={14} color="#64748b" />,
+            badge: 'Manual'
+        });
+
+        return list;
+    }, [occupiedRooms]);
 
     useEffect(() => {
         fetchBills();
@@ -1161,11 +1192,11 @@ export default function RestaurantBillPage() {
                                                     autoFocus
                                                 />
                                             ) : (
-                                                <select
-                                                    className={styles.posInput}
+                                                <CustomSelect
+                                                    options={diningLocationOptions}
                                                     value={roomNumber}
-                                                    onChange={(e) => {
-                                                        const val = e.target.value;
+                                                    size="sm"
+                                                    onChange={(val) => {
                                                         if (val === '__custom__') {
                                                             setIsCustomRoom(true);
                                                             setRoomNumber('');
@@ -1173,19 +1204,8 @@ export default function RestaurantBillPage() {
                                                             handleRoomSelect(val);
                                                         }
                                                     }}
-                                                >
-                                                    <option value="">🍽️ Dine-In / Walk-In Table</option>
-                                                    {occupiedRooms.length > 0 && (
-                                                        <optgroup label="🏨 In-House Guests (Bill to Room)">
-                                                            {occupiedRooms.map((r, i) => (
-                                                                <option key={i} value={r.room_number}>
-                                                                    Room {r.room_number} {r.guest_name ? `— ${r.guest_name}` : ''}
-                                                                </option>
-                                                            ))}
-                                                        </optgroup>
-                                                    )}
-                                                    <option value="__custom__">✏️ Custom / Other Room Number...</option>
-                                                </select>
+                                                    fullWidth
+                                                />
                                             )}
                                         </div>
                                     </div>
