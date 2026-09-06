@@ -18,6 +18,10 @@ export interface Database {
                     status: string | null
                     created_at: string
                     email: string | null
+                    onboarding_completed?: boolean | null
+                    onboarding_skipped?: boolean | null
+                    onboarding_version?: string | null
+                    onboarding_completed_at?: string | null
                 }
                 Insert: { [key: string]: any;
                     id: string
@@ -27,6 +31,10 @@ export interface Database {
                     status?: string | null
                     created_at?: string
                     email?: string | null
+                    onboarding_completed?: boolean | null
+                    onboarding_skipped?: boolean | null
+                    onboarding_version?: string | null
+                    onboarding_completed_at?: string | null
                 }
                 Update: { [key: string]: any;
                     id?: string
@@ -36,6 +44,10 @@ export interface Database {
                     status?: string | null
                     created_at?: string
                     email?: string | null
+                    onboarding_completed?: boolean | null
+                    onboarding_skipped?: boolean | null
+                    onboarding_version?: string | null
+                    onboarding_completed_at?: string | null
                 }
             }
             rooms: {

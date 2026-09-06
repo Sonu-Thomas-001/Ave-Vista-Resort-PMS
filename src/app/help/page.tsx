@@ -15,11 +15,15 @@ import {
     Mail,
     MessageSquare,
     CheckCircle2,
-    LifeBuoy
+    LifeBuoy,
+    Compass,
+    ArrowRight
 } from 'lucide-react';
+import { useOnboarding } from '@/contexts/OnboardingContext';
 import styles from './page.module.css';
 
 export default function HelpPage() {
+    const { restartTour } = useOnboarding();
     const [searchQuery, setSearchQuery] = useState('');
     const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
@@ -145,6 +149,72 @@ export default function HelpPage() {
                             />
                         </div>
                     </div>
+                </div>
+
+                {/* Interactive Tour Re-launch Banner */}
+                <div
+                    style={{
+                        background: '#FFFFFF',
+                        borderRadius: '16px',
+                        border: '1px solid #CFD8DC',
+                        padding: '1.25rem 1.75rem',
+                        marginBottom: '2rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '1.25rem',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+                        flexWrap: 'wrap'
+                    }}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: '260px', flex: 1 }}>
+                        <div
+                            style={{
+                                width: '44px',
+                                height: '44px',
+                                borderRadius: '12px',
+                                background: '#E1F5FE',
+                                color: '#039BE5',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0
+                            }}
+                        >
+                            <Compass size={22} />
+                        </div>
+                        <div>
+                            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#263238', margin: '0 0 2px 0' }}>
+                                Interactive PMS Guided Tour
+                            </h3>
+                            <p style={{ fontSize: '0.86rem', color: '#546E7A', margin: 0 }}>
+                                Need a refresher? Re-launch the role-tailored guided walkthrough across all Ave Vista modules.
+                            </p>
+                        </div>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={restartTour}
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.45rem',
+                            background: '#039BE5',
+                            color: '#FFFFFF',
+                            border: 'none',
+                            padding: '0.65rem 1.25rem',
+                            borderRadius: '8px',
+                            fontWeight: 600,
+                            fontSize: '0.88rem',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                            boxShadow: '0 2px 8px rgba(3, 155, 229, 0.28)'
+                        }}
+                    >
+                        <span>Launch Tour</span>
+                        <ArrowRight size={15} />
+                    </button>
                 </div>
 
                 {/* Operations Pillars */}

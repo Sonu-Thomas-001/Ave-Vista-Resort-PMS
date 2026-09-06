@@ -20,9 +20,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  IndianRupee,
-  ShieldCheck,
-  Sparkles
+  IndianRupee
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
 import { hasAccess } from '@/lib/permissions';
@@ -195,10 +193,13 @@ export default function Sidebar({ isMobile, isOpen, isCollapsed, onToggle, onClo
                         ? pathname === '/'
                         : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
+                    const onboardingKey = `nav-${item.href.replace('/', '') || 'dashboard'}`;
+
                     return (
                       <Link
                         key={item.href}
                         href={item.href}
+                        data-onboarding={onboardingKey}
                         className={`${styles.navItem} ${isActive ? styles.active : ''}`}
                         onClick={() => isMobile && onCloseMobile?.()}
                       >

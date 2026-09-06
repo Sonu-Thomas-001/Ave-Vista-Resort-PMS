@@ -13,6 +13,8 @@ import OfflineBanner from './ui/OfflineBanner';
 import CookieConsentBanner from './ui/CookieConsentBanner';
 import LuxuryPreloader from './ui/LuxuryPreloader';
 import TopProgressBar from './ui/TopProgressBar';
+import { OnboardingProvider } from '@/contexts/OnboardingContext';
+import OnboardingTour from './onboarding/OnboardingTour';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -134,37 +136,40 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     };
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh' }}>
-            <TopProgressBar />
-            <OfflineBanner />
-            <Sidebar
-                isMobile={isMobile}
-                isOpen={isMobileOpen}
-                isCollapsed={isCollapsed}
-                onToggle={toggleDesktop}
-                onCloseMobile={() => setIsMobileOpen(false)}
-            />
+        <OnboardingProvider>
+            <div style={{ display: 'flex', minHeight: '100vh' }}>
+                <TopProgressBar />
+                <OfflineBanner />
+                <Sidebar
+                    isMobile={isMobile}
+                    isOpen={isMobileOpen}
+                    isCollapsed={isCollapsed}
+                    onToggle={toggleDesktop}
+                    onCloseMobile={() => setIsMobileOpen(false)}
+                />
 
-            {/* Mobile Toggle Button (Visible when sidebar is closed) */}
-            {isMobile && !isMobileOpen && (
-                <button
-                    className={sidebarStyles.mobileToggleBtn}
-                    onClick={() => setIsMobileOpen(true)}
-                    aria-label="Open menu"
-                >
-                    <Menu size={20} />
-                </button>
-            )}
+                {/* Mobile Toggle Button (Visible when sidebar is closed) */}
+                {isMobile && !isMobileOpen && (
+                    <button
+                        className={sidebarStyles.mobileToggleBtn}
+                        onClick={() => setIsMobileOpen(true)}
+                        aria-label="Open menu"
+                    >
+                        <Menu size={20} />
+                    </button>
+                )}
 
-            <main style={mainStyle}>
-                <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ flex: 1 }}>
-                        {children}
+                <main style={mainStyle}>
+                    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ flex: 1 }}>
+                            {children}
+                        </div>
+                        <Footer />
                     </div>
-                    <Footer />
-                </div>
-            </main>
-            <CookieConsentBanner />
-        </div>
+                </main>
+                <CookieConsentBanner />
+                <OnboardingTour />
+            </div>
+        </OnboardingProvider>
     );
 }

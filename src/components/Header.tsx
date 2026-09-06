@@ -26,10 +26,12 @@ import {
     HelpCircle,
     FileText,
     Building2,
-    LogIn
+    LogIn,
+    Compass
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import { useOnboarding } from '@/contexts/OnboardingContext';
 import { supabase } from '@/lib/supabase';
 import styles from './Header.module.css';
 
@@ -88,6 +90,7 @@ const getHeaderEmblem = (title: string, pathname: string) => {
 
 export default function Header({ title = "Dashboard" }: HeaderProps) {
     const { user, logout } = useAuth();
+    const { restartTour } = useOnboarding();
     const pathname = usePathname();
     const router = useRouter();
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -238,6 +241,11 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
     const navigateToSettings = () => {
         setShowProfileMenu(false);
         router.push('/settings');
+    };
+
+    const handleRestartTour = () => {
+        setShowProfileMenu(false);
+        restartTour();
     };
 
     const performSearch = async (query: string) => {
@@ -577,6 +585,10 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
                                     <button className={styles.menuItem} onClick={navigateToSettings}>
                                         <div className={styles.menuItemIcon}><Settings size={15} /></div>
                                         <span>Settings</span>
+                                    </button>
+                                    <button className={styles.menuItem} onClick={handleRestartTour}>
+                                        <div className={styles.menuItemIcon}><Compass size={15} /></div>
+                                        <span>Restart Product Tour</span>
                                     </button>
 
                                     <div className={styles.menuDivider} />

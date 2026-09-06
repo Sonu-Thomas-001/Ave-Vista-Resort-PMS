@@ -1,0 +1,688 @@
+/* Ave Vista Resort PMS — Luxury First-Time Onboarding Styling */
+
+/* ==========================================================================
+   1. OVERLAYS & BACKDROPS
+   ========================================================================== */
+
+.modalBackdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 9995;
+    background: rgba(15, 23, 42, 0.68);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-md);
+    animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.spotlightSvgOverlay {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9990;
+    pointer-events: none;
+    transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.spotlightSvgOverlay path {
+    pointer-events: auto;
+}
+
+.spotlightTargetBox {
+    position: fixed;
+    z-index: 9992;
+    pointer-events: none;
+    border-radius: 12px;
+    box-shadow: 0 0 0 2px var(--primary), 0 0 24px rgba(3, 155, 229, 0.35);
+    transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.spotlightGlowRing {
+    position: absolute;
+    inset: -6px;
+    border-radius: 16px;
+    border: 1.5px solid rgba(3, 155, 229, 0.6);
+    animation: pulseRing 2.2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+    pointer-events: none;
+}
+
+@keyframes pulseRing {
+    0% {
+        transform: scale(0.98);
+        opacity: 0.9;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.35;
+    }
+    100% {
+        transform: scale(0.98);
+        opacity: 0.9;
+    }
+}
+
+/* ==========================================================================
+   2. WELCOME MODAL
+   ========================================================================== */
+
+.welcomeCard {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(207, 216, 220, 0.8);
+    box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+    width: 100%;
+    max-width: 520px;
+    padding: 2.25rem;
+    position: relative;
+    overflow: hidden;
+    animation: welcomeCardEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes welcomeCardEnter {
+    from {
+        opacity: 0;
+        transform: scale(0.94) translateY(14px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.welcomeGlowAccent {
+    position: absolute;
+    top: -80px;
+    right: -80px;
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle, rgba(3, 155, 229, 0.18) 0%, rgba(255, 255, 255, 0) 70%);
+    pointer-events: none;
+    border-radius: 50%;
+}
+
+.welcomeHeader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 1.75rem;
+}
+
+.welcomeLogoWrapper {
+    margin-bottom: 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.06));
+}
+
+.roleChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.85rem;
+    background: var(--primary-light);
+    color: var(--secondary);
+    border: 1px solid rgba(3, 155, 229, 0.25);
+    border-radius: var(--radius-full);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 0.85rem;
+}
+
+.roleChipDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--primary);
+}
+
+.welcomeTitle {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.25;
+    margin-bottom: 0.6rem;
+    letter-spacing: -0.02em;
+}
+
+.welcomeSubtitle {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    max-width: 440px;
+}
+
+/* Feature Preview Badges in Welcome Screen */
+.welcomeFeatures {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.75rem;
+    background: var(--background);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(207, 216, 220, 0.6);
+}
+
+.featureItem {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.featureIconCircle {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    flex-shrink: 0;
+}
+
+.welcomeFooter {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.tourMetaRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    padding: 0 0.25rem;
+}
+
+.metaItem {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.welcomeActions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.btnPrimary {
+    flex: 1;
+    background: var(--primary);
+    color: #FFFFFF;
+    border: none;
+    padding: 0.85rem 1.4rem;
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 12px rgba(3, 155, 229, 0.32);
+    transition: all 0.2s ease;
+}
+
+.btnPrimary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(3, 155, 229, 0.4);
+}
+
+.btnPrimary:active {
+    transform: translateY(0);
+}
+
+.btnGhost {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+    padding: 0.85rem 1.1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btnGhost:hover {
+    background: rgba(207, 216, 220, 0.25);
+    color: var(--text-main);
+}
+
+/* ==========================================================================
+   3. TOUR TOOLTIP / FLOATING CARD (Desktop & Tablet)
+   ========================================================================== */
+
+.tooltipCard {
+    position: fixed;
+    z-index: 9998;
+    background: #FFFFFF;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(207, 216, 220, 0.9);
+    box-shadow: 0 14px 35px -8px rgba(15, 23, 42, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.9) inset;
+    width: 370px;
+    max-width: calc(100vw - 32px);
+    padding: 1.4rem;
+    transition: top 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), left 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+    animation: tooltipFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.tooltipHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.stepBadge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--primary);
+    background: var(--primary-light);
+    padding: 0.2rem 0.65rem;
+    border-radius: var(--radius-full);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.closeIconBtn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.closeIconBtn:hover {
+    background: var(--background);
+    color: var(--text-main);
+}
+
+/* Progress bar inside tooltip */
+.progressBarTrack {
+    width: 100%;
+    height: 4px;
+    background: #ECEFF1;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.progressBarFill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+    border-radius: 2px;
+    transition: width 0.35s ease;
+}
+
+.tooltipBody {
+    margin-bottom: 1.25rem;
+}
+
+.tooltipTitle {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.35;
+    margin-bottom: 0.45rem;
+}
+
+.tooltipExplain {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 0.85rem;
+}
+
+.bulletList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    background: var(--background);
+    padding: 0.75rem 0.85rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(207, 216, 220, 0.5);
+}
+
+.bulletItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    color: var(--text-main);
+    line-height: 1.4;
+}
+
+.bulletDot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--primary);
+    margin-top: 6px;
+    flex-shrink: 0;
+}
+
+.tooltipFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.75rem;
+    border-top: 1px solid #ECEFF1;
+}
+
+.skipTourLink {
+    background: none;
+    border: none;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px 6px;
+    transition: color 0.15s ease;
+    border-radius: 4px;
+}
+
+.skipTourLink:hover {
+    color: var(--text-main);
+    text-decoration: underline;
+}
+
+.navButtonsGroup {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btnBack {
+    background: #FFFFFF;
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    padding: 0.5rem 0.9rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: all 0.15s ease;
+}
+
+.btnBack:hover {
+    background: var(--background);
+    border-color: var(--text-secondary);
+}
+
+.btnNext {
+    background: var(--primary);
+    color: #FFFFFF;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    box-shadow: 0 2px 8px rgba(3, 155, 229, 0.28);
+    transition: all 0.15s ease;
+}
+
+.btnNext:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   4. MOBILE BOTTOM SHEET MODE
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    .tooltipCard {
+        position: fixed !important;
+        inset: auto 0 0 0 !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        border-radius: 20px 20px 0 0 !important;
+        box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.25) !important;
+        padding: 1.5rem 1.25rem 2rem 1.25rem !important;
+        border-bottom: none !important;
+        z-index: 9999 !important;
+        animation: mobileSheetEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    @keyframes mobileSheetEnter {
+        from {
+            transform: translateY(100%);
+        }
+        to {
+            transform: translateY(0);
+        }
+    }
+
+    .mobileHandle {
+        width: 42px;
+        height: 4px;
+        border-radius: 2px;
+        background: #CFD8DC;
+        margin: -0.5rem auto 1rem auto;
+    }
+}
+
+/* ==========================================================================
+   5. CONFIRM SKIP MODAL
+   ========================================================================== */
+
+.confirmCard {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-xl);
+    width: 100%;
+    max-width: 420px;
+    padding: 1.75rem;
+    text-align: center;
+    animation: scaleIn 0.25s ease-out;
+}
+
+.confirmIconCircle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #FFF3E0;
+    color: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.confirmTitle {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 0.45rem;
+}
+
+.confirmText {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+
+.confirmActions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.btnSkipConfirm {
+    flex: 1;
+    background: #FFFFFF;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btnSkipConfirm:hover {
+    background: #FFEBEE;
+    color: #D32F2F;
+    border-color: #FFCDD2;
+}
+
+.btnContinueTour {
+    flex: 1.2;
+    background: var(--primary);
+    color: #FFFFFF;
+    border: none;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btnContinueTour:hover {
+    background: var(--primary-hover);
+}
+
+/* ==========================================================================
+   6. COMPLETION MODAL
+   ========================================================================== */
+
+.completionCard {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(207, 216, 220, 0.8);
+    box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.35);
+    width: 100%;
+    max-width: 480px;
+    padding: 2.25rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    animation: welcomeCardEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.successAnimationCircle {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #E8F5E9;
+    color: #2E7D32;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 4px 14px rgba(46, 125, 50, 0.2);
+    animation: scaleIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.completionTitle {
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.015em;
+}
+
+.completionSubtitle {
+    font-size: 0.92rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin-bottom: 1.5rem;
+}
+
+.modulesGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+    background: var(--background);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 1.75rem;
+    border: 1px solid rgba(207, 216, 220, 0.6);
+}
+
+.moduleReadyTag {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.84rem;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.moduleReadyIcon {
+    color: #2E7D32;
+    flex-shrink: 0;
+}
+
+.completionActions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+/* ==========================================================================
+   7. ACCESSIBILITY & PREFERS-REDUCED-MOTION
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    .modalBackdrop,
+    .welcomeCard,
+    .tooltipCard,
+    .confirmCard,
+    .completionCard,
+    .spotlightSvgOverlay,
+    .spotlightTargetBox,
+    .progressBarFill {
+        animation: none !important;
+        transition: none !important;
+    }
+    .spotlightGlowRing {
+        animation: none !important;
+        display: none !important;
+    }
+}
