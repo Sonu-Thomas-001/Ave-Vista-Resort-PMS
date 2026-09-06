@@ -1164,69 +1164,69 @@ export default function BillingPage() {
                             </button>
                         </div>
 
-                        <div className={styles.modalBody}>
-                            {/* Live Settlement Summary Card */}
-                            <div className={styles.settlementSummaryCard}>
-                                <div className={styles.settlementSummaryTop}>
-                                    <div className={styles.settlementSummaryTitle}>
-                                        <CreditCard size={15} />
-                                        <span>Real-Time Settlement & Tax Audit</span>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        className={styles.settleInFullBtn}
-                                        onClick={() => {
-                                            const total = Number(editingInvoice.total_amount || 0);
-                                            setEditingInvoice({
-                                                ...editingInvoice,
-                                                paid_amount: total,
-                                                status: 'Paid',
-                                                is_partial: false
-                                            });
-                                        }}
-                                        title="Set paid amount equal to total amount"
-                                    >
-                                        <Sparkles size={12} />
-                                        <span>Settle in Full (Paid = ₹{Number(editingInvoice.total_amount || 0).toLocaleString('en-IN')})</span>
-                                    </button>
+                        {/* Pinned Live Settlement Summary Bar */}
+                        <div className={styles.settlementBar}>
+                            <div className={styles.settlementSummaryTop}>
+                                <div className={styles.settlementSummaryTitle}>
+                                    <CreditCard size={15} />
+                                    <span>Real-Time Settlement & Tax Audit</span>
                                 </div>
-
-                                <div className={styles.summaryGrid}>
-                                    <div className={styles.summaryItem}>
-                                        <span className={styles.summaryLabel}>Total Folio Billed</span>
-                                        <span className={styles.summaryValue}>
-                                            ₹{Number(editingInvoice.total_amount || 0).toLocaleString('en-IN')}
-                                        </span>
-                                    </div>
-                                    <div className={styles.summaryItem}>
-                                        <span className={styles.summaryLabel}>Realized / Paid</span>
-                                        <span className={styles.summaryValue} style={{ color: '#16a34a' }}>
-                                            ₹{Number(editingInvoice.paid_amount || 0).toLocaleString('en-IN')}
-                                        </span>
-                                    </div>
-                                    <div className={styles.summaryItem}>
-                                        <span className={styles.summaryLabel}>GST ({editingInvoice.gst_rate || 0}%)</span>
-                                        <span className={styles.summaryValue}>
-                                            ₹{calculateInvoiceGstAmount(Number(editingInvoice.total_amount || 0), Number(editingInvoice.gst_rate || 0)).toLocaleString('en-IN')}
-                                        </span>
-                                    </div>
-                                    <div className={styles.summaryItem}>
-                                        <span className={styles.summaryLabel}>Outstanding Due</span>
-                                        <span
-                                            className={`${styles.summaryValue} ${
-                                                Math.max(0, Number(editingInvoice.total_amount || 0) - Number(editingInvoice.paid_amount || 0)) > 0
-                                                    ? styles.summaryDue
-                                                    : styles.summarySettled
-                                            }`}
-                                        >
-                                            {Math.max(0, Number(editingInvoice.total_amount || 0) - Number(editingInvoice.paid_amount || 0)) > 0
-                                                ? `₹${Math.max(0, Number(editingInvoice.total_amount || 0) - Number(editingInvoice.paid_amount || 0)).toLocaleString('en-IN')}`
-                                                : 'Settled (₹0)'}
-                                        </span>
-                                    </div>
-                                </div>
+                                <button
+                                    type="button"
+                                    className={styles.settleInFullBtn}
+                                    onClick={() => {
+                                        const total = Number(editingInvoice.total_amount || 0);
+                                        setEditingInvoice({
+                                            ...editingInvoice,
+                                            paid_amount: total,
+                                            status: 'Paid',
+                                            is_partial: false
+                                        });
+                                    }}
+                                    title="Set paid amount equal to total amount"
+                                >
+                                    <Sparkles size={12} />
+                                    <span>Settle in Full (Paid = ₹{Number(editingInvoice.total_amount || 0).toLocaleString('en-IN')})</span>
+                                </button>
                             </div>
 
+                            <div className={styles.summaryGrid}>
+                                <div className={styles.summaryItem}>
+                                    <span className={styles.summaryLabel}>Total Folio Billed</span>
+                                    <span className={styles.summaryValue}>
+                                        ₹{Number(editingInvoice.total_amount || 0).toLocaleString('en-IN')}
+                                    </span>
+                                </div>
+                                <div className={styles.summaryItem}>
+                                    <span className={styles.summaryLabel}>Realized / Paid</span>
+                                    <span className={styles.summaryValue} style={{ color: '#16a34a' }}>
+                                        ₹{Number(editingInvoice.paid_amount || 0).toLocaleString('en-IN')}
+                                    </span>
+                                </div>
+                                <div className={styles.summaryItem}>
+                                    <span className={styles.summaryLabel}>GST ({editingInvoice.gst_rate || 0}%)</span>
+                                    <span className={styles.summaryValue}>
+                                        ₹{calculateInvoiceGstAmount(Number(editingInvoice.total_amount || 0), Number(editingInvoice.gst_rate || 0)).toLocaleString('en-IN')}
+                                    </span>
+                                </div>
+                                <div className={styles.summaryItem}>
+                                    <span className={styles.summaryLabel}>Outstanding Due</span>
+                                    <span
+                                        className={`${styles.summaryValue} ${
+                                            Math.max(0, Number(editingInvoice.total_amount || 0) - Number(editingInvoice.paid_amount || 0)) > 0
+                                                ? styles.summaryDue
+                                                : styles.summarySettled
+                                        }`}
+                                    >
+                                        {Math.max(0, Number(editingInvoice.total_amount || 0) - Number(editingInvoice.paid_amount || 0)) > 0
+                                            ? `₹${Math.max(0, Number(editingInvoice.total_amount || 0) - Number(editingInvoice.paid_amount || 0)).toLocaleString('en-IN')}`
+                                            : 'Settled (₹0)'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className={styles.modalBody}>
                             {/* Section 1: Folio & Booking Linkage */}
                             <div className={styles.formSection}>
                                 <div className={styles.sectionHeader}>
@@ -1505,10 +1505,11 @@ export default function BillingPage() {
                                     <label className={styles.checkboxLabel}>
                                         <input
                                             type="checkbox"
+                                            className={styles.checkboxInput}
                                             checked={!!editingInvoice.is_partial}
                                             onChange={(e) => setEditingInvoice({ ...editingInvoice, is_partial: e.target.checked })}
                                         />
-                                        Flag folio as Partial Settlement
+                                        <span>Flag folio as Partial Settlement</span>
                                     </label>
                                 </div>
                             </div>
