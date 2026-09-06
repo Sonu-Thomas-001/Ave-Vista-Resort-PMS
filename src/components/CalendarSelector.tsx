@@ -72,12 +72,6 @@ export default function CalendarSelector({ startDate, endDate, onChange }: Calen
                     key={d}
                     className={className}
                     onClick={() => !isDisabled && handleDateClick(date)}
-                    style={{
-                        backgroundColor: isStart || isEnd ? '#039BE5' : isInRange ? '#E1F5FE' : undefined,
-                        color: isStart || isEnd ? 'white' : isInRange ? '#0277BD' : undefined,
-                        borderRadius: isStart ? (endDate ? '50% 0 0 50%' : '50%') : isEnd ? '0 50% 50% 0' : isInRange ? '0' : '50%',
-                        fontWeight: (isStart || isEnd) ? 'bold' : 'normal'
-                    }}
                 >
                     {d}
                 </div>

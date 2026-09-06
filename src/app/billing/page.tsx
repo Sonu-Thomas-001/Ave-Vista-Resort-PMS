@@ -41,6 +41,7 @@ import { Database } from '@/lib/database.types';
 import styles from './page.module.css';
 import { InvoiceTemplate } from '@/components/InvoiceTemplate';
 import CustomSelect from '@/components/ui/CustomSelect';
+import DatePicker from '@/components/ui/DatePicker';
 
 const PAYMENT_MODE_FILTER_OPTIONS = [
     { value: 'ALL', label: 'All Payment Modes' },
@@ -937,12 +938,11 @@ export default function BillingPage() {
                                         <ChevronLeft size={14} /> Prev
                                     </button>
 
-                                    <input
-                                        type="date"
-                                        className={styles.datePickerInput}
+                                    <DatePicker
                                         value={closingDate}
-                                        onChange={(e) => setClosingDate(e.target.value)}
-                                        title="Pick Closing Date"
+                                        onChange={(val) => setClosingDate(val)}
+                                        size="sm"
+                                        clearable={false}
                                     />
 
                                     <button
@@ -1233,11 +1233,10 @@ export default function BillingPage() {
                                     </div>
                                     <div className={styles.formGroup}>
                                         <label className={styles.formLabel}>Invoice Date</label>
-                                        <input
-                                            type="date"
-                                            className={styles.input}
+                                        <DatePicker
                                             value={editingInvoice.invoice_date || ''}
-                                            onChange={(e) => setEditingInvoice({ ...editingInvoice, invoice_date: e.target.value })}
+                                            onChange={(val) => setEditingInvoice({ ...editingInvoice, invoice_date: val })}
+                                            fullWidth
                                         />
                                     </div>
                                     <div className={styles.formGroup}>

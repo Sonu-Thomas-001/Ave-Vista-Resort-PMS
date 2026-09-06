@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { exportToPDF, exportToExcel } from '@/lib/expenseExport';
 import CustomSelect from '@/components/ui/CustomSelect';
+import DatePicker from '@/components/ui/DatePicker';
 import styles from './ExpenseList.module.css';
 
 export interface Expense {
@@ -295,31 +296,32 @@ export default function ExpenseList({
 
                         <div className={styles.filterGroup}>
                             <span className={styles.filterLabel}>From:</span>
-                            <input
-                                type="date"
-                                className={styles.filterDateInput}
+                            <DatePicker
                                 value={filters.startDate || ''}
-                                onChange={(e) =>
+                                onChange={(val) =>
                                     handleFilterChange({
                                         ...filters,
-                                        startDate: e.target.value || undefined,
+                                        startDate: val || undefined,
                                     })
                                 }
+                                size="sm"
+                                placeholder="Start date"
                             />
                         </div>
 
                         <div className={styles.filterGroup}>
                             <span className={styles.filterLabel}>To:</span>
-                            <input
-                                type="date"
-                                className={styles.filterDateInput}
+                            <DatePicker
                                 value={filters.endDate || ''}
-                                onChange={(e) =>
+                                onChange={(val) =>
                                     handleFilterChange({
                                         ...filters,
-                                        endDate: e.target.value || undefined,
+                                        endDate: val || undefined,
                                     })
                                 }
+                                minDate={filters.startDate}
+                                size="sm"
+                                placeholder="End date"
                             />
                         </div>
                     </div>

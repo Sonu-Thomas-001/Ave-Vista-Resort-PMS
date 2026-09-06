@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import styles from './AddExpenseModal.module.css';
 import CustomSelect from '@/components/ui/CustomSelect';
+import DatePicker from '@/components/ui/DatePicker';
 
 interface ExpenseCategory {
     id: string;
@@ -220,11 +221,10 @@ export default function AddExpenseModal({
 
                         <div className={styles.formGroup}>
                             <label className={styles.label}>Expense Date *</label>
-                            <input
-                                type="date"
-                                className={styles.input}
+                            <DatePicker
                                 value={formData.date}
-                                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                onChange={(val) => setFormData({ ...formData, date: val })}
+                                fullWidth
                             />
                         </div>
                     </div>

@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
 import { getPricingUnit, isFullResortType } from '@/lib/constants';
 import CustomSelect from './ui/CustomSelect';
+import DatePicker from './ui/DatePicker';
 
 const BOOKING_STATUS_OPTIONS = [
     { value: 'Confirmed', label: 'Confirmed', color: '#10B981' },
@@ -201,10 +202,19 @@ export default function EditBookingModal({ booking, onClose, onSuccess }: EditBo
                             <input style={inputStyle} value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
                         </Field>
                         <Field label="Check-in">
-                            <input type="date" style={inputStyle} value={formData.checkIn} onChange={(e) => setFormData({ ...formData, checkIn: e.target.value })} />
+                            <DatePicker
+                                value={formData.checkIn}
+                                onChange={(val) => setFormData({ ...formData, checkIn: val })}
+                                fullWidth
+                            />
                         </Field>
                         <Field label="Check-out">
-                            <input type="date" style={inputStyle} value={formData.checkOut} onChange={(e) => setFormData({ ...formData, checkOut: e.target.value })} />
+                            <DatePicker
+                                value={formData.checkOut}
+                                onChange={(val) => setFormData({ ...formData, checkOut: val })}
+                                minDate={formData.checkIn}
+                                fullWidth
+                            />
                         </Field>
                         <Field label="Room">
                             <CustomSelect

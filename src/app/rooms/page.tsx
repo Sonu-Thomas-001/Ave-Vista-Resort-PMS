@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
 import styles from './page.module.css';
 import CustomSelect from '@/components/ui/CustomSelect';
+import DatePicker from '@/components/ui/DatePicker';
 import { getPricingUnit, isFullResortType } from '@/lib/constants';
 import {
     Bed,
@@ -344,11 +345,11 @@ export default function RoomsPage() {
                                 <span className={styles.dateLabel}>
                                     <Calendar size={14} /> Date:
                                 </span>
-                                <input
-                                    type="date"
+                                <DatePicker
                                     value={selectedDate}
-                                    onChange={e => setSelectedDate(e.target.value)}
-                                    className={styles.dateInput}
+                                    onChange={(val) => setSelectedDate(val)}
+                                    size="sm"
+                                    clearable={false}
                                 />
                             </div>
 
