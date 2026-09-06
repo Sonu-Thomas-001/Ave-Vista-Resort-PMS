@@ -5,10 +5,12 @@ import Header from '@/components/Header';
 import {
     Plus, X, Pencil, Trash2, Search,
     UtensilsCrossed, CheckCircle2, XCircle,
-    LayoutGrid, List, Download, Sparkles, AlertCircle
+    LayoutGrid, List, Download, Sparkles, AlertCircle,
+    Flame, Croissant, CookingPot, Coffee, CakeSlice, Sandwich, ArrowUpDown
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './page.module.css';
+import CustomSelect, { CustomSelectOption } from '@/components/ui/CustomSelect';
 
 interface MenuItem {
     id: string;
@@ -30,6 +32,23 @@ const CATEGORIES = [
     'Desserts',
     'Snacks',
     'Other'
+];
+
+const CATEGORY_OPTIONS: CustomSelectOption[] = [
+    { label: 'Starters', value: 'Starters', icon: <Flame size={16} color="#F97316" /> },
+    { label: 'Main Course', value: 'Main Course', icon: <UtensilsCrossed size={16} color="#EA580C" /> },
+    { label: 'Breads', value: 'Breads', icon: <Croissant size={16} color="#D97706" /> },
+    { label: 'Rice & Biryani', value: 'Rice & Biryani', icon: <CookingPot size={16} color="#DC2626" /> },
+    { label: 'Beverages', value: 'Beverages', icon: <Coffee size={16} color="#059669" /> },
+    { label: 'Desserts', value: 'Desserts', icon: <CakeSlice size={16} color="#DB2777" /> },
+    { label: 'Snacks', value: 'Snacks', icon: <Sandwich size={16} color="#2563EB" /> },
+    { label: 'Other', value: 'Other', icon: <Sparkles size={16} color="#7C3AED" /> }
+];
+
+const SORT_OPTIONS: CustomSelectOption[] = [
+    { label: 'Name: A to Z', value: 'name-asc' },
+    { label: 'Price: Low to High', value: 'price-asc' },
+    { label: 'Price: High to Low', value: 'price-desc' }
 ];
 
 export default function RestaurantMenuPage() {
@@ -54,6 +73,16 @@ export default function RestaurantMenuPage() {
     const [category, setCategory] = useState('Main Course');
     const [description, setDescription] = useState('');
     const [isAvailable, setIsAvailable] = useState(true);
+
+    const activeCategoryOptions = useMemo(() => {
+        if (category && !CATEGORY_OPTIONS.some(opt => opt.value === category)) {
+            return [
+                ...CATEGORY_OPTIONS,
+                { label: category, value: category, icon: <Sparkles size={16} color="#7C3AED" /> }
+            ];
+        }
+        return CATEGORY_OPTIONS;
+    }, [category]);
 
     useEffect(() => {
         fetchItems();
@@ -474,15 +503,16 @@ export default function RestaurantMenuPage() {
                             {/* Sort Selector */}
                             <div className={styles.sortGroup}>
                                 <span>Sort:</span>
-                                <select
-                                    className={styles.sortSelect}
-                                    value={sortBy}
-                                    onChange={(e) => setSortBy(e.target.value as any)}
-                                >
-                                    <option value="name-asc">Name: A to Z</option>
-                                    <option value="price-asc">Price: Low to High</option>
-                                    <option value="price-desc">Price: High to Low</option>
-                                </select>
+                                <div style={{ minWidth: '170px' }}>
+                                    <CustomSelect
+                                        options={SORT_OPTIONS}
+                                        value={sortBy}
+                                        onChange={(val) => setSortBy(val as any)}
+                                        size="sm"
+                                        fullWidth
+                                        icon={<ArrowUpDown size={13} />}
+                                    />
+                                </div>
                             </div>
                         </div>
 
@@ -700,15 +730,14 @@ export default function RestaurantMenuPage() {
 
                                 <div className={styles.formGroup}>
                                     <label className={styles.formLabel}>Category</label>
-                                    <select
-                                        className={styles.formInput}
+                                    <CustomSelect
+                                        options={activeCategoryOptions}
                                         value={category}
-                                        onChange={(e) => setCategory(e.target.value)}
-                                    >
-                                        {CATEGORIES.filter(c => c !== 'All').map(cat => (
-                                            <option key={cat} value={cat}>{cat}</option>
-                                        ))}
-                                    </select>
+                                        onChange={(val) => setCategory(val)}
+                                        placeholder="Select category..."
+                                        size="md"
+                                        fullWidth
+                                    />
                                 </div>
                             </div>
 
