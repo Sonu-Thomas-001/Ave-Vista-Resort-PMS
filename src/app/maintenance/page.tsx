@@ -94,13 +94,13 @@ export default function MaintenancePage() {
                     <span className={styles.contactTitle}>Front Desk Emergency Escalations</span>
                     <div className={styles.contactNumbers}>
                         <a href="tel:+919061554545" className={styles.contactLink}>
-                            📞 +91 90615 54545
+                            <Phone size={14} /> +91 90615 54545
                         </a>
                         <a href="tel:+919446595722" className={styles.contactLink}>
-                            📞 +91 94465 95722
+                            <Phone size={14} /> +91 94465 95722
                         </a>
                         <a href="mailto:avevistaresort@gmail.com" className={styles.contactLink}>
-                            ✉️ avevistaresort@gmail.com
+                            <Mail size={14} /> avevistaresort@gmail.com
                         </a>
                     </div>
                 </div>

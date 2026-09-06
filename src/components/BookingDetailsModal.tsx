@@ -21,7 +21,8 @@ import {
     Clock,
     Sparkles,
     Crown,
-    Receipt
+    Receipt,
+    ArrowRight
 } from 'lucide-react';
 import styles from './BookingDetailsModal.module.css';
 import { EmailService } from '@/lib/email-service';
@@ -216,9 +217,9 @@ export default function BookingDetailsModal({ booking, onClose, onEdit }: Bookin
 
                                 <div className={styles.heroDatesPill}>
                                     <Calendar size={12} />
-                                    <span>
-                                        {formatDate(booking.check_in_date)} → {formatDate(booking.check_out_date)}
-                                    </span>
+                                    <span>{formatDate(booking.check_in_date)}</span>
+                                    <ArrowRight size={11} style={{ opacity: 0.8 }} />
+                                    <span>{formatDate(booking.check_out_date)}</span>
                                 </div>
                             </div>
                         </div>

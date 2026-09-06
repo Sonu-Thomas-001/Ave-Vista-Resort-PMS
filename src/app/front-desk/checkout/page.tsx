@@ -585,8 +585,10 @@ export default function CheckOutPage() {
                                 <div className={styles.successChipsRow}>
                                     <div className={styles.turnoverChip}>
                                         <Brush size={15} />
-                                        <span>
-                                            Room {selectedBooking?.rooms?.room_number} Status → Marked Dirty for Turnover
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                                            Room {selectedBooking?.rooms?.room_number} Status
+                                            <ArrowRight size={12} />
+                                            Marked Dirty for Turnover
                                         </span>
                                     </div>
                                     <div className={styles.emailChip}>

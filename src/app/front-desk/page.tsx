@@ -469,8 +469,8 @@ export default function FrontDeskPage() {
                                                             {new Date(booking.check_in_date).toLocaleDateString('en-IN', {
                                                                 month: 'short',
                                                                 day: 'numeric'
-                                                            })}{' '}
-                                                            →{' '}
+                                                            })}
+                                                            <ArrowRight size={11} style={{ display: 'inline-block', verticalAlign: 'middle', margin: '0 4px', color: '#94a3b8' }} />
                                                             {new Date(booking.check_out_date).toLocaleDateString('en-IN', {
                                                                 month: 'short',
                                                                 day: 'numeric'

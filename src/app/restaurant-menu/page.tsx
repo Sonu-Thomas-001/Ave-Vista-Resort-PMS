@@ -758,7 +758,17 @@ export default function RestaurantMenuPage() {
                             >
                                 <div className={styles.switchText}>
                                     <span className={styles.switchTitle}>
-                                        {isAvailable ? '✓ Currently Available in Kitchen' : '✕ Marked as Out of Stock (86\'d)'}
+                                        {isAvailable ? (
+                                            <>
+                                                <CheckCircle2 size={16} color="#16A34A" />
+                                                Currently Available in Kitchen
+                                            </>
+                                        ) : (
+                                            <>
+                                                <XCircle size={16} color="#DC2626" />
+                                                Marked as Out of Stock (86&apos;d)
+                                            </>
+                                        )}
                                     </span>
                                     <span className={styles.switchDesc}>
                                         {isAvailable ? 'This item will appear in restaurant billing and POS tickets' : 'Staff will see this item as unavailable on POS'}

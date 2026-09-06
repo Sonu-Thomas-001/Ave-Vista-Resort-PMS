@@ -17,7 +17,8 @@ import {
     CheckCircle2,
     Calendar,
     Phone,
-    IndianRupee
+    IndianRupee,
+    ArrowRight
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './BookingList.module.css';
@@ -429,8 +430,8 @@ export default function BookingList() {
                                                         {new Date(booking.check_in_date).toLocaleDateString('en-IN', {
                                                             day: '2-digit',
                                                             month: 'short'
-                                                        })}{' '}
-                                                        →{' '}
+                                                        })}
+                                                        <ArrowRight size={11} style={{ display: 'inline-block', verticalAlign: 'middle', margin: '0 4px', color: '#94a3b8' }} />
                                                         {new Date(booking.check_out_date).toLocaleDateString('en-IN', {
                                                             day: '2-digit',
                                                             month: 'short'

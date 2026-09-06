@@ -1,4 +1,4 @@
-import { LucideIcon } from 'lucide-react';
+import { LucideIcon, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import Link from 'next/link';
 import styles from './StatCard.module.css';
 
@@ -22,7 +22,7 @@ export default function StatCard({ title, value, icon: Icon, trend, trendUp, hre
                 <div className={styles.value}>{value}</div>
                 {trend && (
                     <div className={`${styles.trend} ${trendUp ? styles.positive : styles.negative}`}>
-                        <span>{trendUp ? '↑' : '↓'}</span>
+                        {trendUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
                         <span>{trend}</span>
                     </div>
                 )}

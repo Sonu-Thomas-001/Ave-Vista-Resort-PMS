@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Calendar, Search, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
+import { X, Calendar, Search, CheckCircle2, AlertCircle, ArrowRight, Moon } from 'lucide-react';
 import CalendarSelector from './CalendarSelector';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
@@ -422,8 +422,8 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
 
                                 {dates.checkIn && dates.checkOut && (
                                     <div className={styles.nightsDisplay}>
-                                        <span style={{ fontSize: '1.2rem' }}>🌙</span>
-                                        {getNights()} Nights Stay
+                                        <Moon size={18} color="#D97706" />
+                                        <span>{getNights()} Nights Stay</span>
                                     </div>
                                 )}
                             </motion.div>

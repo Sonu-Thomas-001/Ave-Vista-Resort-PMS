@@ -181,6 +181,9 @@
     font-size: 0.88rem;
     font-weight: 600;
     text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .contactLink:hover {

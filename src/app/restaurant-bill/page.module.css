@@ -1360,13 +1360,38 @@ select.posInput:focus {
     flex: 1;
     border: 1px solid #CBD5E1;
     background: white;
-    padding: 6px 8px;
-    border-radius: 6px;
+    padding: 7px 10px;
+    border-radius: 8px;
     font-size: 0.74rem;
     font-weight: 700;
     color: #475569;
     cursor: pointer;
     text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.customRoomBtn {
+    background: none;
+    border: none;
+    color: #0284C7;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.customRoomBtn:hover {
+    background: #E0F2FE;
+    color: #0369A1;
 }
 
 .statusChoiceSelectedPaid {

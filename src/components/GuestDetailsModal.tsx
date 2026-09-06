@@ -18,7 +18,8 @@ import {
     CheckCircle2,
     Clock,
     Moon,
-    Users
+    Users,
+    ArrowRight
 } from 'lucide-react';
 import styles from './GuestDetailsModal.module.css';
 
@@ -377,7 +378,7 @@ export default function GuestDetailsModal({ guest, onClose, onEdit }: GuestDetai
                                                 <div className={styles.bookingDetails}>
                                                     <div className={styles.bookingDates}>
                                                         <span>{formatDate(booking.check_in_date)}</span>
-                                                        <span style={{ color: '#94a3b8' }}>→</span>
+                                                        <ArrowRight size={12} style={{ color: '#94a3b8' }} />
                                                         <span>{formatDate(booking.check_out_date)}</span>
                                                     </div>
                                                     <div className={styles.bookingSub}>

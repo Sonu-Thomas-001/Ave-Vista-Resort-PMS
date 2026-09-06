@@ -342,8 +342,10 @@ export default function CheckInPage() {
                                         </div>
                                         <div className={styles.resultCell}>
                                             <span className={styles.resultLabel}>Stay Period</span>
-                                            <span className={styles.resultVal}>
-                                                {foundBooking.check_in_date} → {foundBooking.check_out_date}
+                                            <span className={styles.resultVal} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                                                {foundBooking.check_in_date}
+                                                <ArrowRight size={12} style={{ color: '#94a3b8' }} />
+                                                {foundBooking.check_out_date}
                                             </span>
                                         </div>
                                         <div className={styles.resultCell}>
