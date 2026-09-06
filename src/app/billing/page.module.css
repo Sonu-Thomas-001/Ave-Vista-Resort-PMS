@@ -297,9 +297,10 @@
 }
 
 .statusPillActive {
-    background: #0f172a !important;
+    background: #0284c7 !important;
     color: #ffffff !important;
-    border-color: #0f172a !important;
+    border-color: #0284c7 !important;
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
 }
 
 .pillBadge {
