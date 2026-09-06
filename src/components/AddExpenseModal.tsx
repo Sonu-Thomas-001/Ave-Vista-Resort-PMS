@@ -15,7 +15,8 @@ import {
     Calendar,
     IndianRupee,
     RefreshCw,
-    Check
+    Check,
+    Sparkles
 } from 'lucide-react';
 import styles from './AddExpenseModal.module.css';
 import CustomSelect from '@/components/ui/CustomSelect';
@@ -160,23 +161,34 @@ export default function AddExpenseModal({
     return (
         <div className={styles.overlay} onClick={onClose}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-                {/* Header */}
+                {/* 1. Header Banner */}
                 <div className={styles.header}>
-                    <div className={styles.titleGroup}>
-                        <Receipt size={20} color="#0284c7" />
-                        <h3 className={styles.title}>Record New Expense</h3>
+                    <div className={styles.headerGlow} />
+
+                    <div className={styles.headerTopBar}>
+                        <div className={styles.voucherTag}>
+                            <Receipt size={12} />
+                            <span>EXPENSE DISBURSEMENT VOUCHER</span>
+                        </div>
+                        <button
+                            type="button"
+                            className={styles.closeBtn}
+                            onClick={onClose}
+                            title="Close"
+                        >
+                            <X size={18} />
+                        </button>
                     </div>
-                    <button
-                        className={styles.closeBtn}
-                        onClick={onClose}
-                        type="button"
-                        title="Close Modal"
-                    >
-                        <X size={18} />
-                    </button>
+
+                    <div className={styles.headerHero}>
+                        <h3 className={styles.title}>Record New Expense</h3>
+                        <span className={styles.subtitle}>
+                            Disburse operational funds, inventory acquisitions, or maintenance payments
+                        </span>
+                    </div>
                 </div>
 
-                {/* Form Body */}
+                {/* 2. Scrollable Form Body */}
                 <form onSubmit={handleSubmit} className={styles.form}>
                     {error && (
                         <div className={styles.errorBanner}>
@@ -185,66 +197,82 @@ export default function AddExpenseModal({
                         </div>
                     )}
 
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Expense Title / Description *</label>
-                        <input
-                            type="text"
-                            className={styles.input}
-                            placeholder="e.g. Organic vegetables procurement, Diesel for generator..."
-                            value={formData.title}
-                            onChange={(e) => {
-                                setFormData({ ...formData, title: e.target.value });
-                                setError('');
-                            }}
-                            autoFocus
-                        />
-                    </div>
+                    {/* Section 1: Voucher Particulars & Amount */}
+                    <div className={styles.sectionCard}>
+                        <div className={styles.sectionHeader}>
+                            <IndianRupee size={15} className={styles.sectionIcon} />
+                            <h4 className={styles.sectionTitle}>Expense Particulars & Amount</h4>
+                        </div>
 
-                    <div className={styles.formGrid2}>
                         <div className={styles.formGroup}>
-                            <label className={styles.label}>Amount (₹) *</label>
+                            <label className={styles.label}>Amount Disbursed (₹) *</label>
                             <div className={styles.inputWrapper}>
                                 <span className={styles.currencyPrefix}>₹</span>
                                 <input
                                     type="number"
                                     step="any"
-                                    className={styles.input}
+                                    required
+                                    className={`${styles.input} ${styles.inputAmount}`}
                                     placeholder="0.00"
                                     value={formData.amount}
                                     onChange={(e) => {
                                         setFormData({ ...formData, amount: e.target.value });
                                         setError('');
                                     }}
+                                    autoFocus
                                 />
                             </div>
                         </div>
 
                         <div className={styles.formGroup}>
-                            <label className={styles.label}>Expense Date *</label>
-                            <DatePicker
-                                value={formData.date}
-                                onChange={(val) => setFormData({ ...formData, date: val })}
-                                fullWidth
+                            <label className={styles.label}>Expense Description / Item Title *</label>
+                            <input
+                                type="text"
+                                required
+                                className={styles.input}
+                                placeholder="e.g. Kitchen groceries procurement, Generator diesel fuel, Laundry supplies..."
+                                value={formData.title}
+                                onChange={(e) => {
+                                    setFormData({ ...formData, title: e.target.value });
+                                    setError('');
+                                }}
                             />
+                        </div>
+
+                        <div className={styles.formGrid2}>
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>Expense Category *</label>
+                                <CustomSelect
+                                    options={categories.map((c) => ({
+                                        label: c.name,
+                                        value: c.id,
+                                        color: c.color
+                                    }))}
+                                    value={formData.categoryId}
+                                    onChange={(val) => setFormData({ ...formData, categoryId: val })}
+                                    placeholder="Select Category..."
+                                    fullWidth
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>Expense Date *</label>
+                                <DatePicker
+                                    value={formData.date}
+                                    onChange={(val) => setFormData({ ...formData, date: val })}
+                                    fullWidth
+                                />
+                            </div>
                         </div>
                     </div>
 
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Expense Category *</label>
-                        <CustomSelect
-                            options={categories.map((c) => ({
-                                label: c.name,
-                                value: c.id,
-                                color: c.color
-                            }))}
-                            value={formData.categoryId}
-                            onChange={(val) => setFormData({ ...formData, categoryId: val })}
-                            placeholder="Select Expense Category..."
-                        />
-                    </div>
+                    {/* Section 2: Payment Instrument / Mode */}
+                    <div className={styles.sectionCard}>
+                        <div className={styles.sectionHeader}>
+                            <CreditCard size={15} className={styles.sectionIcon} />
+                            <h4 className={styles.sectionTitle}>Disbursement Mode / Payment Instrument</h4>
+                        </div>
 
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Payment Instrument / Mode *</label>
                         <div className={styles.paymentModeGrid}>
                             {(['Cash', 'UPI', 'Card', 'Bank'] as const).map((mode) => (
                                 <div
@@ -254,89 +282,121 @@ export default function AddExpenseModal({
                                     }`}
                                     onClick={() => setFormData({ ...formData, paymentMode: mode })}
                                 >
-                                    {mode === 'Cash' && <Banknote size={14} />}
-                                    {mode === 'UPI' && <QrCode size={14} />}
-                                    {mode === 'Card' && <CreditCard size={14} />}
-                                    {mode === 'Bank' && <Building2 size={14} />}
-                                    {mode === 'Bank' ? 'Bank Wire' : mode}
+                                    {mode === 'Cash' && <Banknote size={15} />}
+                                    {mode === 'UPI' && <QrCode size={15} />}
+                                    {mode === 'Card' && <CreditCard size={15} />}
+                                    {mode === 'Bank' && <Building2 size={15} />}
+                                    <span>{mode === 'Bank' ? 'Bank Wire' : mode}</span>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    {/* Receipt Upload Dropzone */}
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Receipt Bill / Invoice Attachment (Optional)</label>
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*,.pdf"
-                            onChange={handleFileChange}
-                            style={{ display: 'none' }}
-                        />
+                    {/* Section 3: Receipt Attachment & Remarks */}
+                    <div className={styles.sectionCard}>
+                        <div className={styles.sectionHeader}>
+                            <FileText size={15} className={styles.sectionIcon} />
+                            <h4 className={styles.sectionTitle}>Receipt Voucher Attachment & Remarks</h4>
+                        </div>
 
-                        {previewUrl ? (
-                            <div className={styles.previewBox}>
-                                <img src={previewUrl} alt="Receipt Preview" className={styles.previewThumb} />
-                                <button
-                                    type="button"
-                                    className={styles.removeThumbBtn}
-                                    onClick={handleRemoveFile}
-                                    title="Remove attachment"
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Invoice / Voucher Bill Document (Optional)</label>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*,.pdf"
+                                onChange={handleFileChange}
+                                style={{ display: 'none' }}
+                            />
+
+                            {previewUrl ? (
+                                <div className={styles.previewBox}>
+                                    <img src={previewUrl} alt="Receipt Preview" className={styles.previewThumb} />
+                                    <div>
+                                        <div style={{ fontSize: '0.86rem', fontWeight: 700, color: '#0f172a' }}>
+                                            {selectedFile?.name}
+                                        </div>
+                                        <div style={{ fontSize: '0.74rem', color: '#64748b' }}>
+                                            {selectedFile ? `${(selectedFile.size / 1024).toFixed(0)} KB • Image Attached` : ''}
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className={styles.removeThumbBtn}
+                                        onClick={handleRemoveFile}
+                                        title="Remove attachment"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                </div>
+                            ) : selectedFile ? (
+                                <div className={styles.previewBox}>
+                                    <FileText size={28} color="#0284c7" />
+                                    <div>
+                                        <div style={{ fontSize: '0.86rem', fontWeight: 700, color: '#0f172a' }}>
+                                            {selectedFile.name}
+                                        </div>
+                                        <div style={{ fontSize: '0.74rem', color: '#64748b' }}>
+                                            {(selectedFile.size / 1024).toFixed(0)} KB • Document Attached
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className={styles.removeThumbBtn}
+                                        onClick={handleRemoveFile}
+                                        title="Remove attachment"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                </div>
+                            ) : (
+                                <div
+                                    className={styles.dropzone}
+                                    onClick={() => fileInputRef.current?.click()}
                                 >
-                                    <X size={14} />
-                                </button>
-                            </div>
-                        ) : selectedFile ? (
-                            <div className={styles.previewBox} style={{ padding: '16px' }}>
-                                <FileText size={28} color="#0284c7" />
-                                <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>
-                                    {selectedFile.name} ({(selectedFile.size / 1024).toFixed(0)} KB)
-                                </span>
-                                <button
-                                    type="button"
-                                    className={styles.removeThumbBtn}
-                                    onClick={handleRemoveFile}
-                                >
-                                    <X size={14} />
-                                </button>
-                            </div>
-                        ) : (
-                            <div
-                                className={styles.dropzone}
-                                onClick={() => fileInputRef.current?.click()}
-                            >
-                                <UploadCloud size={28} className={styles.dropzoneIcon} />
-                                <p className={styles.dropzoneText}>Click to upload receipt, invoice or voucher</p>
-                                <p className={styles.dropzoneSub}>Supports JPG, PNG, PDF up to 10MB</p>
-                            </div>
-                        )}
+                                    <UploadCloud size={30} className={styles.dropzoneIcon} />
+                                    <p className={styles.dropzoneText}>Click or drop receipt, bill, or invoice voucher</p>
+                                    <p className={styles.dropzoneSub}>Supports JPG, PNG, PDF formats up to 10MB</p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Vendor Details / Staff Remarks (Optional)</label>
+                            <textarea
+                                className={styles.textarea}
+                                rows={2}
+                                placeholder="Vendor/Supplier name, bill tax reference number, or purchase justification..."
+                                value={formData.notes || ''}
+                                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                            />
+                        </div>
                     </div>
 
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Additional Remarks / Supplier Notes (Optional)</label>
-                        <textarea
-                            className={styles.textarea}
-                            rows={2}
-                            placeholder="Supplier name, bill reference number, or justification..."
-                            value={formData.notes || ''}
-                            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                        />
-                    </div>
-
-                    {/* Footer */}
+                    {/* 3. Footer Actions */}
                     <div className={styles.footer}>
-                        <button type="button" className={styles.cancelBtn} onClick={onClose}>
+                        <button
+                            type="button"
+                            className={styles.cancelBtn}
+                            onClick={onClose}
+                            disabled={loading}
+                        >
                             Cancel
                         </button>
-                        <button type="submit" className={styles.submitBtn} disabled={loading}>
+                        <button
+                            type="submit"
+                            className={styles.submitBtn}
+                            disabled={loading}
+                        >
                             {loading ? (
                                 <>
-                                    <RefreshCw size={14} className="spin" /> Saving Expense...
+                                    <span className={styles.spinner} />
+                                    <span>Saving Voucher...</span>
                                 </>
                             ) : (
                                 <>
-                                    <Check size={15} /> Save Expense Voucher
+                                    <Check size={15} />
+                                    <span>Record Expense Voucher</span>
                                 </>
                             )}
                         </button>
