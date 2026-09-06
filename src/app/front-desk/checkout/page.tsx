@@ -27,6 +27,7 @@ import {
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
 import { InvoiceTemplate } from '@/components/InvoiceTemplate';
+import { InvoicePreviewModal } from '@/components/ui/InvoicePreviewModal';
 import styles from './page.module.css';
 import { EmailService } from '@/lib/email-service';
 
@@ -46,6 +47,7 @@ export default function CheckOutPage() {
     const [generatedInvoice, setGeneratedInvoice] = useState<any>(null);
     const [paymentMode, setPaymentMode] = useState('Cash');
     const [loading, setLoading] = useState(false);
+    const [showInvoicePreview, setShowInvoicePreview] = useState(false);
 
     const nextStep = () => setStep(s => Math.min(s + 1, 4));
     const prevStep = () => setStep(s => Math.max(s - 1, 1));
@@ -595,7 +597,14 @@ export default function CheckOutPage() {
                             </div>
 
                             <div className={styles.successActions}>
-                                <button className={styles.printBtn} onClick={handlePrint}>
+                                <button
+                                    className={styles.printBtn}
+                                    onClick={() => setShowInvoicePreview(true)}
+                                    title="Preview and Download PDF or Print"
+                                >
+                                    <FileText size={16} /> View & Download PDF
+                                </button>
+                                <button className={styles.secondaryActionBtn} onClick={handlePrint}>
                                     <Printer size={16} /> Print Tax Invoice
                                 </button>
                                 <button
@@ -617,6 +626,24 @@ export default function CheckOutPage() {
                     )}
                 </div>
             </div>
+
+            {/* High-Fidelity Invoice Preview & PDF Download Modal */}
+            {showInvoicePreview && generatedInvoice && selectedBooking && (
+                <InvoicePreviewModal
+                    isOpen={showInvoicePreview}
+                    onClose={() => setShowInvoicePreview(false)}
+                    title={`Tax Invoice #${generatedInvoice.invoice_number}`}
+                    subtitle={`Booking Ref: ${selectedBooking.booking_number || selectedBooking.id?.slice(0, 8).toUpperCase()} • ${selectedBooking.guests?.name || 'Guest Folio'}`}
+                    filename={`AveVista_Invoice_${generatedInvoice.invoice_number}`}
+                    format="a4"
+                >
+                    <InvoiceTemplate
+                        invoice={generatedInvoice}
+                        booking={selectedBooking}
+                        guest={selectedBooking.guests}
+                    />
+                </InvoicePreviewModal>
+            )}
         </>
     );
 }

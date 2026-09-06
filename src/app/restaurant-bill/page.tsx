@@ -11,6 +11,7 @@ import {
 import { supabase } from '@/lib/supabase';
 import styles from './page.module.css';
 import { RestaurantBillTemplate } from '@/components/RestaurantBillTemplate';
+import { InvoicePreviewModal } from '@/components/ui/InvoicePreviewModal';
 
 interface BillItem {
     name: string;
@@ -1407,54 +1408,20 @@ export default function RestaurantBillPage() {
                 </div>
             )}
 
-            {/* ─── View Bill Lightbox Modal (Dual-Mode A4 & Thermal) ─── */}
+            {/* ─── Modern High-Fidelity Bill Preview & Export Modal ─── */}
             {viewingBill && (
-                <div className={styles.modalBackdrop} onClick={() => setViewingBill(null)}>
-                    <div className={styles.viewModal} onClick={(e) => e.stopPropagation()}>
-                        <div className={styles.viewModalHeader}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <FileText size={18} style={{ color: '#FF6B35' }} />
-                                <span style={{ fontWeight: 800 }}>{viewingBill.bill_number}</span>
-                                <div className={styles.viewFormatToggle}>
-                                    <button
-                                        className={`${styles.formatBtn} ${viewFormat === 'a4' ? styles.formatBtnActive : ''}`}
-                                        onClick={() => setViewFormat('a4')}
-                                    >
-                                        A4 Resort Tax Invoice
-                                    </button>
-                                    <button
-                                        className={`${styles.formatBtn} ${viewFormat === 'thermal' ? styles.formatBtnActive : ''}`}
-                                        onClick={() => setViewFormat('thermal')}
-                                    >
-                                        80mm Thermal Receipt
-                                    </button>
-                                </div>
-                            </div>
-                            <button onClick={() => setViewingBill(null)} className={styles.modalCloseBtn}>
-                                <X size={18} />
-                            </button>
-                        </div>
-
-                        <div className={styles.viewContent}>
-                            <div ref={billRef}>
-                                <RestaurantBillTemplate bill={viewingBill} format={viewFormat} />
-                            </div>
-                        </div>
-
-                        <div className={styles.viewModalFooter}>
-                            <button className={styles.cancelModalBtn} onClick={() => setViewingBill(null)}>
-                                Close
-                            </button>
-                            <button
-                                className={styles.saveOrderBtn}
-                                onClick={() => handlePrintBill(viewingBill, viewFormat)}
-                            >
-                                <Printer size={16} />
-                                Print {viewFormat === 'a4' ? 'A4 Invoice' : 'Thermal Slip'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <InvoicePreviewModal
+                    isOpen={!!viewingBill}
+                    onClose={() => setViewingBill(null)}
+                    title={`Dining Bill #${viewingBill.bill_number}`}
+                    subtitle={`Guest: ${viewingBill.guest_name} ${viewingBill.room_number ? `• Room ${viewingBill.room_number}` : ''} • Total: ₹${viewingBill.total_amount}`}
+                    filename={`AveVista_RestaurantBill_${viewingBill.bill_number}`}
+                    format={viewFormat}
+                    showFormatToggle={true}
+                    onFormatChange={(fmt) => setViewFormat(fmt)}
+                >
+                    <RestaurantBillTemplate bill={viewingBill} format={viewFormat} />
+                </InvoicePreviewModal>
             )}
 
             {/* ─── Delete Confirmation Modal ─── */}

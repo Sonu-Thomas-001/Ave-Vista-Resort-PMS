@@ -40,6 +40,7 @@ import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
 import styles from './page.module.css';
 import { InvoiceTemplate } from '@/components/InvoiceTemplate';
+import { InvoicePreviewModal } from '@/components/ui/InvoicePreviewModal';
 import CustomSelect from '@/components/ui/CustomSelect';
 import DatePicker from '@/components/ui/DatePicker';
 
@@ -377,43 +378,7 @@ export default function BillingPage() {
     };
 
     const handleDownloadInvoice = async (invoice: Invoice) => {
-        const { data: booking } = await supabase
-            .from('bookings')
-            .select('*, guest:guests(*), room:rooms(*)')
-            .eq('id', invoice.booking_id || '')
-            .single();
-
-        if (booking) {
-            const printContainer = document.createElement('div');
-            printContainer.style.position = 'fixed';
-            printContainer.style.top = '0';
-            printContainer.style.left = '-9999px';
-            printContainer.style.width = '210mm';
-            printContainer.style.zIndex = '9999';
-            printContainer.style.background = 'white';
-            printContainer.className = 'print-only-container';
-            document.body.appendChild(printContainer);
-
-            const { createRoot } = await import('react-dom/client');
-            const root = createRoot(printContainer);
-
-            const { InvoiceTemplate } = await import('@/components/InvoiceTemplate');
-            root.render(
-                <InvoiceTemplate
-                    invoice={invoice}
-                    booking={booking}
-                    guest={booking.guest}
-                />
-            );
-
-            setTimeout(() => {
-                window.print();
-                setTimeout(() => {
-                    root.unmount();
-                    document.body.removeChild(printContainer);
-                }, 100);
-            }, 500);
-        }
+        handleViewInvoice(invoice);
     };
 
     // Financial KPI Analytics (Real-time computed)
@@ -1145,26 +1110,22 @@ export default function BillingPage() {
                 )}
             </div>
 
-            {/* Invoice Viewer Modal */}
+            {/* Modern High-Fidelity Invoice Preview & PDF Export Modal */}
             {viewingInvoice && viewingInvoice.booking && (
-                <div className={styles.modalOverlay} onClick={() => setViewingInvoice(null)}>
-                    <div className={styles.invoiceViewerModal} onClick={(e) => e.stopPropagation()}>
-                        <button
-                            onClick={() => setViewingInvoice(null)}
-                            className={styles.viewerCloseBtn}
-                            title="Close Invoice Viewer"
-                        >
-                            <X size={18} />
-                        </button>
-                        <div ref={invoiceRef}>
-                            <InvoiceTemplate
-                                invoice={viewingInvoice}
-                                booking={viewingInvoice.booking}
-                                guest={viewingInvoice.guest}
-                            />
-                        </div>
-                    </div>
-                </div>
+                <InvoicePreviewModal
+                    isOpen={!!viewingInvoice}
+                    onClose={() => setViewingInvoice(null)}
+                    title={`Tax Invoice #${viewingInvoice.invoice_number}`}
+                    subtitle={`Booking Ref: ${viewingInvoice.booking.booking_number || viewingInvoice.booking.id?.slice(0, 8).toUpperCase()} • ${viewingInvoice.guest?.name || 'Guest Folio'}`}
+                    filename={`AveVista_Invoice_${viewingInvoice.invoice_number}`}
+                    format="a4"
+                >
+                    <InvoiceTemplate
+                        invoice={viewingInvoice}
+                        booking={viewingInvoice.booking}
+                        guest={viewingInvoice.guest}
+                    />
+                </InvoicePreviewModal>
             )}
 
             {/* Modernized Edit Invoice Modal */}
