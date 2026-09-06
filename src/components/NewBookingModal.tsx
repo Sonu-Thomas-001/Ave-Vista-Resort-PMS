@@ -336,13 +336,26 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
         });
     };
 
+    const STEPS = [
+        { num: 1, label: 'Dates' },
+        { num: 2, label: 'Rooms' },
+        { num: 3, label: 'Guest & Pay' },
+    ];
+
     const renderStepIndicator = () => (
         <div className={styles.stepContainer}>
-            {[1, 2, 3].map((s) => (
-                <div
-                    key={s}
-                    className={`${styles.stepDot} ${step === s ? styles.active : ''} ${step > s ? styles.completed : ''}`}
-                />
+            {STEPS.map((s, idx) => (
+                <div key={s.num} className={styles.stepItemWrapper}>
+                    {idx > 0 && (
+                        <div className={`${styles.stepConnector} ${step >= s.num ? styles.stepConnectorActive : ''}`} />
+                    )}
+                    <div className={`${styles.stepItem} ${step === s.num ? styles.stepItemActive : ''} ${step > s.num ? styles.stepItemCompleted : ''}`}>
+                        <div className={styles.stepBadge}>
+                            {step > s.num ? <CheckCircle2 size={13} /> : s.num}
+                        </div>
+                        <span className={styles.stepLabel}>{s.label}</span>
+                    </div>
+                </div>
             ))}
         </div>
     );
