@@ -14,6 +14,7 @@ import {
     Phone,
     Edit2,
     Trash2,
+    Eye,
     Key,
     LayoutGrid,
     List,
@@ -28,6 +29,7 @@ import Link from 'next/link';
 import styles from './page.module.css';
 import { supabase } from '@/lib/supabase';
 import GuestModal from '@/components/GuestModal';
+import GuestDetailsModal, { GuestDetailsModalData } from '@/components/GuestDetailsModal';
 
 interface Guest {
     id: string;
@@ -43,10 +45,14 @@ interface Guest {
     created_at?: string;
     bookings: {
         id?: string;
+        booking_number?: string;
         status: string;
-        rooms: { room_number: string; type?: string } | null;
+        rooms: { room_number: string; type?: string } | { room_number: string; type?: string }[] | null;
         check_in_date: string;
         check_out_date: string;
+        total_amount?: number;
+        adults?: number;
+        children?: number;
     }[];
 }
 
@@ -81,6 +87,7 @@ export default function GuestsPage() {
     // Modal State
     const [showModal, setShowModal] = useState(false);
     const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
+    const [viewingGuest, setViewingGuest] = useState<GuestDetailsModalData | null>(null);
 
     const fetchGuests = async () => {
         setRefreshing(true);
@@ -91,9 +98,13 @@ export default function GuestsPage() {
                     *,
                     bookings (
                         id,
+                        booking_number,
                         status,
                         check_in_date,
                         check_out_date,
+                        total_amount,
+                        adults,
+                        children,
                         rooms (room_number, type)
                     )
                 `)
@@ -507,7 +518,11 @@ export default function GuestsPage() {
 
                                                 {/* Profile Cell */}
                                                 <td>
-                                                    <div className={styles.guestCell}>
+                                                    <div
+                                                        className={styles.guestCellClickable}
+                                                        onClick={() => setViewingGuest(guest)}
+                                                        title="Click to view full guest details"
+                                                    >
                                                         <div
                                                             className={styles.avatar}
                                                             style={{ background: getAvatarBackground(fullName) }}
@@ -613,6 +628,13 @@ export default function GuestsPage() {
                                                 <td style={{ textAlign: 'right' }}>
                                                     <div className={styles.actionsCell}>
                                                         <button
+                                                            className={`${styles.actionBtn} ${styles.viewBtn}`}
+                                                            title="View Guest Details"
+                                                            onClick={() => setViewingGuest(guest)}
+                                                        >
+                                                            <Eye size={14} />
+                                                        </button>
+                                                        <button
                                                             className={styles.actionBtn}
                                                             title="Edit Profile"
                                                             onClick={() => {
@@ -647,7 +669,11 @@ export default function GuestsPage() {
                             return (
                                 <div key={guest.id} className={styles.guestCardItem}>
                                     <div className={styles.cardTopRow}>
-                                        <div className={styles.guestCell}>
+                                        <div
+                                            className={styles.guestCellClickable}
+                                            onClick={() => setViewingGuest(guest)}
+                                            title="Click to view full guest details"
+                                        >
                                             <div
                                                 className={styles.avatar}
                                                 style={{ background: getAvatarBackground(fullName) }}
@@ -714,6 +740,13 @@ export default function GuestsPage() {
 
                                         <div className={styles.actionsCell}>
                                             <button
+                                                className={`${styles.actionBtn} ${styles.viewBtn}`}
+                                                title="View Guest Details"
+                                                onClick={() => setViewingGuest(guest)}
+                                            >
+                                                <Eye size={14} />
+                                            </button>
+                                            <button
                                                 className={styles.actionBtn}
                                                 title="Edit Profile"
                                                 onClick={() => {
@@ -738,6 +771,19 @@ export default function GuestsPage() {
                     </div>
                 )}
             </div>
+
+            {/* Guest Details Modal */}
+            {viewingGuest && (
+                <GuestDetailsModal
+                    guest={viewingGuest}
+                    onClose={() => setViewingGuest(null)}
+                    onEdit={(g) => {
+                        setViewingGuest(null);
+                        setEditingGuest(g as any);
+                        setShowModal(true);
+                    }}
+                />
+            )}
 
             {/* Guest Create / Edit Modal */}
             {showModal && (
