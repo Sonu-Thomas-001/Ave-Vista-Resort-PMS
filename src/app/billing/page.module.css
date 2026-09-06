@@ -375,6 +375,10 @@
     overflow-x: auto;
 }
 
+.mobileInvoiceCardsContainer {
+    display: none;
+}
+
 .table {
     width: 100%;
     border-collapse: collapse;
@@ -1536,8 +1540,16 @@
         border-radius: 10px;
     }
 
-    .tableWrapper {
+    .tableContainer {
         display: none !important;
+    }
+
+    .tableWrapper {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        overflow: visible;
+        border-radius: 0;
     }
 
     .mobileInvoiceCardsContainer {
