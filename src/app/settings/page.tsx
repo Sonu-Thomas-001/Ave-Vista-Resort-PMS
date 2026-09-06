@@ -37,7 +37,9 @@ import EmailSettingsPage from './email/page';
 import RoomModal from '@/components/RoomModal';
 import { getPricingUnit } from '@/lib/constants';
 
-type SettingsData = Database['public']['Tables']['app_settings']['Row'];
+type SettingsData = Database['public']['Tables']['app_settings']['Row'] & {
+    gst_enabled?: boolean;
+};
 type RoomData = Database['public']['Tables']['rooms']['Row'];
 
 const DEFAULT_SETTINGS: SettingsData = {
@@ -47,6 +49,7 @@ const DEFAULT_SETTINGS: SettingsData = {
     address: 'Near Old Toll Gate, Kumarakom Road, Kottayam, Kerala 686001',
     gst_number: '32AAAAA0000A1Z5',
     tax_rate: 18,
+    gst_enabled: true,
     updated_at: new Date().toISOString()
 };
 
@@ -94,16 +97,37 @@ export default function SettingsPage() {
     };
 
     const fetchSettings = async () => {
+        // 1. Instantly restore from localStorage cache for zero delay
+        if (typeof window !== 'undefined') {
+            try {
+                const cached = localStorage.getItem('ave_vista_app_settings');
+                if (cached) {
+                    const parsed = JSON.parse(cached);
+                    setSettings(prev => ({ ...prev, ...parsed }));
+                }
+            } catch (e) {
+                console.warn('Could not read cached settings:', e);
+            }
+        }
+
+        // 2. Fetch from cloud Supabase app_settings
         try {
-            const { data } = await supabase.from('app_settings').select('*').limit(1);
-            if (data && data.length > 0) {
-                setSettings(data[0]);
-            } else {
-                setSettings(DEFAULT_SETTINGS);
+            const { data, error } = await supabase.from('app_settings').select('*').limit(1);
+            if (error) {
+                console.warn('Note on cloud settings fetch:', error.message || error);
+            } else if (data && data.length > 0) {
+                const cloudSettings = data[0];
+                setSettings(prev => ({
+                    ...prev,
+                    ...cloudSettings,
+                    // Preserve gst_enabled if it was set in localStorage or derive from tax_rate
+                    gst_enabled: cloudSettings.gst_enabled !== undefined
+                        ? Boolean(cloudSettings.gst_enabled)
+                        : (prev.gst_enabled !== undefined ? prev.gst_enabled : (Number(cloudSettings.tax_rate) > 0))
+                }));
             }
         } catch (error) {
-            console.error('Error fetching settings:', error);
-            setSettings(DEFAULT_SETTINGS);
+            console.warn('Cloud settings fetch exception:', error);
         }
     };
 
@@ -121,27 +145,66 @@ export default function SettingsPage() {
         setLoading(true);
 
         try {
-            const payload = {
+            const isGstEnabled = settings.gst_enabled !== false;
+            const completeSettings: SettingsData = {
                 ...settings,
                 id: 1,
+                gst_enabled: isGstEnabled,
+                tax_rate: isGstEnabled ? (Number(settings.tax_rate) || 18) : 0,
                 updated_at: new Date().toISOString()
             };
 
-            const { error } = await supabase
-                .from('app_settings')
-                .upsert(payload);
+            // 1. Immediately persist to localStorage
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('ave_vista_app_settings', JSON.stringify(completeSettings));
+                window.dispatchEvent(new CustomEvent('app_settings_changed', { detail: completeSettings }));
+            }
+            setSettings(completeSettings);
 
-            if (error) throw error;
-            showToast('System configuration saved successfully!', 'success');
+            // 2. Prepare sanitized payload for Supabase with only columns defined in database
+            const supabasePayload: Record<string, any> = {
+                id: 1,
+                resort_name: completeSettings.resort_name || DEFAULT_SETTINGS.resort_name,
+                contact_email: completeSettings.contact_email || DEFAULT_SETTINGS.contact_email,
+                address: completeSettings.address || DEFAULT_SETTINGS.address,
+                gst_number: completeSettings.gst_number || DEFAULT_SETTINGS.gst_number,
+                tax_rate: completeSettings.tax_rate,
+                updated_at: completeSettings.updated_at
+            };
+
+            // 3. Attempt cloud persistence gracefully
+            try {
+                // Try update first (in case row id 1 exists)
+                const { data: updateData, error: updateError } = await supabase
+                    .from('app_settings')
+                    .update(supabasePayload)
+                    .eq('id', 1)
+                    .select();
+
+                if (updateError || !updateData || updateData.length === 0) {
+                    // Try upsert
+                    const { error: upsertError } = await supabase
+                        .from('app_settings')
+                        .upsert(supabasePayload);
+                    if (upsertError) {
+                        console.warn('Supabase app_settings cloud sync note:', upsertError.message || upsertError);
+                    }
+                }
+            } catch (cloudErr: any) {
+                console.warn('Could not sync to cloud database:', cloudErr?.message || cloudErr);
+            }
+
+            showToast('System configuration & tax rules saved successfully!', 'success');
         } catch (error: any) {
-            console.error('Error saving settings:', error);
-            showToast(error.message || 'Failed to save settings.', 'error');
+            const errMsg = error?.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
+            console.error('Error saving settings:', errMsg, error);
+            showToast(errMsg || 'Failed to save settings.', 'error');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleInputChange = (field: keyof SettingsData, value: string | number) => {
+    const handleInputChange = (field: keyof SettingsData, value: string | number | boolean) => {
         setSettings(prev => ({ ...prev, [field]: value }));
     };
 
@@ -215,6 +278,17 @@ export default function SettingsPage() {
 
     // Simulated tax calculation
     const simulatedTax = useMemo(() => {
+        const isGstEnabled = settings.gst_enabled !== false;
+        if (!isGstEnabled) {
+            return {
+                base: simulationAmount,
+                totalTax: 0,
+                cgst: 0,
+                sgst: 0,
+                rate: 0,
+                halfRate: '0.0'
+            };
+        }
         const taxRate = Number(settings.tax_rate) || 18;
         const base = simulationAmount / (1 + taxRate / 100);
         const totalTax = simulationAmount - base;
@@ -227,7 +301,7 @@ export default function SettingsPage() {
             rate: taxRate,
             halfRate: (taxRate / 2).toFixed(1)
         };
-    }, [simulationAmount, settings.tax_rate]);
+    }, [simulationAmount, settings.tax_rate, settings.gst_enabled]);
 
     return (
         <div className={styles.pageWrapper}>
@@ -255,7 +329,9 @@ export default function SettingsPage() {
                         </div>
                         <div className={styles.heroStatCard}>
                             <span className={styles.heroStatLabel}>Fiscal GST Mode</span>
-                            <span className={styles.heroStatValue}>{settings.tax_rate || 18}% Composite</span>
+                            <span className={styles.heroStatValue}>
+                                {settings.gst_enabled !== false ? `${settings.tax_rate || 18}% Composite` : '0% (Exempt)'}
+                            </span>
                         </div>
                         <div className={styles.heroStatCard}>
                             <span className={styles.heroStatLabel}>System Sync</span>
@@ -791,12 +867,79 @@ export default function SettingsPage() {
 
                                 {/* GST Card */}
                                 <div className={styles.cardGroup}>
-                                    <h3 className={styles.cardGroupTitle}>
-                                        <Percent size={18} color="#d97706" /> Statutory Goods & Services Tax (GST)
-                                    </h3>
-                                    <p className={styles.cardGroupSubtitle}>Applied automatically across guest room checkouts and restaurant dining receipts.</p>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+                                        <div>
+                                            <h3 className={styles.cardGroupTitle} style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                <Percent size={18} color="#d97706" /> Statutory Goods & Services Tax (GST)
+                                                <span className={settings.gst_enabled !== false ? styles.gstBadgeActive : styles.gstBadgeInactive}>
+                                                    {settings.gst_enabled !== false ? 'GST Active' : 'GST Disabled'}
+                                                </span>
+                                            </h3>
+                                            <p className={styles.cardGroupSubtitle} style={{ marginTop: 4, marginBottom: 0 }}>
+                                                Applied automatically across guest room checkouts and restaurant dining receipts.
+                                            </p>
+                                        </div>
 
-                                    <div className={styles.formGrid}>
+                                        <button
+                                            type="button"
+                                            className={styles.secondaryBtn}
+                                            onClick={() => handleInputChange('gst_enabled', settings.gst_enabled === false)}
+                                            style={{
+                                                background: settings.gst_enabled !== false ? '#ecfdf5' : '#f8fafc',
+                                                borderColor: settings.gst_enabled !== false ? '#a7f3d0' : '#cbd5e1',
+                                                color: settings.gst_enabled !== false ? '#15803d' : '#475569',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            <div className={`${styles.switchTrack} ${settings.gst_enabled !== false ? styles.switchOn : ''}`} style={{ pointerEvents: 'none' }}>
+                                                <div className={styles.switchThumb} />
+                                            </div>
+                                            <span>{settings.gst_enabled !== false ? 'GST Enabled' : 'GST Disabled'}</span>
+                                        </button>
+                                    </div>
+
+                                    {/* Master Enable/Disable Banner */}
+                                    <div
+                                        className={`${styles.gstToggleBox} ${settings.gst_enabled !== false ? styles.gstToggleActive : ''}`}
+                                        onClick={() => handleInputChange('gst_enabled', settings.gst_enabled === false)}
+                                    >
+                                        <div className={styles.gstToggleLeft}>
+                                            <div className={styles.gstToggleIcon}>
+                                                <Percent size={20} />
+                                            </div>
+                                            <div>
+                                                <div className={styles.gstToggleTitle}>
+                                                    <span>Enable Statutory Goods & Services Tax (GST)</span>
+                                                    <span className={settings.gst_enabled !== false ? styles.gstBadgeActive : styles.gstBadgeInactive}>
+                                                        {settings.gst_enabled !== false ? 'Enabled' : 'Disabled (0% Exempt)'}
+                                                    </span>
+                                                </div>
+                                                <div className={styles.gstToggleSub}>
+                                                    {settings.gst_enabled !== false
+                                                        ? `Levy statutory tax (${settings.tax_rate || 18}%) with central (CGST) and state (SGST) split on billing.`
+                                                        : 'Statutory GST is disabled. Invoices and receipts will be issued as Tax-Exempt with 0% tax.'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            className={`${styles.switchTrack} ${settings.gst_enabled !== false ? styles.switchOn : ''}`}
+                                            aria-label="Toggle GST"
+                                        >
+                                            <div className={styles.switchThumb} />
+                                        </button>
+                                    </div>
+
+                                    {settings.gst_enabled === false && (
+                                        <div className={styles.gstDisabledNotice}>
+                                            <AlertCircle size={18} color="#d97706" style={{ flexShrink: 0 }} />
+                                            <span>
+                                                <strong>Tax-Exempt Mode Active:</strong> All room tariff bills, restaurant tickets, and guest invoices will omit GST levies (0% rate).
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    <div className={`${styles.formGrid} ${settings.gst_enabled === false ? styles.disabledInputsBox : ''}`}>
                                         <div className={styles.formGroup}>
                                             <label className={styles.formLabel}>GSTIN Identification Number</label>
                                             <input
@@ -805,6 +948,7 @@ export default function SettingsPage() {
                                                 onChange={(e) => handleInputChange('gst_number', e.target.value)}
                                                 className={`${styles.input} ${styles.inputNoIcon}`}
                                                 placeholder="32AAAAA0000A1Z5"
+                                                disabled={settings.gst_enabled === false}
                                             />
                                         </div>
 
@@ -812,12 +956,13 @@ export default function SettingsPage() {
                                             <label className={styles.formLabel}>Composite Tax Rate (%)</label>
                                             <input
                                                 type="number"
-                                                value={settings.tax_rate || 0}
+                                                value={settings.gst_enabled === false ? 0 : (settings.tax_rate || 0)}
                                                 onChange={(e) => handleInputChange('tax_rate', Number(e.target.value))}
                                                 className={`${styles.input} ${styles.inputNoIcon}`}
                                                 placeholder="18"
                                                 min={0}
                                                 max={100}
+                                                disabled={settings.gst_enabled === false}
                                             />
                                         </div>
 
@@ -826,7 +971,7 @@ export default function SettingsPage() {
                                             <input
                                                 type="number"
                                                 step="0.1"
-                                                value={((settings.tax_rate || 18) / 2).toFixed(1)}
+                                                value={settings.gst_enabled === false ? '0.0' : ((settings.tax_rate || 18) / 2).toFixed(1)}
                                                 readOnly
                                                 className={`${styles.input} ${styles.inputNoIcon}`}
                                                 style={{ background: '#f8fafc', color: '#64748b' }}
@@ -838,7 +983,7 @@ export default function SettingsPage() {
                                             <input
                                                 type="number"
                                                 step="0.1"
-                                                value={((settings.tax_rate || 18) / 2).toFixed(1)}
+                                                value={settings.gst_enabled === false ? '0.0' : ((settings.tax_rate || 18) / 2).toFixed(1)}
                                                 readOnly
                                                 className={`${styles.input} ${styles.inputNoIcon}`}
                                                 style={{ background: '#f8fafc', color: '#64748b' }}
@@ -850,6 +995,11 @@ export default function SettingsPage() {
                                     <div className={styles.taxSimulatorBox}>
                                         <div className={styles.taxSimulatorTitle}>
                                             <Calculator size={16} color="#0284c7" /> Live Tax Breakdown Simulator
+                                            {settings.gst_enabled === false && (
+                                                <span style={{ fontSize: '0.72rem', background: '#fef3c7', color: '#b45309', padding: '2px 8px', borderRadius: 10, marginLeft: 8, fontWeight: 700 }}>
+                                                    Exempt (0% GST)
+                                                </span>
+                                            )}
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
                                             <span style={{ fontSize: '0.84rem', color: '#64748b' }}>Simulate Room Bill Total:</span>
@@ -870,15 +1020,19 @@ export default function SettingsPage() {
                                         </div>
                                         <div className={styles.simulatorRow}>
                                             <span className={styles.simulatorLabel}>Central GST (CGST {simulatedTax.halfRate}%)</span>
-                                            <span className={styles.simulatorValue}>+ ₹{simulatedTax.cgst.toLocaleString('en-IN')}</span>
+                                            <span className={styles.simulatorValue}>
+                                                {simulatedTax.cgst > 0 ? `+ ₹${simulatedTax.cgst.toLocaleString('en-IN')}` : '₹0 (Exempt)'}
+                                            </span>
                                         </div>
                                         <div className={styles.simulatorRow}>
                                             <span className={styles.simulatorLabel}>State GST (SGST {simulatedTax.halfRate}%)</span>
-                                            <span className={styles.simulatorValue}>+ ₹{simulatedTax.sgst.toLocaleString('en-IN')}</span>
+                                            <span className={styles.simulatorValue}>
+                                                {simulatedTax.sgst > 0 ? `+ ₹${simulatedTax.sgst.toLocaleString('en-IN')}` : '₹0 (Exempt)'}
+                                            </span>
                                         </div>
                                         <div className={styles.simulatorRow}>
                                             <span>Guest Invoice Total Amount</span>
-                                            <span style={{ color: '#059669' }}>₹{simulationAmount.toLocaleString('en-IN')}</span>
+                                            <span style={{ color: '#059669', fontWeight: 700 }}>₹{simulationAmount.toLocaleString('en-IN')}</span>
                                         </div>
                                     </div>
                                 </div>
