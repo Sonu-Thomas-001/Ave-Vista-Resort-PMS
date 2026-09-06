@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { FULL_RESORT_DEFAULT_RATE, FULL_RESORT_TYPE, ROOM_STATUS, RoomStatusType, getPricingUnit, isFullResortType } from '@/lib/constants';
 import styles from './RoomModal.module.css';
+import CustomSelect from '@/components/ui/CustomSelect';
 
 interface Room {
     id?: string;
@@ -189,16 +190,16 @@ export default function RoomModal({ room, onClose, onSuccess }: RoomModalProps) 
 
                         <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
                             <label>Status</label>
-                            <select
+                            <CustomSelect
+                                options={[
+                                    { label: 'Clean', value: ROOM_STATUS.CLEAN, color: '#10B981' },
+                                    { label: 'Dirty', value: ROOM_STATUS.DIRTY, color: '#F59E0B' },
+                                    { label: 'Maintenance', value: ROOM_STATUS.MAINTENANCE, color: '#EF4444' },
+                                    { label: 'Occupied', value: ROOM_STATUS.OCCUPIED, color: '#3B82F6' },
+                                ]}
                                 value={formData.status}
-                                onChange={(e) => setFormData({ ...formData, status: e.target.value as RoomStatusType })}
-                                className={styles.input}
-                            >
-                                <option value={ROOM_STATUS.CLEAN}>Clean</option>
-                                <option value={ROOM_STATUS.DIRTY}>Dirty</option>
-                                <option value={ROOM_STATUS.MAINTENANCE}>Maintenance</option>
-                                <option value={ROOM_STATUS.OCCUPIED}>Occupied</option>
-                            </select>
+                                onChange={(val) => setFormData({ ...formData, status: val as RoomStatusType })}
+                            />
                         </div>
                     </form>
                 </div>

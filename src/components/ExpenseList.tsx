@@ -22,6 +22,7 @@ import {
     RefreshCw
 } from 'lucide-react';
 import { exportToPDF, exportToExcel } from '@/lib/expenseExport';
+import CustomSelect from '@/components/ui/CustomSelect';
 import styles from './ExpenseList.module.css';
 
 export interface Expense {
@@ -251,43 +252,45 @@ export default function ExpenseList({
                     <div className={styles.filterPanel}>
                         <div className={styles.filterGroup}>
                             <span className={styles.filterLabel}>Category:</span>
-                            <select
-                                className={styles.filterSelect}
+                            <CustomSelect
+                                options={[
+                                    { label: 'All Categories', value: '' },
+                                    ...categories.map((c) => ({ label: c.name, value: c.id, color: c.color }))
+                                ]}
                                 value={filters.categoryId || ''}
-                                onChange={(e) =>
+                                onChange={(val) =>
                                     handleFilterChange({
                                         ...filters,
-                                        categoryId: e.target.value || undefined,
+                                        categoryId: val || undefined,
                                     })
                                 }
-                            >
-                                <option value="">All Categories</option>
-                                {categories.map((c) => (
-                                    <option key={c.id} value={c.id}>
-                                        {c.name}
-                                    </option>
-                                ))}
-                            </select>
+                                size="sm"
+                                fullWidth={false}
+                                placeholder="All Categories"
+                            />
                         </div>
 
                         <div className={styles.filterGroup}>
                             <span className={styles.filterLabel}>Payment:</span>
-                            <select
-                                className={styles.filterSelect}
+                            <CustomSelect
+                                options={[
+                                    { label: 'All Modes', value: '' },
+                                    { label: 'Cash', value: 'Cash' },
+                                    { label: 'UPI', value: 'UPI' },
+                                    { label: 'Card', value: 'Card' },
+                                    { label: 'Bank Transfer', value: 'Bank' }
+                                ]}
                                 value={filters.paymentMode || ''}
-                                onChange={(e) =>
+                                onChange={(val) =>
                                     handleFilterChange({
                                         ...filters,
-                                        paymentMode: e.target.value || undefined,
+                                        paymentMode: (val as any) || undefined,
                                     })
                                 }
-                            >
-                                <option value="">All Modes</option>
-                                <option value="Cash">Cash</option>
-                                <option value="UPI">UPI</option>
-                                <option value="Card">Card</option>
-                                <option value="Bank">Bank Transfer</option>
-                            </select>
+                                size="sm"
+                                fullWidth={false}
+                                placeholder="All Modes"
+                            />
                         </div>
 
                         <div className={styles.filterGroup}>

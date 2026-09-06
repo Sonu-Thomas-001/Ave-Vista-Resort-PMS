@@ -18,6 +18,7 @@ import {
     Check
 } from 'lucide-react';
 import styles from './AddExpenseModal.module.css';
+import CustomSelect from '@/components/ui/CustomSelect';
 
 interface ExpenseCategory {
     id: string;
@@ -230,17 +231,16 @@ export default function AddExpenseModal({
 
                     <div className={styles.formGroup}>
                         <label className={styles.label}>Expense Category *</label>
-                        <select
-                            className={styles.select}
+                        <CustomSelect
+                            options={categories.map((c) => ({
+                                label: c.name,
+                                value: c.id,
+                                color: c.color
+                            }))}
                             value={formData.categoryId}
-                            onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                        >
-                            {categories.map((c) => (
-                                <option key={c.id} value={c.id}>
-                                    {c.name}
-                                </option>
-                            ))}
-                        </select>
+                            onChange={(val) => setFormData({ ...formData, categoryId: val })}
+                            placeholder="Select Expense Category..."
+                        />
                     </div>
 
                     <div className={styles.formGroup}>

@@ -38,6 +38,7 @@ import {
     Tooltip
 } from 'recharts';
 import { supabase } from '@/lib/supabase';
+import CustomSelect from '@/components/ui/CustomSelect';
 import styles from './page.module.css';
 
 // Chart Color Palette - Ave Vista Resort Luxury Theme
@@ -475,21 +476,21 @@ export default function ReportsPage() {
                     </div>
 
                     <div className={styles.actionControls}>
-                        <div className={styles.dateFilterWrapper}>
-                            <Calendar size={15} />
-                            <select
-                                className={styles.rangeSelect}
-                                value={dateRange}
-                                onChange={(e) => setDateRange(e.target.value)}
-                            >
-                                <option>Today</option>
-                                <option>Last 7 Days</option>
-                                <option>This Month</option>
-                                <option>Last 3 Months</option>
-                                <option>Year to Date</option>
-                                <option>All Time</option>
-                            </select>
-                        </div>
+                        <CustomSelect
+                            options={[
+                                { label: 'Today', value: 'Today' },
+                                { label: 'Last 7 Days', value: 'Last 7 Days' },
+                                { label: 'This Month', value: 'This Month' },
+                                { label: 'Last 3 Months', value: 'Last 3 Months' },
+                                { label: 'Year to Date', value: 'Year to Date' },
+                                { label: 'All Time', value: 'All Time' },
+                            ]}
+                            value={dateRange}
+                            onChange={(val) => setDateRange(val)}
+                            icon={<Calendar size={15} color="#10B981" />}
+                            size="sm"
+                            fullWidth={false}
+                        />
 
                         <button
                             className={`${styles.iconButton} ${styles.refreshButton} ${loading ? styles.loading : ''}`}

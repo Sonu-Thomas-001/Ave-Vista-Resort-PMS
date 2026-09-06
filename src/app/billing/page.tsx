@@ -40,6 +40,36 @@ import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
 import styles from './page.module.css';
 import { InvoiceTemplate } from '@/components/InvoiceTemplate';
+import CustomSelect from '@/components/ui/CustomSelect';
+
+const PAYMENT_MODE_FILTER_OPTIONS = [
+    { value: 'ALL', label: 'All Payment Modes' },
+    { value: 'Cash', label: 'Cash' },
+    { value: 'Card', label: 'Card' },
+    { value: 'UPI', label: 'UPI' },
+];
+
+const SOURCE_FILTER_OPTIONS = [
+    { value: 'ALL', label: 'All Booking Channels' },
+    { value: 'Direct', label: 'Direct' },
+    { value: 'OTA', label: 'OTA' },
+    { value: 'Corporate', label: 'Corporate' },
+    { value: 'Standard', label: 'Standard' },
+    { value: 'Complementary', label: 'Complementary' },
+];
+
+const INVOICE_STATUS_OPTIONS = [
+    { value: 'Paid', label: 'Paid (Fully Settled)', color: '#10B981' },
+    { value: 'Partial', label: 'Partial Settlement', color: '#F59E0B' },
+    { value: 'Pending', label: 'Pending (Unsettled)', color: '#EF4444' },
+];
+
+const PAYMENT_INSTRUMENT_OPTIONS = [
+    { value: '', label: 'Select Instrument' },
+    { value: 'Cash', label: 'Cash' },
+    { value: 'Card', label: 'Card / POS' },
+    { value: 'UPI', label: 'UPI / QR Transfer' },
+];
 
 type EditableInvoice = Invoice & {
     booking?: any;
@@ -586,32 +616,20 @@ export default function BillingPage() {
                         {activeTab === 'Invoices' && (
                             <div className={styles.selectFilters}>
                                 {/* Payment Mode Filter */}
-                                <select
-                                    className={styles.filterSelect}
+                                <CustomSelect
+                                    options={PAYMENT_MODE_FILTER_OPTIONS}
                                     value={modeFilter}
-                                    onChange={(e) => setModeFilter(e.target.value)}
-                                    title="Filter by Payment Mode"
-                                >
-                                    <option value="ALL">All Payment Modes</option>
-                                    <option value="Cash">Cash</option>
-                                    <option value="Card">Card</option>
-                                    <option value="UPI">UPI</option>
-                                </select>
+                                    onChange={(val) => setModeFilter(val)}
+                                    size="sm"
+                                />
 
                                 {/* Booking Channel Filter */}
-                                <select
-                                    className={styles.filterSelect}
+                                <CustomSelect
+                                    options={SOURCE_FILTER_OPTIONS}
                                     value={sourceFilter}
-                                    onChange={(e) => setSourceFilter(e.target.value)}
-                                    title="Filter by Booking Channel"
-                                >
-                                    <option value="ALL">All Booking Channels</option>
-                                    <option value="Direct">Direct</option>
-                                    <option value="OTA">OTA</option>
-                                    <option value="Corporate">Corporate</option>
-                                    <option value="Standard">Standard</option>
-                                    <option value="Complementary">Complementary</option>
-                                </select>
+                                    onChange={(val) => setSourceFilter(val)}
+                                    size="sm"
+                                />
 
                                 {isFiltersActive && (
                                     <button className={styles.resetBtn} onClick={handleResetFilters}>
@@ -1446,36 +1464,30 @@ export default function BillingPage() {
                                 <div className={styles.formGrid2}>
                                     <div className={styles.formGroup}>
                                         <label className={styles.formLabel}>Payment Settlement Status</label>
-                                        <select
-                                            className={styles.input}
+                                        <CustomSelect
+                                            options={INVOICE_STATUS_OPTIONS}
                                             value={editingInvoice.status}
-                                            onChange={(e) => {
-                                                const status = e.target.value as any;
+                                            onChange={(val) => {
+                                                const status = val as Database['public']['Tables']['invoices']['Row']['status'];
                                                 setEditingInvoice({
                                                     ...editingInvoice,
                                                     status,
                                                     is_partial: status === 'Partial'
                                                 });
                                             }}
-                                        >
-                                            <option value="Paid">Paid (Fully Settled)</option>
-                                            <option value="Partial">Partial Settlement</option>
-                                            <option value="Pending">Pending (Unsettled)</option>
-                                        </select>
+                                            fullWidth
+                                        />
                                     </div>
 
                                     <div className={styles.formGroup}>
                                         <label className={styles.formLabel}>Payment Instrument / Mode</label>
-                                        <select
-                                            className={styles.input}
+                                        <CustomSelect
+                                            options={PAYMENT_INSTRUMENT_OPTIONS}
                                             value={editingInvoice.payment_mode || ''}
-                                            onChange={(e) => setEditingInvoice({ ...editingInvoice, payment_mode: e.target.value as any })}
-                                        >
-                                            <option value="">Select Instrument</option>
-                                            <option value="Cash">Cash</option>
-                                            <option value="Card">Card / POS</option>
-                                            <option value="UPI">UPI / QR Transfer</option>
-                                        </select>
+                                            onChange={(val) => setEditingInvoice({ ...editingInvoice, payment_mode: (val || null) as Database['public']['Tables']['invoices']['Row']['payment_mode'] })}
+                                            placeholder="Select Instrument"
+                                            fullWidth
+                                        />
                                     </div>
                                 </div>
 

@@ -5,6 +5,22 @@ import { AlertCircle, Save, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
 import { getPricingUnit, isFullResortType } from '@/lib/constants';
+import CustomSelect from './ui/CustomSelect';
+
+const BOOKING_STATUS_OPTIONS = [
+    { value: 'Confirmed', label: 'Confirmed', color: '#10B981' },
+    { value: 'Checked In', label: 'Checked In', color: '#039BE5' },
+    { value: 'Checked Out', label: 'Checked Out', color: '#8B5CF6' },
+    { value: 'Cancelled', label: 'Cancelled', color: '#EF4444' },
+];
+
+const BOOKING_TYPE_OPTIONS = [
+    { value: 'Standard', label: 'Standard' },
+    { value: 'Complementary', label: 'Complementary' },
+    { value: 'Corporate', label: 'Corporate' },
+    { value: 'OTA', label: 'OTA' },
+    { value: 'Direct', label: 'Direct' },
+];
 
 type Room = Database['public']['Tables']['rooms']['Row'];
 
@@ -40,6 +56,20 @@ export default function EditBookingModal({ booking, onClose, onSuccess }: EditBo
         () => availableRooms.find((room) => room.id === formData.roomId) || booking.rooms,
         [availableRooms, formData.roomId, booking.rooms]
     );
+
+    const roomOptions = useMemo(() => {
+        const list = availableRooms.map((room) => ({
+            value: room.id,
+            label: `${room.room_number} - ${room.type}`,
+        }));
+        if (formData.roomId && !list.some((r) => r.value === formData.roomId) && booking.rooms) {
+            list.unshift({
+                value: booking.rooms.id,
+                label: `${booking.rooms.room_number} - ${booking.rooms.type} (Current)`,
+            });
+        }
+        return list;
+    }, [availableRooms, formData.roomId, booking.rooms]);
 
     useEffect(() => {
         if (!formData.checkIn || !formData.checkOut) return;
@@ -177,42 +207,37 @@ export default function EditBookingModal({ booking, onClose, onSuccess }: EditBo
                             <input type="date" style={inputStyle} value={formData.checkOut} onChange={(e) => setFormData({ ...formData, checkOut: e.target.value })} />
                         </Field>
                         <Field label="Room">
-                            <select
-                                style={inputStyle}
+                            <CustomSelect
+                                options={roomOptions}
                                 value={formData.roomId}
-                                onChange={(e) => {
-                                    const nextRoom = availableRooms.find((room) => room.id === e.target.value);
+                                onChange={(val) => {
+                                    const nextRoom = availableRooms.find((room) => room.id === val);
                                     setFormData({
                                         ...formData,
-                                        roomId: e.target.value,
+                                        roomId: val,
                                         roomRate: nextRoom ? nextRoom.price_per_night : formData.roomRate,
                                     });
                                 }}
                                 disabled={loadingRooms}
-                            >
-                                {availableRooms.map((room) => (
-                                    <option key={room.id} value={room.id}>
-                                        {room.room_number} - {room.type}
-                                    </option>
-                                ))}
-                            </select>
+                                placeholder={loadingRooms ? 'Loading rooms...' : 'Select a room'}
+                                fullWidth
+                            />
                         </Field>
                         <Field label="Booking Type">
-                            <select style={inputStyle} value={formData.bookingType} onChange={(e) => setFormData({ ...formData, bookingType: e.target.value })}>
-                                <option value="Standard">Standard</option>
-                                <option value="Complementary">Complementary</option>
-                                <option value="Corporate">Corporate</option>
-                                <option value="OTA">OTA</option>
-                                <option value="Direct">Direct</option>
-                            </select>
+                            <CustomSelect
+                                options={BOOKING_TYPE_OPTIONS}
+                                value={formData.bookingType}
+                                onChange={(val) => setFormData({ ...formData, bookingType: val })}
+                                fullWidth
+                            />
                         </Field>
                         <Field label="Status">
-                            <select style={inputStyle} value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })}>
-                                <option value="Confirmed">Confirmed</option>
-                                <option value="Checked In">Checked In</option>
-                                <option value="Checked Out">Checked Out</option>
-                                <option value="Cancelled">Cancelled</option>
-                            </select>
+                            <CustomSelect
+                                options={BOOKING_STATUS_OPTIONS}
+                                value={formData.status}
+                                onChange={(val) => setFormData({ ...formData, status: val })}
+                                fullWidth
+                            />
                         </Field>
                         <Field label={`Room Rate ${selectedRoom?.type ? getPricingUnit(selectedRoom.type) : ''}`}>
                             <input type="number" style={inputStyle} value={formData.roomRate} onChange={(e) => setFormData({ ...formData, roomRate: Number(e.target.value) })} />

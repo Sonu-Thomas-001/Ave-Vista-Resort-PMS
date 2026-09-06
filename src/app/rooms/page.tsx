@@ -8,6 +8,7 @@ import RoomDetailsModal from '@/components/RoomDetailsModal';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
 import styles from './page.module.css';
+import CustomSelect from '@/components/ui/CustomSelect';
 import { getPricingUnit, isFullResortType } from '@/lib/constants';
 import {
     Bed,
@@ -399,18 +400,17 @@ export default function RoomsPage() {
                         {/* Room Type Selector & View Mode Switcher */}
                         <div className={styles.viewAndTypeControls}>
                             {roomTypes.length > 0 && (
-                                <select
+                                <CustomSelect
+                                    options={[
+                                        { label: 'All Accommodation Types', value: 'All' },
+                                        ...roomTypes.map(t => ({ label: t, value: t }))
+                                    ]}
                                     value={typeFilter}
-                                    onChange={e => setTypeFilter(e.target.value)}
-                                    className={styles.typeSelect}
-                                >
-                                    <option value="All">All Accommodation Types</option>
-                                    {roomTypes.map(t => (
-                                        <option key={t} value={t}>
-                                            {t}
-                                        </option>
-                                    ))}
-                                </select>
+                                    onChange={val => setTypeFilter(val)}
+                                    size="sm"
+                                    fullWidth={false}
+                                    placeholder="All Types"
+                                />
                             )}
 
                             <div className={styles.viewModeToggle}>

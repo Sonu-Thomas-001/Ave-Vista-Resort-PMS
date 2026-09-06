@@ -9,6 +9,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import styles from './NewBookingModal.module.css';
 import { EmailService } from '@/lib/email-service';
 import { getPricingUnit, getQuantityLabel, isFullResortType, isSpecialRoomType } from '@/lib/constants';
+import CustomSelect from './ui/CustomSelect';
+
+const BOOKING_TYPE_OPTIONS = [
+    { value: 'Standard', label: 'Standard' },
+    { value: 'Complementary', label: 'Complementary' },
+    { value: 'Corporate', label: 'Corporate' },
+    { value: 'OTA', label: 'OTA (Online Travel Agent)' },
+    { value: 'Direct', label: 'Direct' },
+];
 
 interface NewBookingModalProps {
     onClose: () => void;
@@ -585,17 +594,12 @@ export default function NewBookingModal({ onClose, onSuccess }: NewBookingModalP
 
                                     <div className={styles.formGroup}>
                                         <label>Booking Type</label>
-                                        <select
-                                            className={styles.input}
+                                        <CustomSelect
+                                            options={BOOKING_TYPE_OPTIONS}
                                             value={bookingType}
-                                            onChange={(e) => setBookingType(e.target.value)}
-                                        >
-                                            <option value="Standard">Standard</option>
-                                            <option value="Complementary">Complementary</option>
-                                            <option value="Corporate">Corporate</option>
-                                            <option value="OTA">OTA (Online Travel Agent)</option>
-                                            <option value="Direct">Direct</option>
-                                        </select>
+                                            onChange={(val) => setBookingType(val)}
+                                            fullWidth
+                                        />
                                     </div>
 
                                     <div className={styles.formGroup}>
