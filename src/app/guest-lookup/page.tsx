@@ -432,19 +432,19 @@ export default function GuestLookupPage() {
 
                                         <div className={styles.infoRow}>
                                             <span className={styles.infoRowLabel}>Government ID Document</span>
-                                            <span className={styles.infoRowVal}>
+                                            <div className={styles.infoRowVal}>
                                                 {selectedGuest.id_proof_type ? (
-                                                    <>
-                                                        <span>{selectedGuest.id_proof_type}: </span>
+                                                    <div className={styles.idProofRow}>
+                                                        <span className={styles.idTypeLabel}>{selectedGuest.id_proof_type}:</span>
                                                         <span className={styles.monoTag}>{selectedGuest.id_proof_number || 'On File'}</span>
                                                         <span className={styles.verifiedChip}>
                                                             <ShieldCheck size={11} /> Verified
                                                         </span>
-                                                    </>
+                                                    </div>
                                                 ) : (
                                                     <span style={{ color: '#94a3b8' }}>No document recorded</span>
                                                 )}
-                                            </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

@@ -518,6 +518,7 @@
     color: #0f172a;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
     word-break: break-word;
 }
@@ -527,14 +528,28 @@
     flex-shrink: 0;
 }
 
+.idProofRow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.idTypeLabel {
+    font-weight: 600;
+    color: #334155;
+    white-space: nowrap;
+}
+
 .monoTag {
     font-family: monospace;
     font-weight: 700;
     background: #ffffff;
     border: 1px solid #cbd5e1;
-    padding: 2px 8px;
+    padding: 3px 8px;
     border-radius: 6px;
     color: #0f172a;
+    word-break: break-all;
 }
 
 .verifiedChip {
@@ -545,9 +560,10 @@
     color: #15803d;
     font-size: 0.72rem;
     font-weight: 700;
-    padding: 2px 6px;
+    padding: 2px 7px;
     border-radius: 6px;
-    margin-left: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .notesQuoteBox {
@@ -810,16 +826,12 @@
     .statsGrid {
         grid-template-columns: repeat(2, 1fr);
     }
+}
 
-    .profileCard {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-
-    .profileHeaderRow {
-        flex-direction: column;
-        align-items: center;
+@media (max-width: 900px) {
+    .panelsGrid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
     }
 }
 
@@ -843,18 +855,93 @@
         justify-content: center;
     }
 
+    .profileCard {
+        padding: 1.25rem 1rem;
+        border-radius: 18px;
+    }
+
+    .profileHeroBar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.25rem;
+    }
+
+    .heroIdentity {
+        width: 100%;
+    }
+
+    .actionSection {
+        width: 100%;
+        display: flex;
+        gap: 8px;
+    }
+
+    .actionBtn {
+        flex: 1;
+        min-height: 44px;
+        justify-content: center;
+    }
+
+    .panelsGrid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .panelCard {
+        padding: 1.25rem 1rem;
+    }
+
     .statsGrid {
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
     }
+}
 
-    .detailsGrid {
-        grid-template-columns: 1fr;
+@media (max-width: 480px) {
+    .heroIdentity {
+        gap: 12px;
+    }
+
+    .avatar {
+        width: 56px;
+        height: 56px;
+        min-width: 56px;
+        font-size: 1.3rem;
+        border-radius: 16px;
+    }
+
+    .guestName {
+        font-size: 1.4rem;
+    }
+
+    .statsGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .statCard {
+        padding: 1rem 0.85rem;
+        gap: 10px;
+    }
+
+    .statIconBox {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        border-radius: 10px;
+    }
+
+    .statVal {
+        font-size: 1.2rem;
     }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 360px) {
     .statsGrid {
         grid-template-columns: 1fr;
+    }
+
+    .actionSection {
+        flex-direction: column;
     }
 }
