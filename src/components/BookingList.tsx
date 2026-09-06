@@ -83,13 +83,16 @@ export default function BookingList() {
                     check_out_date,
                     status,
                     source,
+                    adults,
+                    children,
                     total_amount,
                     advance_amount,
                     room_rate,
                     extra_pax,
                     extra_pax_rate,
-                    guests (first_name, last_name, email, phone),
-                    rooms (room_number, type)
+                    created_at,
+                    guests (id, first_name, last_name, email, phone, is_vip, notes, company_name),
+                    rooms (id, room_number, type, price_per_night)
                 `)
                 .order('created_at', { ascending: false });
 
@@ -510,6 +513,10 @@ export default function BookingList() {
                 <BookingDetailsModal
                     booking={selectedBooking}
                     onClose={() => setSelectedBooking(null)}
+                    onEdit={(b) => {
+                        setSelectedBooking(null);
+                        setEditingBooking(b);
+                    }}
                 />
             )}
 
