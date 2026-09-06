@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import nodemailer from 'nodemailer';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { getDefaultTemplateBySlug } from '@/lib/default-email-templates';
 
 // Configure Nodemailer Transporter
 const transporter = nodemailer.createTransport({
@@ -39,20 +40,34 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: "Emails disabled globally" });
         }
 
-        // 2. Fetch Template
-        const { data: template, error: templateError } = await supabase
-            .from("email_templates")
-            .select("*")
-            .eq("slug", type)
-            .single();
+        // 2. Fetch Template (with fallback to default repository)
+        let subjectTemplate = payload.custom_subject;
+        let bodyHtml = payload.custom_html;
 
-        if (templateError || !template) {
-            return NextResponse.json({ error: `Template not found for type: ${type}` }, { status: 404 });
+        if (!subjectTemplate || !bodyHtml) {
+            const { data: template } = await supabase
+                .from("email_templates")
+                .select("*")
+                .eq("slug", type)
+                .single();
+
+            if (template) {
+                subjectTemplate = subjectTemplate || template.subject_template;
+                bodyHtml = bodyHtml || template.body_html;
+            } else {
+                const defaultDef = getDefaultTemplateBySlug(type);
+                if (defaultDef) {
+                    subjectTemplate = subjectTemplate || defaultDef.subject_template;
+                    bodyHtml = bodyHtml || defaultDef.body_html;
+                } else {
+                    return NextResponse.json({ error: `Template not found for type: ${type}` }, { status: 404 });
+                }
+            }
         }
 
         // 3. Prepare Email Content
-        let subject = template.subject_template;
-        let html = template.body_html;
+        let subject = subjectTemplate;
+        let html = bodyHtml;
         const attachments: any[] = [];
 
         // Replace placeholders
@@ -62,6 +77,10 @@ export async function POST(request: Request) {
             subject = subject.replace(regex, String(value));
             html = html.replace(regex, String(value));
         });
+
+        if (payload.is_test) {
+            subject = `[TEST] ${subject}`;
+        }
 
         // 4. Generate PDF if Invoice
         if (type === "invoice-email") {

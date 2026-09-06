@@ -1,30 +1,22 @@
-﻿-- Enable UUID extension if not enabled
-create extension if not exists "uuid-ossp";
+-- =========================================================================
+-- Ave Vista Resorts & Hotels - Modern Email Templates Migration
+-- Redesigned luxury responsive email templates with modern styling,
+-- complete variable coverage, and new templates for checkin-reminder,
+-- checkout-thankyou, booking-cancellation, and restaurant-bill.
+-- =========================================================================
 
--- 1. APP SETTINGS (Extend existing table)
--- We assume app_settings exists from supabase_schema_settings.sql with id=1
-do $$
-begin
-  if not exists (select 1 from information_schema.columns where table_name = 'app_settings' and column_name = 'email_enabled') then
-    alter table public.app_settings add column email_enabled boolean default true;
-  end if;
-
-  if not exists (select 1 from information_schema.columns where table_name = 'app_settings' and column_name = 'admin_email') then
-    alter table public.app_settings add column admin_email text default 'avevistaresort@gmail.com';
-  end if;
-end $$;
-
--- 2. EMAIL TEMPLATES
+-- Ensure table exists
 create table if not exists public.email_templates (
   id uuid default uuid_generate_v4() primary key,
-  slug text unique not null, -- e.g., 'booking-confirmation'
+  slug text unique not null,
   name text not null,
   subject_template text not null,
-  body_html text not null, -- The HTML content with placeholders like {{guest_name}}
+  body_html text not null,
   created_at timestamp with time zone default timezone('utc'::text, now()),
   updated_at timestamp with time zone default timezone('utc'::text, now())
 );
 
+-- Insert or update all 9 modern luxury templates
 insert into public.email_templates (slug, name, subject_template, body_html)
 values
 -- 1. GUEST WELCOME
@@ -1229,32 +1221,3 @@ on conflict (slug) do update set
   subject_template = excluded.subject_template,
   body_html = excluded.body_html,
   updated_at = timezone('utc'::text, now());
-
-
--- 3. EMAIL LOGS
-create table if not exists public.email_logs (
-  id uuid default uuid_generate_v4() primary key,
-  recipient text not null,
-  template_slug text not null,
-  status text check (status in ('Sent', 'Failed', 'Pending')) default 'Pending',
-  error_message text,
-  metadata jsonb, -- Stores extra info like booking_id, etc.
-  created_at timestamp with time zone default timezone('utc'::text, now())
-);
-
--- RLS
-alter table public.email_templates enable row level security;
-alter table public.email_logs enable row level security;
-
--- Policies
--- Templates: Read for everyone (true), Write for Authenticated
-drop policy if exists "Allow all access to email_templates" on public.email_templates;
-create policy "Allow read access to email_templates" on public.email_templates for select using (true);
-create policy "Allow write access to email_templates" on public.email_templates for insert with check (auth.role() = 'authenticated');
-create policy "Allow update access to email_templates" on public.email_templates for update using (auth.role() = 'authenticated');
-
--- Logs: Read/Write for Authenticated
-drop policy if exists "Allow all access to email_logs" on public.email_logs;
-create policy "Allow all access to email_logs" on public.email_logs for all using (auth.role() = 'authenticated');
-
-
